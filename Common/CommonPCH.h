@@ -148,7 +148,6 @@ extern Config* sConfigCommon;
 #include "QueryHolder.h"
 #include "MySQLThreading.h"
 #include "DatabaseWorker.h"
-#include "QueueBase.h"
 #include "MuDatabase.h"
 #include "GameServerDatabase.h"
 #include "MuLogDatabase.h"

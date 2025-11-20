@@ -254,9 +254,6 @@
     <ClInclude Include="FieldReader.h">
       <Filter>DataBase</Filter>
     </ClInclude>
-    <ClInclude Include="QueueBase.h">
-      <Filter>DataBase</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp">
