@@ -40,13 +40,14 @@ class GSSocket : public Socket<GSSocket>
 		void SendPacket(uint8 * packet, uint16 size);
 
 	protected:
-		void ReadHandler() override;
+        void ReadHandler() override;
 
-	private:
-		void GameServerConnect(uint8 * Packet);
-		void GameServerUserPercent(uint8 * Packet);
+    private:
+        void GameServerConnect(uint8 * Packet);
+        void GameServerUserPercent(uint8 * Packet);
 
-		DECLARE_ENUM(uint16, ServerCode);
+    public:
+        uint16 m_ServerCode = static_cast<uint16>(-1);
 };
 
 #endif

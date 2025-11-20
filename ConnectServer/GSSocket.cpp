@@ -32,7 +32,7 @@ std::unordered_map<uint8, LoginHandler<GSSocket>> const Handlers = GSSocket::Ini
 
 GSSocket::GSSocket(tcp::socket&& socket): Socket(std::move(socket))
 {
-	this->SetServerCode(-1);
+        this->m_ServerCode = static_cast<uint16>(-1);
 }
 
 void GSSocket::Start()
@@ -71,7 +71,7 @@ void GSSocket::ReadHandler()
 
 void GSSocket::OnEnd()
 {
-	sServer->ServerClose(this->GetServerCode());
+        sServer->ServerClose(m_ServerCode);
 }
 
 void GSSocket::SendPacket(uint8 * packet, uint16 size)
@@ -81,14 +81,14 @@ void GSSocket::SendPacket(uint8 * packet, uint16 size)
 
 void GSSocket::GameServerConnect(uint8 * Packet)
 {
-	POINTER_PCT(CS_GAMESERVER_CONNECT, lpMsg, Packet, 0);
+        POINTER_PCT(CS_GAMESERVER_CONNECT, lpMsg, Packet, 0);
 
-	this->SetServerCode(lpMsg->h.server);
+        m_ServerCode = lpMsg->h.server;
 
-	sServer->ServerConnect(this->GetServerCode());
+        sServer->ServerConnect(m_ServerCode);
 
-	CS_GAMESERVER_CONNECT pMsg(lpMsg->h.server);
-	this->SendPacket((uint8*)&pMsg, pMsg.h.get_size());
+        CS_GAMESERVER_CONNECT pMsg(lpMsg->h.server);
+        this->SendPacket((uint8*)&pMsg, pMsg.h.get_size());
 }
 
 void GSSocket::GameServerUserPercent(uint8 * Packet)

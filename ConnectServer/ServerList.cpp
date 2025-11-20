@@ -5,28 +5,28 @@ CServerList::CServerList() : m_UpdateInterval(0), m_NextUpdateTime(time(NULL))
 
 CServerList::~CServerList()
 {
-	MAP_CLEAR(ServerDataMap::iterator, this->server_map);
+MAP_CLEAR(ServerDataMap::iterator, this->m_ServerMap);
 }
 
 ServerData * CServerList::FindServer(uint16 code)
 {
-	ServerDataMap::const_iterator it = this->server_map.find(code);
+ServerDataMap::const_iterator it = this->m_ServerMap.find(code);
 
-	return it != this->server_map.end() ? it->second : nullptr;
+return it != this->m_ServerMap.end() ? it->second : nullptr;
 }
 
 ServerData const* CServerList::FindServerByDisplay(uint16 id) const
 {
-	for (ServerDataMap::const_iterator itr = this->server_map.begin(); itr != this->server_map.end(); ++itr)
-	{
-		ServerData const* pData = itr->second;
+for (ServerDataMap::const_iterator itr = this->m_ServerMap.begin(); itr != this->m_ServerMap.end(); ++itr)
+{
+ServerData const* pData = itr->second;
 
 		if (!pData)
 		{
 			continue;
 		}
 
-		if (pData->GetDisplayID() == id)
+                if (pData->displayID == id)
 		{
 			return pData;
 		}
@@ -67,7 +67,7 @@ void CServerList::SendChannel()
 	{
 		head->count = 0;
 
-		for (ServerDataMap::const_iterator itr = this->server_map.begin(); itr != this->server_map.end(); ++itr)
+                for (ServerDataMap::const_iterator itr = this->m_ServerMap.begin(); itr != this->m_ServerMap.end(); ++itr)
 		{
 			ServerData const* pData = itr->second;
 
@@ -76,21 +76,21 @@ void CServerList::SendChannel()
 				continue;
 			}
 
-			if ((pData->GetServer() / MAX_SERVER_PER_GROUP) != i)
+                        if ((pData->server / MAX_SERVER_PER_GROUP) != i)
 			{
 				continue;
 			}
 
-			if (!pData->IsActive() || !pData->IsOnline() || !pData->IsFlag(SERVER_FLAG_DISPLAY) || pData->IsFlag(SERVER_FLAG_DISABLED))
-			{
-				continue;
-			}
-			
-			body[head->count].server = pData->GetServer();
-			body[head->count].data1 = 0;
-			body[head->count].data2 = 0;
-			body[head->count].type = pData->GetType() & 1;
-			body[head->count].gold = pData->GetType() >= 2 ? 1 : 0;
+                        if (!pData->active || !pData->online || !pData->IsFlag(SERVER_FLAG_DISPLAY) || pData->IsFlag(SERVER_FLAG_DISABLED))
+                        {
+                                continue;
+                        }
+
+                        body[head->count].server = pData->server;
+                        body[head->count].data1 = 0;
+                        body[head->count].data2 = 0;
+                        body[head->count].type = pData->type & 1;
+                        body[head->count].gold = pData->type >= 2 ? 1 : 0;
 			++head->count;
 		}
 
@@ -141,7 +141,7 @@ void CServerList::LoadServerList(char* pchFileName)
 				add_server->SetPercent(0);
 				add_server->SetOnline(false);
 				add_server->SetActive(false);
-				this->server_map[add_server->GetServer()] = add_server;
+                                this->m_ServerMap[add_server->server] = add_server;
 			}
 
 			if ( !add_server->IsActive() )
@@ -153,8 +153,8 @@ void CServerList::LoadServerList(char* pchFileName)
 				add_server->RemoveFlag(SERVER_FLAG_DISABLED);
 			}
 			
-			sLog->outInfo(LOG_DEFAULT, "Added Server %u [%s]    Port: %u   IP: %s   Display: %d	AccountAllowed: %d	Disabled: %d", add_server->GetServer(),
-			add_server->GetName().c_str(), add_server->GetPort(), add_server->GetIP().c_str(), 
+			sLog->outInfo(LOG_DEFAULT, "Added Server %u [%s]    Port: %u   IP: %s   Display: %d	AccountAllowed: %d	Disabled: %d", add_server->server,
+			add_server->name.c_str(), add_server->port, add_server->ip.c_str(), 
 			add_server->IsFlag(SERVER_FLAG_DISPLAY), 
 			add_server->IsFlag(SERVER_FLAG_ACCOUNT_ALLOWED),
 			add_server->IsFlag(SERVER_FLAG_DISABLED));
@@ -186,33 +186,33 @@ void CServerList::LoadServerList(char* pchFileName)
 			add = true;
 		}
 
-		add_server->SetServer(servercode);
-		add_server->SetDisplayID(server.attribute("ServerIndex").as_int());
-		add_server->SetName(server.attribute("ServerName").as_string());
-		add_server->SetPort(server.attribute("ServerPort").as_int());
-		add_server->SetIP(server.attribute("ServerIP").as_string());
-		add_server->SetFlag(server.attribute("Display").as_int());
-		add_server->SetType(server.attribute("ServerType").as_int());
+                add_server->server = servercode;
+                add_server->displayID = server.attribute("ServerIndex").as_int();
+                add_server->name = server.attribute("ServerName").as_string();
+                add_server->port = server.attribute("ServerPort").as_int();
+                add_server->ip = server.attribute("ServerIP").as_string();
+                add_server->flag = server.attribute("Display").as_int();
+                add_server->type = server.attribute("ServerType").as_int();
 
-		if (add)
-		{
-			add_server->SetPercent(0);
-			add_server->SetOnline(false);
-			add_server->SetActive(false);
-			this->server_map[add_server->GetServer()] = add_server;
-		}
+                if (add)
+                {
+                        add_server->percent = 0;
+                        add_server->online = false;
+                        add_server->active = false;
+                        this->m_ServerMap[add_server->server] = add_server;
+                }
 
-		if (!add_server->IsActive())
-		{
-			add_server->AddFlag(SERVER_FLAG_DISABLED);
-		}
+                if (!add_server->active)
+                {
+                        add_server->AddFlag(SERVER_FLAG_DISABLED);
+                }
 		else
 		{
 			add_server->RemoveFlag(SERVER_FLAG_DISABLED);
 		}
 
-		sLog->outInfo(LOG_DEFAULT, "Added Server %u [%s]    Port: %u   IP: %s   Display: %d	AccountAllowed: %d	Disabled: %d", add_server->GetServer(),
-			add_server->GetName().c_str(), add_server->GetPort(), add_server->GetIP().c_str(),
+		sLog->outInfo(LOG_DEFAULT, "Added Server %u [%s]    Port: %u   IP: %s   Display: %d	AccountAllowed: %d	Disabled: %d", add_server->server,
+			add_server->name.c_str(), add_server->port, add_server->ip.c_str(),
 			add_server->IsFlag(SERVER_FLAG_DISPLAY),
 			add_server->IsFlag(SERVER_FLAG_ACCOUNT_ALLOWED),
 			add_server->IsFlag(SERVER_FLAG_DISABLED));
@@ -228,7 +228,7 @@ void CServerList::ServerListRequest(std::shared_ptr<MainSocket> client)
 {
 	this->UpdateServerList();
 
-	if ( this->server_map.empty() )
+        if ( this->m_ServerMap.empty() )
 	{
 		client->CloseSocket();
 		return;
@@ -243,7 +243,7 @@ void CServerList::ServerListRequest(std::shared_ptr<MainSocket> client)
 	uint16 size = sizeof(SERVER_DATA_HEAD);
 	uint16 count = 0;
 
-	for (ServerDataMap::const_iterator it = this->server_map.begin(); it != this->server_map.end(); ++it)
+        for (ServerDataMap::const_iterator it = this->m_ServerMap.begin(); it != this->m_ServerMap.end(); ++it)
 	{
 		ServerData const* pData = it->second;
 
@@ -252,14 +252,14 @@ void CServerList::ServerListRequest(std::shared_ptr<MainSocket> client)
 			continue;
 		}
 
-		if (!pData->IsFlag(SERVER_FLAG_DISPLAY) || pData->IsFlag(SERVER_FLAG_DISABLED) || !pData->IsOnline())
+		if (!pData->IsFlag(SERVER_FLAG_DISPLAY) || pData->IsFlag(SERVER_FLAG_DISABLED) || !pData->online)
 		{
 			continue;
 		}
 
-		body[count].server_code = pData->GetDisplayID();
-		body[count].percent = pData->GetPercent();
-		body[count].type = pData->GetType();
+		body[count].server_code = pData->displayID;
+		body[count].percent = pData->percent;
+		body[count].type = pData->type;
 		size += sizeof(SERVER_DATA_BODY);
 		count++;
 	}
@@ -289,13 +289,13 @@ void CServerList::ServerSelectRequest(std::shared_ptr<MainSocket> client, uint8 
 		return;
 	}
 
-	if ( !server_data->IsFlag(SERVER_FLAG_DISPLAY) || server_data->IsFlag(SERVER_FLAG_DISABLED) || !server_data->IsOnline() )
-	{
-		client->CloseSocket();
-		return;
-	}
+        if ( !server_data->IsFlag(SERVER_FLAG_DISPLAY) || server_data->IsFlag(SERVER_FLAG_DISABLED) || !server_data->online )
+        {
+                client->CloseSocket();
+                return;
+        }
 
-	SERVER_INFO_RESULT pMsg(server_data->GetIP().c_str(), server_data->GetPort());
+	SERVER_INFO_RESULT pMsg(server_data->ip.c_str(), server_data->port);
 
 	client->SendPacket((uint8*)&pMsg, pMsg.h.size);
 }
@@ -311,8 +311,8 @@ void CServerList::ServerSetInfo(std::shared_ptr<GSSocket> client, uint8 * Packet
 		return;
 	}
 
-	server_data->SetPercent(lpMsg->percent);
-	server_data->SetActive(lpMsg->active);
+        server_data->percent = lpMsg->percent;
+        server_data->active = lpMsg->active;
 	
 	if ( !lpMsg->active )
 	{
@@ -323,7 +323,7 @@ void CServerList::ServerSetInfo(std::shared_ptr<GSSocket> client, uint8 * Packet
 		server_data->RemoveFlag(SERVER_FLAG_DISABLED);
 	}
 
-	CS_GAMESERVER_FLAG pMsg(server_data->GetFlag());
+	CS_GAMESERVER_FLAG pMsg(server_data->flag);
 	client->SendPacket((uint8*)&pMsg, pMsg.h.get_size());
 }
 
@@ -332,7 +332,7 @@ void CServerList::ServerVersionCheck(std::shared_ptr<MainSocket> client, uint8 *
 	POINTER_PCT(MU_VERSION_CHECK, lpMsg, Packet, 0);
 
 	MU_VERSION_CHECK_RESULT pMsg;
-	memcpy(pMsg.address, sMain->update_address.c_str(), sMain->update_address.length());
+        memcpy(pMsg.address, sMain->m_UpdateAddress.c_str(), sMain->m_UpdateAddress.length());
 	pMsg.data[0] = 1;
 	pMsg.data[1] = 1;
 
@@ -350,8 +350,8 @@ void CServerList::ServerConnect(uint16 server)
 {
 	if ( ServerData * server_data = this->FindServer(server) )
 	{
-		server_data->SetOnline(true);
-		sLog->outInfo("root", "[ SERVER CONNECT ] Connecting Server - %s / %d", server_data->GetName().c_str(), server);
+                server_data->online = true;
+		sLog->outInfo("root", "[ SERVER CONNECT ] Connecting Server - %s / %d", server_data->name.c_str(), server);
 	}
 
 	/*SQLTransaction trans = LoginDatabase.BeginTransaction();
@@ -368,8 +368,8 @@ void CServerList::ServerClose(uint16 server)
 {
 	if ( ServerData * server_data = this->FindServer(server) )
 	{
-		server_data->SetOnline(false);
-		sLog->outInfo("root", "[ SERVER CLOSE ] Closing Server - %s / %d", server_data->GetName().c_str(), server);
+                server_data->online = false;
+		sLog->outInfo("root", "[ SERVER CLOSE ] Closing Server - %s / %d", server_data->name.c_str(), server);
 	}
 
 	/*SQLTransaction trans = LoginDatabase.BeginTransaction();
