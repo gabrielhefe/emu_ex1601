@@ -1,6 +1,9 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <cstddef>
+#include <string>
+
 enum UPDATE_DOWNLOAD_TYPE
 {
 	UPDATE_DOWNLOAD_TYPE_FTP,
@@ -26,37 +29,36 @@ enum WorldTimers
 
 class MainApplication: public AppConsole
 {
-	SingletonInstance(MainApplication);
+        SingletonInstance(MainApplication);
 
-	public:
+        public:
 		MainApplication();
 		virtual ~MainApplication();
 
 		void Load() { }
 		void CreateSetting(std::string const& key, std::string const& default) { }
 
-		bool Run();
-		void Update(uint32 diff);
-		void UpdateWin();
-		void End();
+                bool Run();
+                void Update(uint32 diff);
+                void UpdateWin();
+                void End();
 
-		uint8 version[3];
-		std::string filename;
+                uint8 m_Version[3];
+                std::string m_Filename;
 
-		DECLARE_ENUM(uint8, DownloadType);
-		DECLARE_ARRAY_STRUCT(UpdateDownloadData, DownloadData, UPDATE_DOWNLOAD_TYPE_MAX);
+                uint8 m_DownloadType = 0;
+                UpdateDownloadData m_DownloadData[UPDATE_DOWNLOAD_TYPE_MAX] = {};
 
-	public:
-		void LoadVersion();
-		void LoadAccountTime();
+        public:
+                void LoadVersion();
+                void LoadAccountTime();
+                size_t m_MaxConnectionCount = 0;
+                uint32 m_MaxConnectionIdle = 0;
 
-		DECLARE_ENUM(size_t, MaxConnectionCount);
-		DECLARE_ENUM(uint32, MaxConnectionIdle);
+                IntervalTimer m_Timers[WUPDATE_COUNT];
 
-		IntervalTimer m_timers[WUPDATE_COUNT];
-
-		DECLARE_ENUM(uint8, UpdateHeadcode);
-		std::string update_address;
+                uint8 m_UpdateHeadcode = 0;
+                std::string m_UpdateAddress;
 };
 
 #endif

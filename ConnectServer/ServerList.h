@@ -1,18 +1,24 @@
 #ifndef SERVER_LIST_H
 #define SERVER_LIST_H
 
+#include <map>
+#include <string>
+
 struct ServerData
 {
-	DECLARE_ENUM(uint16, Server);
-	DECLARE_ENUM(uint16, DisplayID);
-	DECLARE_PROPERTY_STRING(Name);
-	DECLARE_ENUM(uint16, Port);
-	DECLARE_PROPERTY_STRING(IP);
-	DECLARE_FLAG(uint8, Flag);
-	DECLARE_ENUM(uint8, Percent);
-	DECLARE_BOOL(Online);
-	DECLARE_ENUM(uint8, Type);
-	DECLARE_BOOL(Active);
+        uint16 server = 0;
+        uint16 displayID = 0;
+        std::string name;
+        uint16 port = 0;
+        std::string ip;
+        uint8 flag = 0;
+        uint8 percent = 0;
+        bool online = false;
+        uint8 type = 0;
+        bool active = false;
+        void AddFlag(uint8 value) { flag |= value; }
+        void RemoveFlag(uint8 value) { flag &= ~value; }
+        bool IsFlag(uint8 value) const { return (flag & value) != 0; }
 };
 
 typedef std::map<uint16, ServerData*> ServerDataMap;
@@ -41,11 +47,11 @@ class CServerList
 {
 	SingletonInstance(CServerList);
 
-	public:
-		CServerList();
-		virtual ~CServerList();
+        public:
+                CServerList();
+                virtual ~CServerList();
 
-		ServerDataMap server_map;
+                ServerDataMap m_ServerMap;
 		ServerData * FindServer(uint16 code);
 		ServerData const* FindServerByDisplay(uint16 id) const;
 

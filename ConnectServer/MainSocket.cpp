@@ -22,7 +22,7 @@ using boost::asio::ip::tcp;
 
 MainSocket::MainSocket(tcp::socket&& socket): Socket(std::move(socket))
 {
-	this->GetTime()->Start();
+m_Time.Start();
 }
 
 struct PMSG_CONNECT
@@ -48,11 +48,11 @@ void MainSocket::Start()
 		return;
 	}
 
-	if ( sMainSocketMgr.GetConnectiounsCount() >= sMain->GetMaxConnectionCount() )
-	{
-		CloseSocket();
-		return;
-	}
+        if ( sMainSocketMgr.GetConnectiounsCount() >= sMain->m_MaxConnectionCount )
+        {
+                CloseSocket();
+                return;
+        }
 
 	if ( !sConfig->GetBoolDefault("Network.ConnectionEnabled", true) )
 	{
@@ -68,8 +68,8 @@ bool MainSocket::Update()
 	if ( !Socket::Update() )
 		return false;
 
-	if ( this->GetTime()->Elapsed(sMain->GetMaxConnectionIdle()) )
-		return false;
+        if ( m_Time.Elapsed(sMain->m_MaxConnectionIdle) )
+                return false;
 
 	return true;
 }

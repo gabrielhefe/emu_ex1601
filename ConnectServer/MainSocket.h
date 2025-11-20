@@ -37,10 +37,11 @@ class MainSocket : public Socket<MainSocket>
 	protected:
 		void ReadHandler() override;
 
-	private:
-		void PrococolCore(uint8 * Packet, uint16 size, uint8 headcode);
-		DECLARE_STRUCT(EncodeDecode, EncDec);
-		DECLARE_STRUCT(TickTimer, Time);
+        private:
+                void PrococolCore(uint8 * Packet, uint16 size, uint8 headcode);
+
+                EncodeDecode m_EncDec;
+                TickTimer m_Time;
 };
 
 #endif

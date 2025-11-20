@@ -53,16 +53,16 @@ void MainApplication::End()
 
 bool MainApplication::Run()
 {
-	sServer->Initialize(sConfig->GetIntDefault("ServerStateUpdateDelay", 0));
-	sMain->LoadVersion();
+        sServer->Initialize(sConfig->GetIntDefault("ServerStateUpdateDelay", 0));
+        sMain->LoadVersion();
 
 	//LoginDatabase.Execute("UPDATE server_list SET online = 0");
 
 	if ( !StartNetwork() )
 		return false;
 
-	m_timers[WUPDATE_PINGDB].SetInterval(this->GetPingDB() * MINUTE * IN_MILLISECONDS);
-	m_timers[WUPDATE_CHANNEL].SetInterval(30 * IN_MILLISECONDS);
+        m_Timers[WUPDATE_PINGDB].SetInterval(this->GetPingDB() * MINUTE * IN_MILLISECONDS);
+        m_Timers[WUPDATE_CHANNEL].SetInterval(30 * IN_MILLISECONDS);
 
 	return true;
 }
@@ -86,38 +86,38 @@ bool StartNetwork()
 
 void MainApplication::LoadVersion()
 {
-	this->update_address = sConfig->GetStringDefault("UpdateAddress", "");
+        this->m_UpdateAddress = sConfig->GetStringDefault("UpdateAddress", "");
 }
 
 void MainApplication::LoadAccountTime()
 {
-	this->SetMaxConnectionCount(sConfig->GetIntDefault("Network.MaxConnectionCount", 0));
-	this->SetMaxConnectionIdle(sConfig->GetIntDefault("Network.MaxConnectionIdle", 0) * IN_MILLISECONDS);
+        m_MaxConnectionCount = sConfig->GetIntDefault("Network.MaxConnectionCount", 0);
+        m_MaxConnectionIdle = sConfig->GetIntDefault("Network.MaxConnectionIdle", 0) * IN_MILLISECONDS;
 
-	this->SetUpdateHeadcode(sConfig->GetIntDefault("Update.Headcode", 0));
+        m_UpdateHeadcode = sConfig->GetIntDefault("Update.Headcode", 0);
 }
 
 void MainApplication::Update(uint32 diff)
 {
-	for (int32 i = 0; i < WUPDATE_COUNT; ++i)
-	{
-		if (m_timers[i].GetCurrent() >= 0)
-			m_timers[i].Update(diff);
-		else
-			m_timers[i].SetCurrent(0);
-	}
+        for (int32 i = 0; i < WUPDATE_COUNT; ++i)
+        {
+                if (m_Timers[i].GetCurrent() >= 0)
+                        m_Timers[i].Update(diff);
+                else
+                        m_Timers[i].SetCurrent(0);
+        }
 
-	if (m_timers[WUPDATE_PINGDB].Passed())
-	{
-		m_timers[WUPDATE_PINGDB].Reset();
+        if (m_Timers[WUPDATE_PINGDB].Passed())
+        {
+                m_Timers[WUPDATE_PINGDB].Reset();
 
-		KeepDatabaseAlive();
-	}
+                KeepDatabaseAlive();
+        }
 
-	if (m_timers[WUPDATE_CHANNEL].Passed())
-	{
-		m_timers[WUPDATE_CHANNEL].Reset();
+        if (m_Timers[WUPDATE_CHANNEL].Passed())
+        {
+                m_Timers[WUPDATE_CHANNEL].Reset();
 
-		sServer->SendChannel();
-	}
+                sServer->SendChannel();
+        }
 }
