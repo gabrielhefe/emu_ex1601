@@ -37,19 +37,19 @@ public:
     }
 };
 
-MainSocketMgr::MainSocketMgr() : BaseSocketMgr(), _instanceAcceptor(nullptr), _socketSendBufferSize(-1), m_SockOutUBuff(65536), _tcpNoDelay(true), _max_connection_per_ip(0)
+MainSocketMgr::MainSocketMgr() : BaseSocketMgr(), m_InstanceAcceptor(nullptr), m_SocketSendBufferSize(-1), m_SockOutUBuff(65536), m_TcpNoDelay(true), m_MaxConnectionPerIp(0)
 {
 }
 
 MainSocketMgr::~MainSocketMgr()
 {
-	if ( _instanceAcceptor )
-		delete _instanceAcceptor;
+        if ( this->m_InstanceAcceptor )
+                delete this->m_InstanceAcceptor;
 }
 
 bool MainSocketMgr::StartNetwork(boost::asio::io_service& service, std::string const& bindIp, uint16 port, int32 threadCount)
 {
-	_max_connection_per_ip = sConfig->GetIntDefault("Network.MaxConnectionPerIP", 0);
+this->m_MaxConnectionPerIp = sConfig->GetIntDefault("Network.MaxConnectionPerIP", 0);
 
     BaseSocketMgr::StartNetwork(service, bindIp, port, threadCount);
 
@@ -60,19 +60,19 @@ bool MainSocketMgr::StartNetwork(boost::asio::io_service& service, std::string c
 void MainSocketMgr::OnSocketOpen(tcp::socket&& sock)
 {
     // set some options here
-    if (_socketSendBufferSize >= 0)
+    if (this->m_SocketSendBufferSize >= 0)
     {
         boost::system::error_code err;
-        sock.set_option(boost::asio::socket_base::send_buffer_size(_socketSendBufferSize), err);
+        sock.set_option(boost::asio::socket_base::send_buffer_size(this->m_SocketSendBufferSize), err);
         if (err && err != boost::system::errc::not_supported)
         {
-			sLog->outError(LOG_DEFAULT, "MainSocketMgr::OnSocketOpen sock.set_option(boost::asio::socket_base::send_buffer_size) err = %s", err.message().c_str());
-			return;
+                        sLog->outError(LOG_DEFAULT, "MainSocketMgr::OnSocketOpen sock.set_option(boost::asio::socket_base::send_buffer_size) err = %s", err.message().c_str());
+                        return;
         }
     }
 
     // Set TCP_NODELAY.
-    if (_tcpNoDelay)
+    if (this->m_TcpNoDelay)
     {
         boost::system::error_code err;
         sock.set_option(boost::asio::ip::tcp::no_delay(true), err);
@@ -88,7 +88,7 @@ void MainSocketMgr::OnSocketOpen(tcp::socket&& sock)
 
 bool MainSocketMgr::ConnectIPAllowed(std::shared_ptr<MainSocket> sock)
 {
-	return GetIPCount(sock->GetRemoteIpAddress().to_string()) < _max_connection_per_ip || _max_connection_per_ip == -1;
+return this->GetIPCount(sock->GetRemoteIpAddress().to_string()) < this->m_MaxConnectionPerIp || this->m_MaxConnectionPerIp == -1;
 }
 
 NetworkThread<MainSocket>* MainSocketMgr::CreateThreads() const

@@ -47,7 +47,7 @@ public:
 
     void OnSocketOpen(tcp::socket&& sock) override;
 
-	GSSocketList _socket_list;
+        GSSocketList m_SocketList;
 
 	void SendPacketAll(uint8 * Packet, uint16 size, uint16 server_group);
 protected:
@@ -56,10 +56,10 @@ protected:
     NetworkThread<GSSocket>* CreateThreads() const override;
 
 private:
-	AsyncAcceptor* _instanceAcceptor;
-    int32 _socketSendBufferSize;
+        AsyncAcceptor* m_InstanceAcceptor;
+    int32 m_SocketSendBufferSize;
     int32 m_SockOutUBuff;
-    bool _tcpNoDelay;
+    bool m_TcpNoDelay;
 };
 
 #endif

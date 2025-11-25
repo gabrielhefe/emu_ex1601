@@ -71,7 +71,7 @@ void GSSocket::ReadHandler()
 
 void GSSocket::OnEnd()
 {
-        sServer->ServerClose(m_ServerCode);
+        sServer->ServerClose(this->m_ServerCode);
 }
 
 void GSSocket::SendPacket(uint8 * packet, uint16 size)
@@ -83,9 +83,9 @@ void GSSocket::GameServerConnect(uint8 * Packet)
 {
         POINTER_PCT(CS_GAMESERVER_CONNECT, lpMsg, Packet, 0);
 
-        m_ServerCode = lpMsg->h.server;
+        this->m_ServerCode = lpMsg->h.server;
 
-        sServer->ServerConnect(m_ServerCode);
+        sServer->ServerConnect(this->m_ServerCode);
 
         CS_GAMESERVER_CONNECT pMsg(lpMsg->h.server);
         this->SendPacket((uint8*)&pMsg, pMsg.h.get_size());

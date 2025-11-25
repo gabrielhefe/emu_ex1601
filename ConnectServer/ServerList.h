@@ -6,19 +6,19 @@
 
 struct ServerData
 {
-        uint16 server = 0;
-        uint16 displayID = 0;
-        std::string name;
-        uint16 port = 0;
-        std::string ip;
-        uint8 flag = 0;
-        uint8 percent = 0;
-        bool online = false;
-        uint8 type = 0;
-        bool active = false;
-        void AddFlag(uint8 value) { flag |= value; }
-        void RemoveFlag(uint8 value) { flag &= ~value; }
-        bool IsFlag(uint8 value) const { return (flag & value) != 0; }
+uint16 m_Server = 0;
+uint16 m_DisplayID = 0;
+std::string m_Name;
+uint16 m_Port = 0;
+std::string m_Ip;
+uint8 m_Flag = 0;
+uint8 m_Percent = 0;
+bool m_Online = false;
+uint8 m_Type = 0;
+bool m_Active = false;
+void AddFlag(uint8 value) { this->m_Flag |= value; }
+void RemoveFlag(uint8 value) { this->m_Flag &= ~value; }
+bool IsFlag(uint8 value) const { return (this->m_Flag & value) != 0; }
 };
 
 typedef std::map<uint16, ServerData*> ServerDataMap;

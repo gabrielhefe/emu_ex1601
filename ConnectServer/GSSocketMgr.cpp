@@ -28,23 +28,23 @@ class GSSocketThread : public NetworkThread<GSSocket>
 public:
     void SocketAdded(std::shared_ptr<GSSocket> sock) override
     {
-		sGSSocketMgr._socket_list.insert(sock);
+        sGSSocketMgr.m_SocketList.insert(sock);
     }
 
     void SocketRemoved(std::shared_ptr<GSSocket> sock) override
     {
-		sGSSocketMgr._socket_list.erase(sock);
+        sGSSocketMgr.m_SocketList.erase(sock);
     }
 };
 
-GSSocketMgr::GSSocketMgr() : BaseSocketMgr(), _instanceAcceptor(nullptr), _socketSendBufferSize(-1), m_SockOutUBuff(65536), _tcpNoDelay(true)
+GSSocketMgr::GSSocketMgr() : BaseSocketMgr(), m_InstanceAcceptor(nullptr), m_SocketSendBufferSize(-1), m_SockOutUBuff(65536), m_TcpNoDelay(true)
 {
 }
 
 GSSocketMgr::~GSSocketMgr()
 {
-	if ( _instanceAcceptor )
-		delete _instanceAcceptor;
+        if ( this->m_InstanceAcceptor )
+                delete this->m_InstanceAcceptor;
 }
 
 bool GSSocketMgr::StartNetwork(boost::asio::io_service& service, std::string const& bindIp, uint16 port, int32 threadCount)
@@ -58,19 +58,19 @@ bool GSSocketMgr::StartNetwork(boost::asio::io_service& service, std::string con
 void GSSocketMgr::OnSocketOpen(tcp::socket&& sock)
 {
     // set some options here
-    if (_socketSendBufferSize >= 0)
+    if (this->m_SocketSendBufferSize >= 0)
     {
         boost::system::error_code err;
-        sock.set_option(boost::asio::socket_base::send_buffer_size(_socketSendBufferSize), err);
+        sock.set_option(boost::asio::socket_base::send_buffer_size(this->m_SocketSendBufferSize), err);
         if (err && err != boost::system::errc::not_supported)
         {
-			sLog->outError(LOG_DEFAULT, "GSSocketMgr::OnSocketOpen sock.set_option(boost::asio::socket_base::send_buffer_size) err = %s", err.message().c_str());
-			return;
+                        sLog->outError(LOG_DEFAULT, "GSSocketMgr::OnSocketOpen sock.set_option(boost::asio::socket_base::send_buffer_size) err = %s", err.message().c_str());
+                        return;
         }
     }
 
     // Set TCP_NODELAY.
-    if (_tcpNoDelay)
+    if (this->m_TcpNoDelay)
     {
         boost::system::error_code err;
         sock.set_option(boost::asio::ip::tcp::no_delay(true), err);
@@ -91,7 +91,7 @@ NetworkThread<GSSocket>* GSSocketMgr::CreateThreads() const
 
 void GSSocketMgr::SendPacketAll(uint8 * Packet, uint16 size, uint16 server_group)
 {
-        for (auto& socket : _socket_list)
+        for (auto& socket : this->m_SocketList)
         {
                 if ((socket->m_ServerCode / MAX_SERVER_PER_GROUP) == server_group)
                 {

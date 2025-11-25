@@ -22,7 +22,7 @@ using boost::asio::ip::tcp;
 
 MainSocket::MainSocket(tcp::socket&& socket): Socket(std::move(socket))
 {
-m_Time.Start();
+        this->m_Time.Start();
 }
 
 struct PMSG_CONNECT
@@ -68,7 +68,7 @@ bool MainSocket::Update()
 	if ( !Socket::Update() )
 		return false;
 
-        if ( m_Time.Elapsed(sMain->m_MaxConnectionIdle) )
+        if ( this->m_Time.Elapsed(sMain->m_MaxConnectionIdle) )
                 return false;
 
 	return true;
