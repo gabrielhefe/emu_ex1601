@@ -290,18 +290,18 @@ class Player: public Unit
 		void CreateSocket(std::shared_ptr<WorldSocket> sock);
 		std::shared_ptr<WorldSocket> m_Socket;
 
-		class PlayerSaveTransaction: public TransactionCallBack
-		{
-			public:
-				explicit PlayerSaveTransaction(Player* pPlayer, uint8 operation);
-				virtual ~PlayerSaveTransaction();
+                class PlayerSaveTransaction: public TransactionCallBack
+                {
+                        public:
+                                explicit PlayerSaveTransaction(Player* pPlayer, uint8 operation);
+                                virtual ~PlayerSaveTransaction();
 
-				void Finished();
-				void Cancelled();
+                                void Finished();
+                                void Cancelled();
 
-			public:
-				DECLARE_PTR(Player, Player);
-				DECLARE_ENUM(uint8, Operation);
+                        private:
+                                Player* m_Player;
+                                uint8 m_Operation;
 		};
 
 	public: // Player Socket

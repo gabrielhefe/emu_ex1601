@@ -6,10 +6,8 @@
 *
 */
 
-Player::PlayerSaveTransaction::PlayerSaveTransaction(Player* pPlayer, uint8 operation): TransactionCallBack()
+Player::PlayerSaveTransaction::PlayerSaveTransaction(Player* pPlayer, uint8 operation): TransactionCallBack(), m_Player(pPlayer), m_Operation(operation)
 {
-	this->SetPlayer(pPlayer);
-	this->SetOperation(operation);
 }
 
 Player::PlayerSaveTransaction::~PlayerSaveTransaction()
@@ -19,11 +17,11 @@ Player::PlayerSaveTransaction::~PlayerSaveTransaction()
 
 void Player::PlayerSaveTransaction::Finished()
 {
-	Player* pPlayer = this->GetPlayer();
+        Player* pPlayer = this->m_Player;
 
 	if (pPlayer)
 	{
-		switch ( this->GetOperation() )
+                switch ( this->m_Operation )
 		{
 		case 0: // Regular Save
 			{
@@ -82,10 +80,10 @@ void Player::PlayerSaveTransaction::Finished()
 
 void Player::PlayerSaveTransaction::Cancelled()
 {
-	if ( Player* pPlayer = this->GetPlayer() )
-	{
-		switch ( this->GetOperation() )
-		{
+        if ( Player* pPlayer = this->m_Player )
+        {
+                switch ( this->m_Operation )
+                {
 		case 0: // Regular Save
 			{
 			} break;
