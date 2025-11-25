@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="LoginServerPCH.cpp" />
+    <ClCompile Include="JoinServerPCH.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ServerList.cpp" />
     <ClCompile Include="LoginQueue.cpp">
@@ -18,7 +18,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LoginServerPCH.h" />
+    <ClInclude Include="JoinServerPCH.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="ServerList.h" />
     <ClInclude Include="LoginQueue.h">

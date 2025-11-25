@@ -1,4 +1,4 @@
-#include "../LoginServer/LoginServerPCH.h"
+#include "../JoinServer/JoinServerPCH.h"
 /**
  * pugixml parser - version 1.4
  * --------------------------------------------------------

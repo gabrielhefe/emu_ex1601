@@ -163,7 +163,7 @@
     <ClInclude Include="FreeImage.h" />
     <ClInclude Include="GameServerDatabase.h" />
     <ClInclude Include="LockedQueue.h" />
-    <ClInclude Include="LoginServerPacket.h" />
+    <ClInclude Include="JoinServerPacket.h" />
     <ClInclude Include="MD5.h" />
     <ClInclude Include="MD5KEY.h" />
     <ClInclude Include="MiniDump.h" />

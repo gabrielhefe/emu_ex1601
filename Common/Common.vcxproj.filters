@@ -155,7 +155,7 @@
     <ClInclude Include="EncDec.h">
       <Filter>PacketData</Filter>
     </ClInclude>
-    <ClInclude Include="LoginServerPacket.h">
+    <ClInclude Include="JoinServerPacket.h">
       <Filter>PacketData</Filter>
     </ClInclude>
     <ClInclude Include="ByteBuffer.h">

@@ -1,5 +1,5 @@
-#ifndef LOGIN_SERVER_PACKET_H
-#define LOGIN_SERVER_PACKET_H
+#ifndef JOIN_SERVER_PACKET_H
+#define JOIN_SERVER_PACKET_H
 
 #pragma pack(push, 1)
 
