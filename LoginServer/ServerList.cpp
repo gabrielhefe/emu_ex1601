@@ -30,8 +30,8 @@ void CServerList::UpdateServerList()
 
 void CServerList::LoadWorldServer(char* pchFileName)
 {
-	if (!sMain->IsGSMultiSubEnabled())
-		return;
+        if (!sMain->m_GSMultiSubEnabled)
+                return;
 
 	sLog->outInfo(LOG_DEFAULT, "Loading World Server...");
 
@@ -64,19 +64,19 @@ void CServerList::LoadWorldServer(char* pchFileName)
 void CServerList::ServerOpen(uint16 server, uint16 port, const char * ip, uint8 flag, uint8 type)
 {
 	ServerData & data = this->server_map[server];
-	data.SetPort(port);
-	data.SetIP(ip, 16);
-	data.SetPercent(0);
-	data.SetFlag(flag);
-	data.SetType(type);
-	data.SetOnline(true);
+        data.m_Port = port;
+        memcpy(data.m_IP, ip, sizeof(data.m_IP));
+        data.m_Percent = 0;
+        data.m_Flag = flag;
+        data.m_Type = type;
+        data.m_Online = true;
 }
 
 void CServerList::ServerClose(uint16 server)
 {
 	ServerData & data = this->server_map[server];
-	data.SetOnline(false);
-	data.SetPercent(0);
+        data.m_Online = false;
+        data.m_Percent = 0;
 
 	sLoginQueue->CloseServer(server);
 }
@@ -85,31 +85,31 @@ void CServerList::ServerSetInfo(uint16 server, uint8 percent, uint8 flag, uint8 
 {
 	ServerData & data = this->server_map[server];
 
-	if ( !data.IsOnline() )
-	{
-		return;
-	}
+        if ( !data.m_Online )
+        {
+                return;
+        }
 
-	data.SetPercent(percent);
-	data.SetFlag(flag);
-	data.SetType(type);
+        data.m_Percent = percent;
+        data.m_Flag = flag;
+        data.m_Type = type;
 }
 
 bool CServerList::IsServerOnlineAndFree(uint16 server)
 {
 	ServerData & data = this->server_map[server];
 
-	if ( !data.IsOnline() )
-	{
-		return false;
-	}
+        if ( !data.m_Online )
+        {
+                return false;
+        }
 
-	if ( data.IsFlag(SERVER_FLAG_DISABLED) )
-	{
-		return false;
-	}
+        if ( (data.m_Flag & SERVER_FLAG_DISABLED) != 0 )
+        {
+                return false;
+        }
 
-	return data.GetPercent() < 100;
+        return data.m_Percent < 100;
 }
 
 bool CServerList::IsWorldInList(uint16 world, uint16 server_group)

@@ -93,9 +93,9 @@ void AuthSocketMgr::SendPacketAll(uint8 * Packet, uint16 size, uint16 server_gro
 {
 	for (auto& socket : _socket_list)
     {
-		if ( (socket->GetServerCode() / MAX_SERVER_PER_GROUP) == server_group )
-		{
-			socket->QueuePacket(Packet, size);
-		}
-	}
+                if ( (socket->m_ServerCode / MAX_SERVER_PER_GROUP) == server_group )
+                {
+                        socket->QueuePacket(Packet, size);
+                }
+        }
 }

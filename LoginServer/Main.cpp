@@ -61,7 +61,7 @@ bool MainApplication::Run()
 	if ( !StartNetwork() )
 		return false;
 
-	this->SetGSMultiSubEnabled(GetPrivateProfileInt(SERVER_COMMON_SECTION_GERENAL, "GSMultiSubEnabled", 0, SERVER_COMMON_FILEPATH));
+        this->m_GSMultiSubEnabled = GetPrivateProfileInt(SERVER_COMMON_SECTION_GERENAL, "GSMultiSubEnabled", 0, SERVER_COMMON_FILEPATH);
 
 	m_timers[WUPDATE_QUEUE].SetInterval(100);
 	m_timers[WUPDATE_PINGDB].SetInterval(this->GetPingDB() * MINUTE * IN_MILLISECONDS);
@@ -84,10 +84,10 @@ bool StartNetwork()
 void MainApplication::LoadAccountTime()
 {
 	if (boost::filesystem::exists(SERVER_COMMON_FILEPATH)) {
-		this->SetAccountMovingTime(GetPrivateProfileInt(SERVER_COMMON_SECTION_ACCOUNT, "MovingTime", 0, SERVER_COMMON_FILEPATH));
-		this->SetAccountAuthorizationEnabled(GetPrivateProfileInt(SERVER_COMMON_SECTION_ACCOUNT, "AuthorizationEnabled", 0, SERVER_COMMON_FILEPATH));
-		this->SetAccountWrongAuthorizationCount(GetPrivateProfileInt(SERVER_COMMON_SECTION_ACCOUNT, "WrongAuthorizationCount", 0, SERVER_COMMON_FILEPATH));
-		this->SetAccountWrongAuthorizationTime(GetPrivateProfileInt(SERVER_COMMON_SECTION_ACCOUNT, "WrongAuthorizationTime", 0, SERVER_COMMON_FILEPATH));
+                this->m_AccountMovingTime = GetPrivateProfileInt(SERVER_COMMON_SECTION_ACCOUNT, "MovingTime", 0, SERVER_COMMON_FILEPATH);
+                this->m_AccountAuthorizationEnabled = GetPrivateProfileInt(SERVER_COMMON_SECTION_ACCOUNT, "AuthorizationEnabled", 0, SERVER_COMMON_FILEPATH);
+                this->m_AccountWrongAuthorizationCount = GetPrivateProfileInt(SERVER_COMMON_SECTION_ACCOUNT, "WrongAuthorizationCount", 0, SERVER_COMMON_FILEPATH);
+                this->m_AccountWrongAuthorizationTime = GetPrivateProfileInt(SERVER_COMMON_SECTION_ACCOUNT, "WrongAuthorizationTime", 0, SERVER_COMMON_FILEPATH);
 	}
 	else {
 		sLog->outError(LOG_DEFAULT, "Error Load Common.ini File");

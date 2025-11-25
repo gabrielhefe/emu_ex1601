@@ -34,54 +34,54 @@ typedef std::shared_ptr<LoginData> LoginDataPtr;
 
 struct AccountData
 {
-	AccountData()
-	{
-		memset(this->account, 0, MAX_ACCOUNT_LENGTH + 1);
-		this->guid = 0;
-		this->SetStartServer(-1);
-		this->SetCurrentServer(-1);
-		this->SetOffline(false);
-		this->SetMoving(false);
-		this->SetTime(time(nullptr));
-		this->SetDestServer(-1);
-		this->SetDestWorld(-1);
-		this->SetDestX(0);
-		this->SetDestY(0);
-		this->ResetAuth(0);
-		this->ResetMAC();
-		this->ResetSecureCode();
-		this->SetFacebookStatus(0);
-		this->SetMovingTick(0);
-		this->ResetIP();
-		this->SetGoldenChannel(0);
-		this->SetDiskSerial(0);
-		this->SetAuthorized(false);
-		this->SetAccType(0);
-	}
+        AccountData()
+        {
+                memset(this->account, 0, MAX_ACCOUNT_LENGTH + 1);
+                this->guid = 0;
+                this->m_StartServer = -1;
+                this->m_CurrentServer = -1;
+                this->m_Offline = false;
+                this->m_Moving = false;
+                this->m_Time = time(nullptr);
+                this->m_DestServer = -1;
+                this->m_DestWorld = -1;
+                this->m_DestX = 0;
+                this->m_DestY = 0;
+                memset(this->m_Auth, 0, sizeof(this->m_Auth));
+                memset(this->m_MAC, 0, sizeof(this->m_MAC));
+                memset(this->m_SecureCode, 0, sizeof(this->m_SecureCode));
+                this->m_FacebookStatus = 0;
+                this->m_MovingTick = 0;
+                memset(this->m_IP, 0, sizeof(this->m_IP));
+                this->m_GoldenChannel = 0;
+                this->m_DiskSerial = 0;
+                this->m_Authorized = false;
+                this->m_AccType = 0;
+        }
 
 	char account[MAX_ACCOUNT_LENGTH + 1];
 	
 	uint32 guid;
 
-	DECLARE_ENUM(time_t, Time);
-	DECLARE_ENUM(uint16, StartServer);
-	DECLARE_ENUM(uint16, CurrentServer);
-	DECLARE_BOOL(Offline);
-	DECLARE_BOOL(Moving);
-	DECLARE_ENUM(uint32, MovingTick);
-	DECLARE_ENUM(int16, DestServer);
-	DECLARE_ENUM(int16, DestWorld);
-	DECLARE_ENUM(int16, DestX);
-	DECLARE_ENUM(int16, DestY);
-	DECLARE_PROPERTY_ARRAY(int32, Auth, 4);
-	DECLARE_STRING_FIXED(MAC, MAX_ACCOUNT_MAC_LENGTH + 1);
-	DECLARE_STRING_FIXED(SecureCode, MAX_SECURE_CODE_LENGTH + 1);
-	DECLARE_STRING_FIXED(IP, MAX_ACCOUNT_IP_LENGTH + 1);
-	DECLARE_ENUM(uint8, FacebookStatus);
-	DECLARE_ENUM(time_t, GoldenChannel);
-	DECLARE_ENUM(uint32, DiskSerial);
-	DECLARE_BOOL(Authorized);
-	DECLARE_ENUM(uint8, AccType);
+        time_t m_Time;
+        uint16 m_StartServer;
+        uint16 m_CurrentServer;
+        bool m_Offline;
+        bool m_Moving;
+        uint32 m_MovingTick;
+        int16 m_DestServer;
+        int16 m_DestWorld;
+        int16 m_DestX;
+        int16 m_DestY;
+        int32 m_Auth[4];
+        char m_MAC[MAX_ACCOUNT_MAC_LENGTH + 1];
+        char m_SecureCode[MAX_SECURE_CODE_LENGTH + 1];
+        char m_IP[MAX_ACCOUNT_IP_LENGTH + 1];
+        uint8 m_FacebookStatus;
+        time_t m_GoldenChannel;
+        uint32 m_DiskSerial;
+        bool m_Authorized;
+        uint8 m_AccType;
 };
 
 typedef std::shared_ptr<AccountData> AccountDataPtr;
@@ -132,14 +132,14 @@ class LoginQueue
 
 		void ClearWrongAccountAuthorization(uint32 account_id, uint32 disk_serial);
 		bool IncreaseWrongAccountAuthorization(uint32 account_id, uint32 disk_serial);
-	private:
-		LockedQueue<LoginDataPtr> LoginDataQueue;
+        private:
+                LockedQueue<LoginDataPtr> LoginDataQueue;
 
-		AccountLoggedMap account_logged_map;
-		WrongAuthorizationDataList account_wrong_authorization_list;
+                AccountLoggedMap account_logged_map;
+                WrongAuthorizationDataList account_wrong_authorization_list;
 
-		DECLARE_ENUM(uint32, UpdateTick);
-		DECLARE_ENUM(uint32, VerifyTick);
+                uint32 m_UpdateTick;
+                uint32 m_VerifyTick;
 };
 
 #endif

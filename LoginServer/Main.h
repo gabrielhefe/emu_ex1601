@@ -29,17 +29,17 @@ class MainApplication: public AppConsole
 		void UpdateWin();
 		void End();
 
-	public:
-		void LoadAccountTime();
+        public:
+                void LoadAccountTime();
 
-		DECLARE_ENUM(uint32, AccountMovingTime);
-		DECLARE_BOOL(AccountAuthorizationEnabled);
-		DECLARE_ENUM(int32, AccountWrongAuthorizationCount);
-		DECLARE_ENUM(uint32, AccountWrongAuthorizationTime);
+                uint32 m_AccountMovingTime;
+                bool m_AccountAuthorizationEnabled;
+                int32 m_AccountWrongAuthorizationCount;
+                uint32 m_AccountWrongAuthorizationTime;
 
-		DECLARE_BOOL(GSMultiSubEnabled);
-		
-		IntervalTimer m_timers[WUPDATE_COUNT];
+                bool m_GSMultiSubEnabled;
+
+                IntervalTimer m_timers[WUPDATE_COUNT];
 };
 
 #endif
