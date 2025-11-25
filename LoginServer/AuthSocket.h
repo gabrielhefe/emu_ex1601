@@ -37,25 +37,25 @@ class AuthSocket : public Socket<AuthSocket>
 		void Start() override;
 		void OnEnd();
 
-		void SendPacket(uint8 * packet, uint16 size);
+                void SendPacket(uint8 * packet, uint16 size);
 
-	protected:
-		void ReadHandler() override;
+                uint16 m_ServerCode;
 
-	private:
-		void GameServerConnect(uint8 * Packet);
-		void GameServerPercent(uint8 * Packet);
-		void AccountReconnect(uint8 * Packet);
-		void AccountLoginRequest(uint8 * Packet);
+        protected:
+                void ReadHandler() override;
+
+        private:
+                void GameServerConnect(uint8 * Packet);
+                void GameServerPercent(uint8 * Packet);
+                void AccountReconnect(uint8 * Packet);
+                void AccountLoginRequest(uint8 * Packet);
 		void AccountLogout(uint8 * Packet);
 		void AccountServerMove(uint8 * Packet);
 		void AccountServerAuth(uint8 * Packet);
 		void AccountKick(uint8 * Packet);
-		void AccountCompleteBan(uint8 * Packet);
-		void AccountValidate(uint8 * Packet);
-		void AccountConnectType(uint8 * Packet);
-
-		DECLARE_ENUM(uint16, ServerCode);
+                void AccountCompleteBan(uint8 * Packet);
+                void AccountValidate(uint8 * Packet);
+                void AccountConnectType(uint8 * Packet);
 };
 
 #endif

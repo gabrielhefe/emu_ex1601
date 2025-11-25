@@ -26,22 +26,22 @@ typedef std::map<uint16, WorldServerList> WorldServerMap;
 
 struct ServerData
 {
-	ServerData()
-	{
-		this->SetOnline(false);
-		this->SetPercent(0);
-		this->SetPort(-1);
-		this->ResetIP();
-		this->SetFlag(0);
-		this->SetType(0);
-	}
+        ServerData()
+        {
+                this->m_Online = false;
+                this->m_Percent = 0;
+                this->m_Port = -1;
+                memset(this->m_IP, 0, sizeof(this->m_IP));
+                this->m_Flag = 0;
+                this->m_Type = 0;
+        }
 
-	DECLARE_BOOL(Online);
-	DECLARE_ENUM(uint8, Percent);
-	DECLARE_ENUM(uint16, Port);
-	DECLARE_STRING_FIXED(IP, 16);
-	DECLARE_FLAG(uint8, Flag);
-	DECLARE_ENUM(uint8, Type);
+        bool m_Online;
+        uint8 m_Percent;
+        uint16 m_Port;
+        char m_IP[16];
+        uint8 m_Flag;
+        uint8 m_Type;
 };
 
 typedef std::map<uint16, ServerData> ServerDataMap;

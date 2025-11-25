@@ -43,7 +43,7 @@ std::unordered_map<uint8, LoginHandler<AuthSocket>> const Handlers = AuthSocket:
 
 AuthSocket::AuthSocket(tcp::socket&& socket): Socket(std::move(socket))
 {
-	this->SetServerCode(-1);
+        this->m_ServerCode = -1;
 }
 
 void AuthSocket::Start()
@@ -82,7 +82,7 @@ void AuthSocket::ReadHandler()
 
 void AuthSocket::OnEnd()
 {
-	sServer->ServerClose(this->GetServerCode());
+        sServer->ServerClose(this->m_ServerCode);
 }
 
 void AuthSocket::SendPacket(uint8 * packet, uint16 size)
@@ -92,9 +92,9 @@ void AuthSocket::SendPacket(uint8 * packet, uint16 size)
 
 void AuthSocket::GameServerConnect(uint8 * Packet)
 {
-	POINTER_PCT(GAMESERVER_CONNECT, lpMsg, Packet, 0);
+        POINTER_PCT(GAMESERVER_CONNECT, lpMsg, Packet, 0);
 
-	this->SetServerCode(lpMsg->h.server);
+        this->m_ServerCode = lpMsg->h.server;
 
 	sServer->ServerOpen(lpMsg->h.server, lpMsg->port, lpMsg->ip, lpMsg->flag, lpMsg->type);
 
@@ -176,34 +176,34 @@ void AuthSocket::AccountServerMove(uint8 * Packet)
 		}
 	}
 
-	if ( pAccountData->GetCurrentServer() != lpMsg->data.cur_server )
-	{
-		pMsg.result = 3;
-		this->SendPacket((uint8*)&pMsg, pMsg.h.size);
-		return;
-	}
+        if ( pAccountData->m_CurrentServer != lpMsg->data.cur_server )
+        {
+                pMsg.result = 3;
+                this->SendPacket((uint8*)&pMsg, pMsg.h.size);
+                return;
+        }
 
-	if ( pAccountData->IsMoving() )
-	{
-		pMsg.result = 4;
-		this->SendPacket((uint8*)&pMsg, pMsg.h.size);
-		return;
-	}
+        if ( pAccountData->m_Moving )
+        {
+                pMsg.result = 4;
+                this->SendPacket((uint8*)&pMsg, pMsg.h.size);
+                return;
+        }
 
 	if (lpMsg->channel_change == 0)
 	{
-		lpMsg->data.dest_server = sServer->CheckDestServer(lpMsg->h.GetServerGroup(), lpMsg->data.dest_world, lpMsg->data.dest_server, pAccountData->GetStartServer());
-	}
+                lpMsg->data.dest_server = sServer->CheckDestServer(lpMsg->h.GetServerGroup(), lpMsg->data.dest_world, lpMsg->data.dest_server, pAccountData->m_StartServer);
+        }
 
 	ServerData & cur_srv = sServer->server_map[lpMsg->data.cur_server];
 	ServerData & dest_srv = sServer->server_map[lpMsg->data.dest_server];
 
-	if ( !dest_srv.IsOnline() || dest_srv.IsFlag(SERVER_FLAG_DISABLED) )
-	{
-		pMsg.result = 2;
-		this->SendPacket((uint8*)&pMsg, pMsg.h.size);
-		return;
-	}
+        if ( !dest_srv.m_Online || (dest_srv.m_Flag & SERVER_FLAG_DISABLED) != 0 )
+        {
+                pMsg.result = 2;
+                this->SendPacket((uint8*)&pMsg, pMsg.h.size);
+                return;
+        }
 
 	if ( !sServer->IsServerOnlineAndFree(lpMsg->data.dest_server) )
 	{
@@ -212,19 +212,19 @@ void AuthSocket::AccountServerMove(uint8 * Packet)
 		return;
 	}
 
-	pMsg.dest_port = dest_srv.GetPort();
-	memcpy(pMsg.dest_ip, dest_srv.GetIP(), 16);
+        pMsg.dest_port = dest_srv.m_Port;
+        memcpy(pMsg.dest_ip, dest_srv.m_IP, 16);
 
-	pAccountData->SetDestServer(lpMsg->data.dest_server);
-	pAccountData->SetDestWorld(lpMsg->data.dest_world);
-	pAccountData->SetDestX(lpMsg->data.dest_x);
-	pAccountData->SetDestY(lpMsg->data.dest_y);
-	pAccountData->SetMoving(true);
-	pAccountData->SetMovingTick(getMSTime());
-	pAccountData->SetAuth(0, pMsg.auth[0]);
-	pAccountData->SetAuth(1, pMsg.auth[1]);
-	pAccountData->SetAuth(2, pMsg.auth[2]);
-	pAccountData->SetAuth(3, pMsg.auth[3]);
+        pAccountData->m_DestServer = lpMsg->data.dest_server;
+        pAccountData->m_DestWorld = lpMsg->data.dest_world;
+        pAccountData->m_DestX = lpMsg->data.dest_x;
+        pAccountData->m_DestY = lpMsg->data.dest_y;
+        pAccountData->m_Moving = true;
+        pAccountData->m_MovingTick = getMSTime();
+        pAccountData->m_Auth[0] = pMsg.auth[0];
+        pAccountData->m_Auth[1] = pMsg.auth[1];
+        pAccountData->m_Auth[2] = pMsg.auth[2];
+        pAccountData->m_Auth[3] = pMsg.auth[3];
 	
 	sLoginQueue->DBAccountStatus(pAccountData, true, false);
 
@@ -253,53 +253,53 @@ void AuthSocket::AccountServerAuth(uint8 * Packet)
 		return;
 	}
 
-	if ( pAccountData->IsOffline() || !pAccountData->IsMoving() )
-	{
-		pMsg.result = 2;
-		this->SendPacket((uint8*)&pMsg, pMsg.h.size);
-		return;
-	}
+        if ( pAccountData->m_Offline || !pAccountData->m_Moving )
+        {
+                pMsg.result = 2;
+                this->SendPacket((uint8*)&pMsg, pMsg.h.size);
+                return;
+        }
 
-	if ( pAccountData->GetCurrentServer() == uint16(-1) ||
-		 pAccountData->GetStartServer() == uint16(-1) ||
-		 pAccountData->GetDestServer() == -1 ||
-		 pAccountData->GetDestServer() != lpMsg->h.server )
-	{
-		pMsg.result = 3;
-		this->SendPacket((uint8*)&pMsg, pMsg.h.size);
-		return;
-	}
+        if ( pAccountData->m_CurrentServer == uint16(-1) ||
+                 pAccountData->m_StartServer == uint16(-1) ||
+                 pAccountData->m_DestServer == -1 ||
+                 pAccountData->m_DestServer != lpMsg->h.server )
+        {
+                pMsg.result = 3;
+                this->SendPacket((uint8*)&pMsg, pMsg.h.size);
+                return;
+        }
 
-	if ( pAccountData->GetAuth(0) != lpMsg->auth[0] || 
-		 pAccountData->GetAuth(1) != lpMsg->auth[1] || 
-		 pAccountData->GetAuth(2) != lpMsg->auth[2] || 
-		 pAccountData->GetAuth(3) != lpMsg->auth[3] )
-	{
-		pMsg.result = 4;
-		this->SendPacket((uint8*)&pMsg, pMsg.h.size);
-		return;
-	}
+        if ( pAccountData->m_Auth[0] != lpMsg->auth[0] ||
+                 pAccountData->m_Auth[1] != lpMsg->auth[1] ||
+                 pAccountData->m_Auth[2] != lpMsg->auth[2] ||
+                 pAccountData->m_Auth[3] != lpMsg->auth[3] )
+        {
+                pMsg.result = 4;
+                this->SendPacket((uint8*)&pMsg, pMsg.h.size);
+                return;
+        }
 
-	pMsg.account_id = pAccountData->guid;
-	pMsg.start_server = pAccountData->GetStartServer();
-	pMsg.world = pAccountData->GetDestWorld();
-	pMsg.x = pAccountData->GetDestX();
-	pMsg.y = pAccountData->GetDestY();
-	memcpy(pMsg.security_code, pAccountData->GetSecureCode(), MAX_SECURE_CODE_LENGTH);
-	pMsg.facebook_status = pAccountData->GetFacebookStatus();
-	pMsg.golden_channel = pAccountData->GetGoldenChannel();
-	pMsg.disk_serial = pAccountData->GetDiskSerial();
-	memcpy(pMsg.mac, pAccountData->GetMAC(), MAX_ACCOUNT_MAC_LENGTH);
-	pMsg.authorized = pAccountData->IsAuthorized();
-	
-	pAccountData->SetCurrentServer(pAccountData->GetDestServer());
-	pAccountData->SetDestServer(-1);
-	pAccountData->SetDestWorld(-1);
-	pAccountData->SetDestX(-1);
-	pAccountData->SetDestY(-1);
-	pAccountData->SetMoving(false);
-	pAccountData->SetMovingTick(0);
-	pAccountData->ResetAuth(0);
+        pMsg.account_id = pAccountData->guid;
+        pMsg.start_server = pAccountData->m_StartServer;
+        pMsg.world = pAccountData->m_DestWorld;
+        pMsg.x = pAccountData->m_DestX;
+        pMsg.y = pAccountData->m_DestY;
+        memcpy(pMsg.security_code, pAccountData->m_SecureCode, MAX_SECURE_CODE_LENGTH);
+        pMsg.facebook_status = pAccountData->m_FacebookStatus;
+        pMsg.golden_channel = pAccountData->m_GoldenChannel;
+        pMsg.disk_serial = pAccountData->m_DiskSerial;
+        memcpy(pMsg.mac, pAccountData->m_MAC, MAX_ACCOUNT_MAC_LENGTH);
+        pMsg.authorized = pAccountData->m_Authorized;
+
+        pAccountData->m_CurrentServer = pAccountData->m_DestServer;
+        pAccountData->m_DestServer = -1;
+        pAccountData->m_DestWorld = -1;
+        pAccountData->m_DestX = -1;
+        pAccountData->m_DestY = -1;
+        pAccountData->m_Moving = false;
+        pAccountData->m_MovingTick = 0;
+        memset(pAccountData->m_Auth, 0, sizeof(pAccountData->m_Auth));
 
 	sLoginQueue->DBAccountStatus(pAccountData, true, false);
 
@@ -339,41 +339,41 @@ void AuthSocket::AccountValidate(uint8 * Packet)
 
 	if ( lpMsg->warning )
 	{
-		if ( sLoginQueue->IncreaseWrongAccountAuthorization(lpMsg->account_id, pAccountData->GetDiskSerial()) )
-		{
-			SQLTransaction trans = LoginDatabase.BeginTransaction();
+                if ( sLoginQueue->IncreaseWrongAccountAuthorization(lpMsg->account_id, pAccountData->m_DiskSerial) )
+                {
+                        SQLTransaction trans = LoginDatabase.BeginTransaction();
 
-			PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNTS_WARNING_INSERT);
-			stmt->setUInt32(0, pAccountData->guid);
-			stmt->setUInt32(1, pAccountData->GetDiskSerial());
-			stmt->setInt64(2, time(nullptr));
-			trans->Append(stmt);
+                        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNTS_WARNING_INSERT);
+                        stmt->setUInt32(0, pAccountData->guid);
+                        stmt->setUInt32(1, pAccountData->m_DiskSerial);
+                        stmt->setInt64(2, time(nullptr));
+                        trans->Append(stmt);
 
 			LoginDatabase.CommitTransaction(trans);
 
-			ACCOUNT_KICK pMsg(lpMsg->account_id);
-			pMsg.h.server = lpMsg->h.server;
-			this->SendPacket((uint8*)&pMsg, pMsg.h.get_size());
-		}
-	}
-	else
-	{
-		SQLTransaction trans = LoginDatabase.BeginTransaction();
+                        ACCOUNT_KICK pMsg(lpMsg->account_id);
+                        pMsg.h.server = lpMsg->h.server;
+                        this->SendPacket((uint8*)&pMsg, pMsg.h.get_size());
+                }
+        }
+        else
+        {
+                SQLTransaction trans = LoginDatabase.BeginTransaction();
 
-		PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNTS_VALIDATION_INSERT);
-		stmt->setUInt32(0, pAccountData->guid);
-		stmt->setUInt32(1, pAccountData->GetDiskSerial());
-		trans->Append(stmt);
+                PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNTS_VALIDATION_INSERT);
+                stmt->setUInt32(0, pAccountData->guid);
+                stmt->setUInt32(1, pAccountData->m_DiskSerial);
+                trans->Append(stmt);
 
-		stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNTS_WARNING_DELETE);
-		stmt->setUInt32(0, pAccountData->guid);
-		stmt->setUInt32(1, pAccountData->GetDiskSerial());
-		trans->Append(stmt);
+                stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNTS_WARNING_DELETE);
+                stmt->setUInt32(0, pAccountData->guid);
+                stmt->setUInt32(1, pAccountData->m_DiskSerial);
+                trans->Append(stmt);
 
-		LoginDatabase.CommitTransaction(trans);
+                LoginDatabase.CommitTransaction(trans);
 
-		pAccountData->SetAuthorized(true);
-	}
+                pAccountData->m_Authorized = true;
+        }
 }
 
 void AuthSocket::AccountConnectType(uint8 * Packet)

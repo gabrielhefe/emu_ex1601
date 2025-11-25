@@ -1,7 +1,7 @@
 LoginQueue::LoginQueue()
 {
-	this->SetUpdateTick(getMSTime());
-	this->SetVerifyTick(getMSTime());
+        this->m_UpdateTick = getMSTime();
+        this->m_VerifyTick = getMSTime();
 }
 
 LoginQueue::~LoginQueue()
@@ -24,9 +24,9 @@ void LoginQueue::Queue(LoginDataPtr data)
 
 void LoginQueue::Update()
 {
-	if ( GetMSTimeDiffToNow(this->GetUpdateTick()) > 500 )
-	{
-		this->SetUpdateTick(getMSTime());
+        if ( GetMSTimeDiffToNow(this->m_UpdateTick) > 500 )
+        {
+                this->m_UpdateTick = getMSTime();
 
 		for ( AccountLoggedMap::iterator itr = account_logged_map.begin(); itr != account_logged_map.end(); ++itr )
 		{
@@ -40,34 +40,34 @@ void LoginQueue::Update()
 					continue;
 				}
 
-				if ( pAccountData->IsOffline() )
+                                if ( pAccountData->m_Offline )
 				{
 					this->DBAccountStatus(pAccountData, false, false);
 					itr->second.erase(it++);
 					continue;
 				}
 
-				if ( pAccountData->IsMoving() )
-				{
-					if ( sMain->GetAccountMovingTime() > 0 )
-					{
-						if ( GetMSTimeDiffToNow(pAccountData->GetMovingTick()) > sMain->GetAccountMovingTime() )
-						{
-							sLog->outInfo("player", "Removing Player [%u][%s] - Server Move Time Out.", pAccountData->guid, pAccountData->account);
-							pAccountData->SetOffline(true);
-						}
-					}
-				}
+                                if ( pAccountData->m_Moving )
+                                {
+                                        if ( sMain->m_AccountMovingTime > 0 )
+                                        {
+                                                if ( GetMSTimeDiffToNow(pAccountData->m_MovingTick) > sMain->m_AccountMovingTime )
+                                                {
+                                                        sLog->outInfo("player", "Removing Player [%u][%s] - Server Move Time Out.", pAccountData->guid, pAccountData->account);
+                                                        pAccountData->m_Offline = true;
+                                                }
+                                        }
+                                }
 
 				++it;
 			}
 		}
 	}
 
-	if ( GetMSTimeDiffToNow(this->GetVerifyTick()) > 30000 )
-	{
-		this->SetVerifyTick(getMSTime());
-	}
+        if ( GetMSTimeDiffToNow(this->m_VerifyTick) > 30000 )
+        {
+                this->m_VerifyTick = getMSTime();
+        }
 
 	LoginDataPtr data;
 	uint32 processedPackets = 0;
@@ -97,7 +97,7 @@ void LoginQueue::Process(LoginDataPtr data)
 	strToLower(password);
 
 	PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNT_LOGIN);
-	stmt->setUInt16(0, data->GetServerGroup());
+        stmt->setUInt16(0, data->GetServerGroup());
 	stmt->setUInt16(1, data->server);
 	stmt->setUInt32(2, data->disk_serial);
 	stmt->setUInt32(3, data->disk_serial);
@@ -159,16 +159,16 @@ void LoginQueue::Process(LoginDataPtr data)
 				strcpy(pMsg.account, account.c_str());
 			}
 
-			if (!warning_account || (sMain->GetAccountWrongAuthorizationTime() <= 0) || (current_time >= (warning_time + sMain->GetAccountWrongAuthorizationTime())))
-			{
-				warning_account = 0;
-				this->ClearWrongAccountAuthorization(pMsg.account_id, data->disk_serial);
-			}
+                        if (!warning_account || (sMain->m_AccountWrongAuthorizationTime <= 0) || (current_time >= (warning_time + sMain->m_AccountWrongAuthorizationTime)))
+                        {
+                                warning_account = 0;
+                                this->ClearWrongAccountAuthorization(pMsg.account_id, data->disk_serial);
+                        }
 
-			if (validate_account || !sMain->IsAccountAuthorizationEnabled() || !secured || count <= 0 || master_disk != 0)
-			{
-				pMsg.authorized = true;
-			}
+                        if (validate_account || !sMain->m_AccountAuthorizationEnabled || !secured || count <= 0 || master_disk != 0)
+                        {
+                                pMsg.authorized = true;
+                        }
 
 			pMsg.result = LOGIN_RESULT_SUCCESS;
 
@@ -196,20 +196,20 @@ void LoginQueue::Process(LoginDataPtr data)
 			{
 				ServerData & server_data = sServer->server_map[data->server];
 
-				if (server_data.IsOnline() && server_data.GetPort() != uint16(-1))
-				{
-					if (server_data.IsFlag(SERVER_FLAG_DISABLED)) // Retorno error si el servidor est� deshabilitado
-					{
-						pMsg.result = LOGIN_RESULT_MAX_USER;
-					}
-					else if (master_disk == 0 && !fields[4].GetUInt32() && server_data.IsFlag(SERVER_FLAG_ACCOUNT_ALLOWED)) // Retorno error si el servidor tiene acceso solamente a cuentas de la lista
-					{
-						pMsg.result = LOGIN_RESULT_MAX_USER;
-					}
-					else if (master_disk == 0 && (current_time > pMsg.golden_channel) && (server_data.GetType() == SERVER_TYPE_GOLDEN_PVP || server_data.GetType() == SERVER_TYPE_GOLDEN_NO_PVP))
-					{
-						pMsg.result = LOGIN_RESULT_ERROR;
-					}
+                                if (server_data.m_Online && server_data.m_Port != uint16(-1))
+                                {
+                                        if ((server_data.m_Flag & SERVER_FLAG_DISABLED) != 0) // Retorno error si el servidor está deshabilitado
+                                        {
+                                                pMsg.result = LOGIN_RESULT_MAX_USER;
+                                        }
+                                        else if (master_disk == 0 && !fields[4].GetUInt32() && (server_data.m_Flag & SERVER_FLAG_ACCOUNT_ALLOWED)) // Retorno error si el servidor tiene acceso solamente a cuentas de la lista
+                                        {
+                                                pMsg.result = LOGIN_RESULT_MAX_USER;
+                                        }
+                                        else if (master_disk == 0 && (current_time > pMsg.golden_channel) && (server_data.m_Type == SERVER_TYPE_GOLDEN_PVP || server_data.m_Type == SERVER_TYPE_GOLDEN_NO_PVP))
+                                        {
+                                                pMsg.result = LOGIN_RESULT_ERROR;
+                                        }
 				}
 				else // Retorno error si el servidor no existe en la base de datos ( conexi�n ileg�tima )
 				{
@@ -256,9 +256,9 @@ void LoginQueue::Process(LoginDataPtr data)
 
 			if (pMsg.result == LOGIN_RESULT_SUCCESS)
 			{
-				if (acctype >= 0 || !this->IsAccountLogged(data->GetServerGroup(), pMsg.account))
-				{
-					this->ConnectAccount(data->server, data->server, pMsg.account, pMsg.account_id, pMsg.security_code, data->ip, data->mac, pMsg.facebook_status, pMsg.golden_channel, data->disk_serial, pMsg.authorized, acctype);
+                                if (acctype >= 0 || !this->IsAccountLogged(data->GetServerGroup(), pMsg.account))
+                                {
+                                        this->ConnectAccount(data->server, data->server, pMsg.account, pMsg.account_id, pMsg.security_code, data->ip, data->mac, pMsg.facebook_status, pMsg.golden_channel, data->disk_serial, pMsg.authorized, acctype);
 
 					ACCOUNT_KICK pMsg(pMsg.account_id);
 					pMsg.h.server = data->server;
@@ -320,22 +320,22 @@ void LoginQueue::ConnectAccount(uint16 start_server, uint16 current_server, cons
 	}
 
 	memcpy(pAccountData->account, account, MAX_ACCOUNT_LENGTH);
-	pAccountData->SetStartServer(start_server);
-	pAccountData->SetCurrentServer(current_server);
-	pAccountData->SetMAC(mac);
-	pAccountData->SetIP(ip);
-	pAccountData->SetSecureCode(secure_code);
-	pAccountData->SetFacebookStatus(facebook_status);
-	pAccountData->SetGoldenChannel(golden_channel);
-	pAccountData->SetDiskSerial(disk_serial);
-	pAccountData->guid = guid;
-	pAccountData->SetTime(time(nullptr));
-	pAccountData->SetDestServer(-1);
-	pAccountData->SetDestWorld(-1);
-	pAccountData->SetDestX(-1);
-	pAccountData->SetDestY(-1);
-	pAccountData->SetAuthorized(authorized);
-	pAccountData->SetAccType(acctype);
+        pAccountData->m_StartServer = start_server;
+        pAccountData->m_CurrentServer = current_server;
+        memcpy(pAccountData->m_MAC, mac, sizeof(pAccountData->m_MAC));
+        memcpy(pAccountData->m_IP, ip, sizeof(pAccountData->m_IP));
+        memcpy(pAccountData->m_SecureCode, secure_code, sizeof(pAccountData->m_SecureCode));
+        pAccountData->m_FacebookStatus = facebook_status;
+        pAccountData->m_GoldenChannel = golden_channel;
+        pAccountData->m_DiskSerial = disk_serial;
+        pAccountData->guid = guid;
+        pAccountData->m_Time = time(nullptr);
+        pAccountData->m_DestServer = -1;
+        pAccountData->m_DestWorld = -1;
+        pAccountData->m_DestX = -1;
+        pAccountData->m_DestY = -1;
+        pAccountData->m_Authorized = authorized;
+        pAccountData->m_AccType = acctype;
 
 	if ( add )
 	{
@@ -356,20 +356,20 @@ void LoginQueue::DisconnectAccount(uint16 server, uint32 account)
 		return;
 	}
 
-	if ( pAccountData->GetCurrentServer() != server )
-	{
-		return;
-	}
+        if ( pAccountData->m_CurrentServer != server )
+        {
+                return;
+        }
 
-	if ( !pAccountData->IsMoving() )
-	{
-		if (pAccountData->GetAccType() == 0) {
-			sLog->outInfo("player", "Removing Player [%u][%s] - Disconnected.", pAccountData->guid, pAccountData->account);
-			pAccountData->SetOffline(true);
-		}
-	}
+        if ( !pAccountData->m_Moving )
+        {
+                if (pAccountData->m_AccType == 0) {
+                        sLog->outInfo("player", "Removing Player [%u][%s] - Disconnected.", pAccountData->guid, pAccountData->account);
+                        pAccountData->m_Offline = true;
+                }
+        }
 
-	pAccountData->SetAccType(0);
+        pAccountData->m_AccType = 0;
 }
 
 void LoginQueue::CloseServer(uint16 server)
@@ -385,26 +385,26 @@ void LoginQueue::CloseServer(uint16 server)
 				continue;
 			}
 
-			if ( pAccountData->GetCurrentServer() == server )
-			{
-				sLog->outInfo("player", "Removing Player [%u][%s] - Server Closed.", pAccountData->guid, pAccountData->account);
-				pAccountData->SetOffline(true);
-			}
-		}
-	}
+                        if ( pAccountData->m_CurrentServer == server )
+                        {
+                                sLog->outInfo("player", "Removing Player [%u][%s] - Server Closed.", pAccountData->guid, pAccountData->account);
+                                pAccountData->m_Offline = true;
+                        }
+                }
+        }
 }
 
 void LoginQueue::KickAccount(uint16 server_group, uint32 account_id)
 {
 	AccountDataPtr pAccountData = this->GetAccountData(server_group, account_id);
 
-	if ( !pAccountData )
-	{
-		return;
-	}
+        if ( !pAccountData )
+        {
+                return;
+        }
 
-	sLog->outInfo("player", "Removing Player [%u][%s] - Kicked.", pAccountData->guid, pAccountData->account);
-	pAccountData->SetOffline(true);
+        sLog->outInfo("player", "Removing Player [%u][%s] - Kicked.", pAccountData->guid, pAccountData->account);
+        pAccountData->m_Offline = true;
 }
 
 bool LoginQueue::IsAccountLogged(uint16 server_group, const char * account)
@@ -487,49 +487,49 @@ void LoginQueue::DBAccountStatus(AccountDataPtr pAccount, bool online, bool on_c
 	SQLTransaction trans = LoginDatabase.BeginTransaction();
 
 	PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNT_STATUS_DELETE);
-	stmt->setUInt32(0, pAccount->guid);
-	stmt->setUInt16(1, pAccount->GetStartServer() / MAX_SERVER_PER_GROUP);
+        stmt->setUInt32(0, pAccount->guid);
+        stmt->setUInt16(1, pAccount->m_StartServer / MAX_SERVER_PER_GROUP);
 	trans->Append(stmt);
 
-	stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNT_STATUS_UPDATE);
-	stmt->setUInt32(0, pAccount->guid);
-	stmt->setUInt16(1, pAccount->GetStartServer() / MAX_SERVER_PER_GROUP);
-	stmt->setUInt16(2, pAccount->GetCurrentServer());
-	stmt->setUInt16(3, pAccount->GetStartServer());
-	stmt->setInt16(4, pAccount->GetDestServer());
-	stmt->setInt16(5, pAccount->GetDestWorld());
-	stmt->setInt16(6, pAccount->GetDestX());
-	stmt->setInt16(7, pAccount->GetDestY());
-	stmt->setUInt32(8, pAccount->GetMovingTick());
-	stmt->setUInt32(9, pAccount->GetAuth(0));
-	stmt->setUInt32(10, pAccount->GetAuth(1));
-	stmt->setUInt32(11, pAccount->GetAuth(2));
-	stmt->setUInt32(12, pAccount->GetAuth(3));
-	stmt->setString(13, pAccount->GetIP());
-	stmt->setString(14, pAccount->GetMAC());
-	stmt->setString(15, ConvertTimeToString(pAccount->GetTime()));
-	stmt->setBool(16, online);
-	stmt->setUInt32(17, pAccount->GetDiskSerial());
-	stmt->setUInt8(8, pAccount->GetAccType());
-	trans->Append(stmt);
+        stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNT_STATUS_UPDATE);
+        stmt->setUInt32(0, pAccount->guid);
+        stmt->setUInt16(1, pAccount->m_StartServer / MAX_SERVER_PER_GROUP);
+        stmt->setUInt16(2, pAccount->m_CurrentServer);
+        stmt->setUInt16(3, pAccount->m_StartServer);
+        stmt->setInt16(4, pAccount->m_DestServer);
+        stmt->setInt16(5, pAccount->m_DestWorld);
+        stmt->setInt16(6, pAccount->m_DestX);
+        stmt->setInt16(7, pAccount->m_DestY);
+        stmt->setUInt32(8, pAccount->m_MovingTick);
+        stmt->setUInt32(9, pAccount->m_Auth[0]);
+        stmt->setUInt32(10, pAccount->m_Auth[1]);
+        stmt->setUInt32(11, pAccount->m_Auth[2]);
+        stmt->setUInt32(12, pAccount->m_Auth[3]);
+        stmt->setString(13, pAccount->m_IP);
+        stmt->setString(14, pAccount->m_MAC);
+        stmt->setString(15, ConvertTimeToString(pAccount->m_Time));
+        stmt->setBool(16, online);
+        stmt->setUInt32(17, pAccount->m_DiskSerial);
+        stmt->setUInt8(8, pAccount->m_AccType);
+        trans->Append(stmt);
 
 	if ( on_connect )
 	{
-		/*stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNT_SECURITY_DELETE);
-		stmt->setUInt32(0, pAccount->guid);
-		stmt->setString(1, pAccount->GetIP());
-		stmt->setString(2, pAccount->GetMAC());
-		stmt->setUInt32(3, pAccount->GetDiskSerial());
-		trans->Append(stmt);*/
+                /*stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNT_SECURITY_DELETE);
+                stmt->setUInt32(0, pAccount->guid);
+                stmt->setString(1, pAccount->m_IP);
+                stmt->setString(2, pAccount->m_MAC);
+                stmt->setUInt32(3, pAccount->m_DiskSerial);
+                trans->Append(stmt);*/
 
-		stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNT_SECURITY_INSERT);
-		stmt->setUInt32(0, pAccount->guid);
-		stmt->setString(1, pAccount->account);
-		stmt->setString(2, pAccount->GetIP());
-		stmt->setString(3, pAccount->GetMAC());
-		stmt->setUInt32(4, pAccount->GetDiskSerial());
-		trans->Append(stmt);
-	}
+                stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_ACCOUNT_SECURITY_INSERT);
+                stmt->setUInt32(0, pAccount->guid);
+                stmt->setString(1, pAccount->account);
+                stmt->setString(2, pAccount->m_IP);
+                stmt->setString(3, pAccount->m_MAC);
+                stmt->setUInt32(4, pAccount->m_DiskSerial);
+                trans->Append(stmt);
+        }
 
 	LoginDatabase.CommitTransaction(trans);
 }
@@ -605,10 +605,10 @@ bool LoginQueue::IncreaseWrongAccountAuthorization(uint32 account_id, uint32 dis
 		count = 1;
 	}
 	
-	if ( sMain->GetAccountWrongAuthorizationCount() > 0 && (count >= sMain->GetAccountWrongAuthorizationCount()) )
-	{
-		return true;
-	}
+        if ( sMain->m_AccountWrongAuthorizationCount > 0 && (count >= sMain->m_AccountWrongAuthorizationCount) )
+        {
+                return true;
+        }
 
 	return false;
 }
