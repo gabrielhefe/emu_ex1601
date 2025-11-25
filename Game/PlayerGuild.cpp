@@ -25,7 +25,7 @@ void Player::GuildCreateRequest(uint8 * Packet)
 
 	sGuildMatching->GDGuildMatchingJoinCancelSend(this, 1);
 
-	sServerLink->GuildCreateRequest(this, name, lpMsg->emblem);
+	sDataServer->GuildCreateRequest(this, name, lpMsg->emblem);
 }
 
 void Player::GuildCreateResult(uint8 result, uint8 type)
@@ -173,7 +173,7 @@ void Player::GuildJoinAnswer(uint8 * Packet)
 	{
 		sGuildMatching->GDGuildMatchingJoinCancelSend(pPlayer, 1);
 
-		sServerLink->GuildMemberAddRequest(this, pPlayer, pGuild->GetID());
+		sDataServer->GuildMemberAddRequest(this, pPlayer, pGuild->GetID());
 	}
 	else
 	{
@@ -259,10 +259,10 @@ void Player::GuildMemberDelRequest(uint8 * Packet)
 
 			if ( pGuild->GetHostil() )
 			{
-				sServerLink->GuildRelationshipRequest(pGuild->GetID(), pGuild->GetHostil(), GUILD_RELATIONSHIP_RIVAL, false);
+				sDataServer->GuildRelationshipRequest(pGuild->GetID(), pGuild->GetHostil(), GUILD_RELATIONSHIP_RIVAL, false);
 			}
 
-			sServerLink->GuildDeleteRequest(pGuild->GetID());
+			sDataServer->GuildDeleteRequest(pGuild->GetID());
 			this->GuildMemberDelResult(4);
 		}
 		else
@@ -271,7 +271,7 @@ void Player::GuildMemberDelRequest(uint8 * Packet)
 
 			if (pGuildMember)
 			{
-				sServerLink->GuildMemberDelRequest(pGuild->GetID(), pGuildMember->GetID());
+				sDataServer->GuildMemberDelRequest(pGuild->GetID(), pGuildMember->GetID());
 			}
 		}
 	}
@@ -283,7 +283,7 @@ void Player::GuildMemberDelRequest(uint8 * Packet)
 			return;
 		}
 
-		sServerLink->GuildMemberDelRequest(pGuild->GetID(), this->GetGUID());
+		sDataServer->GuildMemberDelRequest(pGuild->GetID(), this->GetGUID());
 	}
 }
 
@@ -606,7 +606,7 @@ void Player::GuildAssignStatus(uint8 * Packet)
 	
 	if ( lpMsg->type == 1 || lpMsg->type == 2 || lpMsg->type == 3 )
 	{
-		sServerLink->GuildMemberStatusRequest(pGuild->GetID(), lpMsg->name, lpMsg->status);
+		sDataServer->GuildMemberStatusRequest(pGuild->GetID(), lpMsg->name, lpMsg->status);
 	}
 }
 
@@ -873,7 +873,7 @@ void Player::GuildRelationShipRequest(uint8 * Packet)
 						return;
 					}*/
 					
-					sServerLink->GuildRelationshipRequest(pGuild01->GetAlliance(), pGuild01->GetID(), GUILD_RELATIONSHIP_UNION, false);
+					sDataServer->GuildRelationshipRequest(pGuild01->GetAlliance(), pGuild01->GetID(), GUILD_RELATIONSHIP_UNION, false);
 				} break;
 
 			case GUILD_RELATIONSHIP_RIVAL:
@@ -954,12 +954,12 @@ void Player::GuildRelationShipAnswer(uint8 * Packet)
 		{
 		case GUILD_RELATIONSHIP_UNION:
 			{
-				sServerLink->GuildRelationshipRequest(pGuild01->GetID(), pGuild02->GetID(), GUILD_RELATIONSHIP_UNION, true);
+				sDataServer->GuildRelationshipRequest(pGuild01->GetID(), pGuild02->GetID(), GUILD_RELATIONSHIP_UNION, true);
 			} break;
 
 		case GUILD_RELATIONSHIP_RIVAL:
 			{
-				sServerLink->GuildRelationshipRequest(pGuild01->GetID(), pGuild02->GetID(), GUILD_RELATIONSHIP_RIVAL, relation_ship == GUILD_RELATIONSHIP_RIVAL ? false: true);
+				sDataServer->GuildRelationshipRequest(pGuild01->GetID(), pGuild02->GetID(), GUILD_RELATIONSHIP_RIVAL, relation_ship == GUILD_RELATIONSHIP_RIVAL ? false: true);
 			} break;
 		}
 	}
@@ -1060,7 +1060,7 @@ void Player::GuildAllianceKick(uint8 * Packet) // Solamente puede ser usado por 
 		return;
 	}
 
-	sServerLink->GuildRelationshipRequest(pGuild->GetID(), pKick->GetID(), GUILD_RELATIONSHIP_UNION, false);
+	sDataServer->GuildRelationshipRequest(pGuild->GetID(), pKick->GetID(), GUILD_RELATIONSHIP_UNION, false);
 	GUILD_KICK_UNION pMsg(1, GUILD_RELATIONSHIP_OPERATION_BREAKOFF, GUILD_RELATIONSHIP_UNION);
 	this->SEND_PCT(pMsg);
 }

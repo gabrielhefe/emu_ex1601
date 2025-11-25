@@ -1190,27 +1190,27 @@ bool ItemBagMgr::RunItemBag(Player* pPlayer, std::string const& name, Item & ite
 
 		if (pItemBag->GetGUID() == 430) {
 			if (add_ruud >= 1000) {
-				sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 1]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
+				sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 1]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
 			}
 		}
 		else if (pItemBag->GetGUID() == 436) {
 			if (add_ruud >= 1000) {
-				sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 2]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
+				sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 2]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
 			}
 		}
 		else if (pItemBag->GetGUID() == 442) {
 			if (add_ruud >= 1000) {
-				sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 3]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
+				sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 3]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
 			}
 		}
 		else if (pItemBag->GetGUID() == 448) {
 			if (add_ruud >= 1000) {
-				sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 4]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
+				sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 4]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
 			}
 		}
 		else if (pItemBag->GetGUID() == 455) {
 			if (add_ruud >= 1000) {
-				sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 5]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
+				sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] get bonus %d Ruud From [Monster Soul Lvl 5]", pPlayer->GetName(), add_ruud, pItemBag->GetName());
 			}
 		}
 

@@ -755,8 +755,8 @@ public:
 	DECLARE_ENUM(uint32, ConnectServerReconnecTime);
 	DECLARE_BOOL(AuthServerReconnect);
 	DECLARE_ENUM(uint32, AuthServerReconnecTime);
-	DECLARE_BOOL(ServerLinkServerReconnect);
-	DECLARE_ENUM(uint32, ServerLinkServerReconnecTime);
+	DECLARE_BOOL(DataServerServerReconnect);
+	DECLARE_ENUM(uint32, DataServerServerReconnecTime);
 
 	DECLARE_BOOL(CharacterDieExperienceDecrease);
 	DECLARE_BOOL(CharacterDieZenDecrease);

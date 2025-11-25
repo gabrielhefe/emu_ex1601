@@ -1340,7 +1340,7 @@ void CBloodCastleMgr::SetState_Open()
 	this->SetState(EVENT_MGR_STATE_OPEN);
 	this->RunTime(EVENT_MGR_OPEN_TIME * MINUTE * IN_MILLISECONDS);
 
-	sServerLink->EventNotification(EVENT_NOTIFICATION_BLOOD_CASTLE, 1);
+	sDataServer->EventNotification(EVENT_NOTIFICATION_BLOOD_CASTLE, 1);
 
 	sLog->outInfo(LOG_BLOOD_CASTLE,"[BloodCastleMgr] SetState_Open()");
 }
@@ -1350,7 +1350,7 @@ void CBloodCastleMgr::SetState_Playing()
 	this->SetState(EVENT_MGR_STATE_PLAYING);
 	this->RunTime(0);
 
-	sServerLink->EventNotification(EVENT_NOTIFICATION_BLOOD_CASTLE, 0);
+	sDataServer->EventNotification(EVENT_NOTIFICATION_BLOOD_CASTLE, 0);
 
 	FOR_EACH_GROUND(BLOOD_CASTLE)->SetState_StandBy();
 
@@ -1372,7 +1372,7 @@ void CBloodCastleMgr::ProcState_Open()
 {
 	if ( this->GetNotificationTime()->Elapsed(EVENT_NOTIFICATION_TIME) )
 	{
-		sServerLink->EventNotification(EVENT_NOTIFICATION_BLOOD_CASTLE, 1);
+		sDataServer->EventNotification(EVENT_NOTIFICATION_BLOOD_CASTLE, 1);
 	}
 
 	this->SendRemainMinutes("%d minute(s) left before Blood Castle Start", 1, 5);

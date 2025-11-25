@@ -388,7 +388,7 @@ void GuildWarMgr::IncreaseScore(Player* pPlayer, Player* pVictim)
 			add_score = 2;
 		}
 
-		sServerLink->GuildScore(pGuild01->GetID(), add_score);
+		sDataServer->GuildScore(pGuild01->GetID(), add_score);
 
 		this->EndWar(pGuild02, pGuild01, BATTLE_SOCCER_END_REASON_SCORE);
 	}

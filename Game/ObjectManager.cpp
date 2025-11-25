@@ -591,7 +591,7 @@ void CObjectMgr::SendEventNotification(uint8 type, const char * msg, ...)
 	pMsg.h.size += strlen(message);
 
 	if (pMsg.type == NOTICE_GLOBAL) {
-		sServerLink->NoticeSend(type, message);
+		sDataServer->NoticeSend(type, message);
 	}
 	else {
 		PlayerSessionMap const& characters = sObjectMgr->GetAllCharacters();

@@ -1097,7 +1097,7 @@ void MixHandler::ExecuteMix(uint8 * packet)
 					const char noticesucces[] = { "[%s] create succes [%s]" };
 					STRING_SAFE(notice_message, 100);
 					sprintf_s(notice_message, noticesucces, this->GetPlayer()->GetName(), item->GetName());
-					sServerLink->NoticeSend(0, notice_message);
+					sDataServer->NoticeSend(0, notice_message);
 				}
 			}*/
 		}
@@ -1674,7 +1674,7 @@ void MixHandler::ChaosMixWingSecond(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(wing);
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -1930,7 +1930,7 @@ void MixHandler::ChaosMixWingFirst(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(wing);
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -2542,7 +2542,7 @@ void MixHandler::ChaosMixCloak(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(wing);
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -2618,7 +2618,7 @@ void MixHandler::ChaosMixFenrirFragment(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(ITEMGET(13, 35));
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -2694,7 +2694,7 @@ void MixHandler::ChaosMixFenrirBrokenHorn(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(ITEMGET(13, 36));
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -2767,7 +2767,7 @@ void MixHandler::ChaosMixFenrir(uint8 data)
 		sItemMgr->ItemSerialCreateItem(this->GetPlayer(), serial_create_chaos_box, Item(PET_FENRIR, 0, 255.0f), 1);
 		this->ChaosMixLogSuccess();
 
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [Horn Of Fenrir]", this->GetPlayer()->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [Horn Of Fenrir]", this->GetPlayer()->GetName());
 	}
 	else
 	{
@@ -2865,10 +2865,10 @@ void MixHandler::ChaosMixFenrirUpgrade(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		if (FenrirType == 0) {
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes Horn Of Fenrir +Destroy", this->GetPlayer()->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes Horn Of Fenrir +Destroy", this->GetPlayer()->GetName());
 		}
 		else {
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes Horn Of Fenrir +Protect", this->GetPlayer()->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes Horn Of Fenrir +Protect", this->GetPlayer()->GetName());
 		}
 	}
 	else
@@ -3551,7 +3551,7 @@ void MixHandler::ChaosMixCondorFeather(uint8 data)
 	{
 		sItemMgr->ItemSerialCreateItem(this->GetPlayer(), serial_create_chaos_box, Item(ITEMGET(13, 53)), 1);
 		this->ChaosMixLogSuccess();
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [Condor Feather]", this->GetPlayer()->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [Condor Feather]", this->GetPlayer()->GetName());
 	}
 	else
 	{
@@ -3683,7 +3683,7 @@ void MixHandler::ChaosMixWingThird(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(wing);
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -4269,7 +4269,7 @@ void MixHandler::ChaosMixArkaWarSign(uint8 data)
 		//this->GetPlayer()->ChaosMixSend(0);
 		this->GetPlayer()->ChaosMixResult(193);
 						
-		sServerLink->ArkaWarSignRegister(this->GetPlayer(), 1, count);
+		sDataServer->ArkaWarSignRegister(this->GetPlayer(), 1, count);
 
 		this->ChaosMixLogSuccess();
 	}
@@ -4553,7 +4553,7 @@ void MixHandler::ChaosMixMonsterWing(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(ItemIndex);
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -4647,7 +4647,7 @@ void MixHandler::ChaosMixConquerorWings(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(ITEMGET(12, 268));
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -5256,7 +5256,7 @@ void MixHandler::ChaosMixBloodangelToDarkangelSet(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -5417,7 +5417,7 @@ void MixHandler::ChaosMixUpgradeDarkangelToHolyangelSet(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -5578,7 +5578,7 @@ void MixHandler::ChaosMixUpgradeHolyangelToAwakeningSet(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -5739,7 +5739,7 @@ void MixHandler::ChaosMixUpgradeAwakeningToBlueEyeSet(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -5900,7 +5900,7 @@ void MixHandler::ChaosMixUpgradeBlueEyeToSilverHeartSet(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -6064,7 +6064,7 @@ void MixHandler::ChaosMixUpgradeSilverHearToManticoretSet(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -6310,7 +6310,7 @@ void MixHandler::ChaosMixUpgradeDivineArchangelWeapon(uint8 data)
 		const char noticesucces[] = { "[%s] create succes [%s]" };
 		STRING_SAFE(notice_message, 100);
 		sprintf_s(notice_message, noticesucces, this->GetPlayer()->GetName(), pItemInfo->GetName());
-		sServerLink->NoticeSend(0, notice_message);
+		sDataServer->NoticeSend(0, notice_message);
 
 	}
 	else
@@ -6473,7 +6473,7 @@ void MixHandler::ChaosMixUpgradeBloodangelToDarkangelWeapon(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -6634,7 +6634,7 @@ void MixHandler::ChaosMixUpgradeDarkangelToHolyangelWeapon(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -6795,7 +6795,7 @@ void MixHandler::ChaosMixUpgradeHolyangelToSoulWeapon(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -6956,7 +6956,7 @@ void MixHandler::ChaosMixUpgradeSoulToBlueEyeWeapon(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 	}
 	else
 	{
@@ -7119,7 +7119,7 @@ void MixHandler::ChaosMixUpgradeBlueEyeToSilverHartWeapon(uint8 data)
 		this->ChaosMixLogSuccess();
 
 		item_template const* pItemInfo = sItemMgr->GetItem(item_create.GetItem());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade succes [%s]", this->GetPlayer()->GetName(), pItemInfo->GetName());
 
 	}
 	else
@@ -8374,7 +8374,7 @@ void MixHandler::ChaosMixBindWingsCreateLvl2(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(item_create.GetItem());
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -8511,7 +8511,7 @@ void MixHandler::ChaosMixBindWingsCreateLvl3(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(item_create.GetItem());
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -8643,7 +8643,7 @@ void MixHandler::ChaosMixBindWingsCreateLvl4(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(item_create.GetItem());
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else
@@ -8728,7 +8728,7 @@ void MixHandler::ChaosMixGarudaFeather(uint8 data)
 		sItemMgr->ItemSerialCreateItem(this->GetPlayer(), serial_create_chaos_box, Item(ITEMGET(13, 467)), 1);
 		this->ChaosMixLogSuccess();
 
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [Garuda Feather]", this->GetPlayer()->GetName());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [Garuda Feather]", this->GetPlayer()->GetName());
 	}
 	else
 	{
@@ -8883,7 +8883,7 @@ void MixHandler::ChaosMixFourthWings(uint8 data)
 		if (sGameServer->IsNoticeMixSuccesWingEnable()) {
 			item_template const* item_wing = sItemMgr->GetItem(item_create);
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] create succes [%s]", this->GetPlayer()->GetName(), item_wing->GetName());
 		}
 	}
 	else

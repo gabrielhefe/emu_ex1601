@@ -176,9 +176,9 @@ void ProtectorOfAcheron::SetState_Playing()
 		return;
 	}
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, "Protector of Acheron Started.");
+	sDataServer->NoticeSend(NOTICE_GLOBAL, "Protector of Acheron Started.");
 
-	sServerLink->EventStateUpdate(EVENT_PROTECTOR_OF_ACHERON, PROTECTOR_OF_ACHERON_STATE_PLAYING, 0);
+	sDataServer->EventStateUpdate(EVENT_PROTECTOR_OF_ACHERON, PROTECTOR_OF_ACHERON_STATE_PLAYING, 0);
 
 	sLog->outInfo("protectorofacheron", "%s", __FUNCTION__);
 }
@@ -188,7 +188,7 @@ void ProtectorOfAcheron::SetState_End()
 	this->SetState(PROTECTOR_OF_ACHERON_STATE_END);
 	this->GetTime()->Start(PROTECTOR_OF_ACHERON_END_TIME);
 
-	sServerLink->EventStateUpdate(EVENT_PROTECTOR_OF_ACHERON, PROTECTOR_OF_ACHERON_STATE_END, 0);
+	sDataServer->EventStateUpdate(EVENT_PROTECTOR_OF_ACHERON, PROTECTOR_OF_ACHERON_STATE_END, 0);
 
 	sLog->outInfo("protectorofacheron", "%s", __FUNCTION__);
 }
@@ -214,7 +214,7 @@ void ProtectorOfAcheron::ProcState_End()
 	if ( this->GetTime()->Elapsed() )
 	{
 		this->SetState_None();
-		sServerLink->EventStateUpdate(EVENT_PROTECTOR_OF_ACHERON, PROTECTOR_OF_ACHERON_STATE_NONE, 0);
+		sDataServer->EventStateUpdate(EVENT_PROTECTOR_OF_ACHERON, PROTECTOR_OF_ACHERON_STATE_NONE, 0);
 	}
 }
 

@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{B98EEA21-D2A6-45E7-B5A7-31BCD2FA012C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerLink", "Server_Link\Server_Link.vcxproj", "{6054EEE0-FDAC-4537-A888-2F5C965578EA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataServer", "DataServer\DataServer.vcxproj", "{6054EEE0-FDAC-4537-A888-2F5C965578EA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Util", "Util", "{95480D1A-244E-425F-ACC4-082FD6E81C68}"
 EndProject

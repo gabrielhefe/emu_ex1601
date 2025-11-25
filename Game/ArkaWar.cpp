@@ -429,7 +429,7 @@ void ArkaWar::ChangeState(uint8 state, bool from_server_link)
 
 	if ( !from_server_link )
 	{
-		sServerLink->EventStateUpdate(EVENT_ARKA_WAR, this->GetState(), 0);
+		sDataServer->EventStateUpdate(EVENT_ARKA_WAR, this->GetState(), 0);
 	}
 }
 
@@ -494,7 +494,7 @@ void ArkaWar::ProcState_Closed()
 {
 	if ( this->GetTime()->Finished() )
 	{
-		sServerLink->ArkaWarClear();
+		sDataServer->ArkaWarClear();
 		
 		this->ChangeState(ARKA_WAR_STATE_MASTER_REGISTER);
 	}
@@ -508,7 +508,7 @@ void ArkaWar::ProcState_MasterRegister()
 	{
 		this->SetCurrentNotifyTime(remain_minutes);
 
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "%d minutes left to register as Guild Master for the Arca War", remain_minutes + 1);
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "%d minutes left to register as Guild Master for the Arca War", remain_minutes + 1);
 	}
 
 	if ( this->GetTime()->Finished() )
@@ -525,13 +525,13 @@ void ArkaWar::ProcState_MemberRegister()
 	{
 		this->SetCurrentNotifyTime(remain_minutes);
 
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "%d minutes left to register as Guild member for the Arca War", remain_minutes + 1);
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "%d minutes left to register as Guild member for the Arca War", remain_minutes + 1);
 	}
 
 	if ( this->GetTime()->Finished() )
 	{
 		this->ChangeState(ARKA_WAR_STATE_READY);
-		sServerLink->ArkaWarList();
+		sDataServer->ArkaWarList();
 	}
 }
 
@@ -543,12 +543,12 @@ void ArkaWar::ProcState_Ready()
 	{
 		this->SetCurrentNotifyTime(remain_seconds);
 
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "%d seconds left until the Arca War starts. Please wait in a safe area.", remain_seconds + 1);
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "%d seconds left until the Arca War starts. Please wait in a safe area.", remain_seconds + 1);
 	}
 
 	if ( this->GetTime()->Finished() )
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "The Arca War has started. You can enter by talking to Sir Lesnar.");
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "The Arca War has started. You can enter by talking to Sir Lesnar.");
 
 		this->ChangeState(ARKA_WAR_STATE_STANDBY);
 		this->SetRandomObeliskAttribute();
@@ -559,7 +559,7 @@ void ArkaWar::ProcState_Standby()
 {
 	if ( this->GetNotifyTime()->Elapsed(MINUTE * IN_MILLISECONDS) )
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "The Arca War has started. You can enter by talking to Sir Lesnar.");
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "The Arca War has started. You can enter by talking to Sir Lesnar.");
 	}
 
 	if ( (this->GetTime()->GetRemain() <= 30000) && (this->GetTime()->GetRemain() >= 0) )
@@ -606,7 +606,7 @@ void ArkaWar::ProcState_Playing()
 {
 	if ( this->GetNotifyTime()->Elapsed(3 * MINUTE * IN_MILLISECONDS) )
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "The Arca War has started. You can enter by talking to Sir Lesnar.");
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "The Arca War has started. You can enter by talking to Sir Lesnar.");
 	}
 
 	if ( this->GetTime()->GetRemain() <= 60000 && this->GetTime()->GetRemain() >= 0 )
@@ -648,7 +648,7 @@ void ArkaWar::ProcState_Playing()
 
 	if ( this->GetTime()->Finished() )
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "Exit the Arca War.");
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "Exit the Arca War.");
 
 		this->ChangeState(ARKA_WAR_STATE_RESULT);
 	}
@@ -688,7 +688,7 @@ void ArkaWar::ProcState_Result()
 
 		this->SendResult();
 
-		sServerLink->ArkaWarGuildSave();
+		sDataServer->ArkaWarGuildSave();
 
 		this->InsertRanking();
 
@@ -776,7 +776,7 @@ void ArkaWar::MasterRegisterRequest(Player* pPlayer, uint8 * Packet)
 		return;
 	}
 	
-	sServerLink->ArkaWarMasterRegister(pPlayer, pPlayer->GetGuildID());
+	sDataServer->ArkaWarMasterRegister(pPlayer, pPlayer->GetGuildID());
 }
 
 void ArkaWar::MasterRegisterResult(Player* pPlayer, uint8 result)
@@ -817,7 +817,7 @@ void ArkaWar::MemberRegisterRequest(Player* pPlayer, uint8 * Packet)
 		return;
 	}
 	
-	sServerLink->ArkaWarMemberRegister(pPlayer);
+	sDataServer->ArkaWarMemberRegister(pPlayer);
 }
 
 void ArkaWar::MemberRegisterResult(Player* pPlayer, uint8 result)
@@ -853,7 +853,7 @@ void ArkaWar::EnterRequest(Player* pPlayer, uint8 * Packet)
 	}
 	else if ( lpMsg->result == 1 )
 	{
-		sServerLink->ArkaWarEnter(pPlayer);
+		sDataServer->ArkaWarEnter(pPlayer);
 	}
 }
 
@@ -883,7 +883,7 @@ void ArkaWar::ViewGuildMemberRequest(Player* pPlayer, uint8 * Packet)
 		return;
 	}
 
-	sServerLink->ArkaWarMemberCount(pPlayer);
+	sDataServer->ArkaWarMemberCount(pPlayer);
 }
 
 void ArkaWar::ViewGuildMemberResult(Player* pPlayer, uint8 result, uint8 count)
@@ -934,7 +934,7 @@ void ArkaWar::SignOfLordRegisterRequest(Player* pPlayer, uint8 * Packet)
 		return;
 	}
 
-	sServerLink->ArkaWarSignRegister(pPlayer, 0);
+	sDataServer->ArkaWarSignRegister(pPlayer, 0);
 }
 
 void ArkaWar::SignOfLordRegisterResult(Player* pPlayer, uint8 result, uint32 signs)
@@ -974,7 +974,7 @@ void ArkaWar::SignOfLordCheckRequest(Player* pPlayer, uint8 * Packet)
 		return;
 	}
 
-	sServerLink->ArkaWarSignOfLordCheckRequest(pPlayer);
+	sDataServer->ArkaWarSignOfLordCheckRequest(pPlayer);
 }
 
 void ArkaWar::ExchangeOpen(Player* pPlayer, uint8 * Packet)
@@ -1002,8 +1002,8 @@ void ArkaWar::ExchangeOpen(Player* pPlayer, uint8 * Packet)
 
 void ArkaWar::GuildList(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_LIST_HEAD, head, Packet, 0);
-	POINTER_PCT(SL_ARKA_WAR_LIST_GUILD_BODY, body, Packet, sizeof(SL_ARKA_WAR_LIST_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_LIST_HEAD, head, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_LIST_GUILD_BODY, body, Packet, sizeof(DS_ARKA_WAR_LIST_HEAD));
 
 	for ( int32 i = 0; i < MAX_ARKA_WAR_GUILD; ++i )
 	{
@@ -1023,8 +1023,8 @@ void ArkaWar::GuildList(uint8 * Packet)
 	
 void ArkaWar::MemberList(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_LIST_HEAD, head, Packet, 0);
-	POINTER_PCT(SL_ARKA_WAR_LIST_MEMBER_BODY, body, Packet, sizeof(SL_ARKA_WAR_LIST_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_LIST_HEAD, head, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_LIST_MEMBER_BODY, body, Packet, sizeof(DS_ARKA_WAR_LIST_HEAD));
 
 	MAP_CLEAR(ArkaWarPlayerMap::iterator, this->m_ArkaWarPlayer);
 
@@ -1053,7 +1053,7 @@ void ArkaWar::SendNoticeToAll(const char * msg, ...)
 		}
 	}*/
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, msg);
+	sDataServer->NoticeSend(NOTICE_GLOBAL, msg);
 }
 
 void ArkaWar::SendNoticeExToAll(uint8 type, uint32 color, uint8 count, uint16 delay, uint8 speed, const char * msg, ...)

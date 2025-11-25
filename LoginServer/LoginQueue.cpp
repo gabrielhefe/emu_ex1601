@@ -297,7 +297,7 @@ void LoginQueue::Process(LoginDataPtr data)
 
 	if (pMsg.result == LOGIN_RESULT_SUCCESS)
 	{
-		SL_ACCOUNT_DUPLICATE pMsg3;
+		DS_ACCOUNT_DUPLICATE pMsg3;
 		pMsg3.h.server = pMsg.h.server;
 		pMsg3.account_id = pMsg.account_id;
 		sAuthSocketMgr.SendPacketAll((uint8*)&pMsg3, pMsg3.h.get_size(), data->GetServerGroup());

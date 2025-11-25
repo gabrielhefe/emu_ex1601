@@ -230,14 +230,14 @@ void CNoticeSystem::NotifyMossMerchant(Player* pPlayer, Item item) {
 
 	if (item.IsAncient()) {
 		sprintf(tagtext, texttagitemancient);
-		sServerLink->NoticeSend(0, "[%s] Open Box Moss Merchant received [%s %s]", pPlayer->GetName(), tagtext, itemnotify->GetName());
+		sDataServer->NoticeSend(0, "[%s] Open Box Moss Merchant received [%s %s]", pPlayer->GetName(), tagtext, itemnotify->GetName());
 	}
 	else if (item.IsExcellent()) {
 		sprintf(tagtext, texttagitemexcl);
-		sServerLink->NoticeSend(0, "[%s] Open Box Moss Merchant received [%s %s]", pPlayer->GetName(), tagtext, itemnotify->GetName());
+		sDataServer->NoticeSend(0, "[%s] Open Box Moss Merchant received [%s %s]", pPlayer->GetName(), tagtext, itemnotify->GetName());
 	}
 	else {
-		sServerLink->NoticeSend(0, "[%s] Open Box Moss Merchant received [%s]", pPlayer->GetName(), itemnotify->GetName());
+		sDataServer->NoticeSend(0, "[%s] Open Box Moss Merchant received [%s]", pPlayer->GetName(), itemnotify->GetName());
 	}
 
 }

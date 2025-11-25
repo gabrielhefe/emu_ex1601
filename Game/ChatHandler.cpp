@@ -622,7 +622,7 @@ void ChatHandler::CommandHostilCancel(const char * msg)
 	if ( !pGuild->GetHostil() )
 		return;
 
-	sServerLink->GuildRelationshipRequest(pGuild->GetID(), pGuild->GetHostil(), GUILD_RELATIONSHIP_RIVAL, false);
+	sDataServer->GuildRelationshipRequest(pGuild->GetID(), pGuild->GetHostil(), GUILD_RELATIONSHIP_RIVAL, false);
 }
 
 void ChatHandler::CommandRequest(const char * msg)
@@ -1690,13 +1690,13 @@ void ChatHandler::CommandNhanThuongLoDe(const char* msg) {
 				}
 
 				pPlayer->MoneyAdd(reward_value);
-				sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] choi lo de nhan thuong %d Zen", pPlayer->GetName(), reward_value);
+				sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] choi lo de nhan thuong %d Zen", pPlayer->GetName(), reward_value);
 			}
 			else {
 				//Item item_new(ITEMGET(type, index), level, durability, skill, luck, option, exe, ancient, 0, 255, 86400);
 				item_template* item_temp = sItemMgr->GetItem(betitem);
 
-				sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] choi lo de nhan thuong %d [%s]", pPlayer->GetName(), reward_value, item_temp->GetName());
+				sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] choi lo de nhan thuong %d [%s]", pPlayer->GetName(), reward_value, item_temp->GetName());
 
 				if (reward_value > 50) {
 					while (reward_value > 0) {
@@ -1758,13 +1758,13 @@ void ChatHandler::CommandNhanThuongLoDe(const char* msg) {
 			}
 
 			pPlayer->MoneyAdd(reward_value);
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] choi lo de nhan thuong %d Zen", pPlayer->GetName(), reward_value);
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] choi lo de nhan thuong %d Zen", pPlayer->GetName(), reward_value);
 		}
 		else {
 			//Item item_new(ITEMGET(type, index), level, durability, skill, luck, option, exe, ancient, 0, 255, 86400);
 			item_template* item_temp = sItemMgr->GetItem(betitem);
 
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] choi lo de nhan thuong %d [%s]", pPlayer->GetName(), reward_value, item_temp->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] choi lo de nhan thuong %d [%s]", pPlayer->GetName(), reward_value, item_temp->GetName());
 
 			while (reward_value > 0) {
 				if (reward_value < 50) {
@@ -2367,7 +2367,7 @@ void ChatHandler::CommandKick(const char * msg)
 
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), name_safe.c_str(), name_safe.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH : name_safe.size());
 
-	sServerLink->AdminCommandRequest(this->GetPlayer(), 0, 0, name, nullptr, time);
+	sDataServer->AdminCommandRequest(this->GetPlayer(), 0, 0, name, nullptr, time);
 }
 
 void ChatHandler::CommandEvents(const char * msg)
@@ -2717,7 +2717,7 @@ void ChatHandler::CommandMute(const char * msg)
 
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), safe_name.c_str(), safe_name.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH: safe_name.size());
 
-	sServerLink->AdminCommandRequest(this->GetPlayer(), 2, 0, name, nullptr, mute_time);
+	sDataServer->AdminCommandRequest(this->GetPlayer(), 2, 0, name, nullptr, mute_time);
 }
 
 void ChatHandler::CommandItemNormal(const char * msg)
@@ -3145,7 +3145,7 @@ void ChatHandler::CommandBanChar(const char * msg)
 
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), name_safe.c_str(), name_safe.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH: name_safe.size());
 
-	sServerLink->AdminCommandRequest(this->GetPlayer(), 3, 0, name, nullptr, 0);
+	sDataServer->AdminCommandRequest(this->GetPlayer(), 3, 0, name, nullptr, 0);
 }
 
 void ChatHandler::CommandBanAcc(const char * msg)
@@ -3495,7 +3495,7 @@ void ChatHandler::CommandRestriction(const char * msg)
 		return;
 	}
 	
-	sServerLink->AdminCommandRequest(this->GetPlayer(), 1, restriction, name, nullptr, duration);
+	sDataServer->AdminCommandRequest(this->GetPlayer(), 1, restriction, name, nullptr, duration);
 }
 
 void ChatHandler::CommandOnline(const char * msg)
@@ -3702,7 +3702,7 @@ void ChatHandler::CommandChangeGuild(const char * msg)
 
 	conversor >> guild;
 
-	sServerLink->GuildDeleteRequest(guild);
+	sDataServer->GuildDeleteRequest(guild);
 }
 	
 void ChatHandler::CommandChangeAlliance(const char * msg)
@@ -3714,7 +3714,7 @@ void ChatHandler::CommandChangeAlliance(const char * msg)
 
 	conversor >> guild01 >> guild02 >> add;
 
-	sServerLink->GuildRelationshipRequest(guild01, guild02, GUILD_RELATIONSHIP_UNION, add == 0 ? false : true);
+	sDataServer->GuildRelationshipRequest(guild01, guild02, GUILD_RELATIONSHIP_UNION, add == 0 ? false : true);
 
 	//35200 40598 1
 }
@@ -3815,11 +3815,11 @@ void ChatHandler::CommandCastleSiegeRegister(const char * msg)
 		return;
 	}
 
-	SL_CASTLE_SIEGE_INSERT_REGISTERED_GUILD pMsg;
+	DS_CASTLE_SIEGE_INSERT_REGISTERED_GUILD pMsg;
 	pMsg.guild = pGuild->GetID();
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 	
-	sServerLink->CastleSiegeRegisterGuild(pGuild->GetID(), true, 0);
+	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), true, 0);
 	pGuild->SetRegisteredInCaslteSiege(true);
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered successfully.", guild_name.c_str());
 }
@@ -3848,11 +3848,11 @@ void ChatHandler::CommandCastleSiegeUnRegister(const char * msg)
 		return;
 	}
 
-	SL_CASTLE_SIEGE_DELETE_REGISTERED_GUILD pMsg;
+	DS_CASTLE_SIEGE_DELETE_REGISTERED_GUILD pMsg;
 	pMsg.guild = pGuild->GetID();
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
-	sServerLink->CastleSiegeRegisterGuild(pGuild->GetID(), false, 0);
+	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), false, 0);
 	pGuild->SetRegisteredInCaslteSiege(false);
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s unregistered successfully.", guild_name.c_str());
 }
@@ -3887,10 +3887,10 @@ void ChatHandler::CommandCastleSiegeIncreaseMarks(const char * msg)
 
 	pGuild->SetCastleSiegeMarks(pGuild->GetCastleSiegeMarks() + count);
 
-	SL_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD pMsg(pGuild->GetID(), pGuild->GetCastleSiegeMarks());
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	DS_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD pMsg(pGuild->GetID(), pGuild->GetCastleSiegeMarks());
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
-	sServerLink->CastleSiegeRegisterGuild(pGuild->GetID(), true, pGuild->GetCastleSiegeMarks());
+	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), true, pGuild->GetCastleSiegeMarks());
 	
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered mark successfully. Count %u.", guild_name.c_str(), pGuild->GetCastleSiegeMarks());
 }
@@ -3932,17 +3932,17 @@ void ChatHandler::CommandCastleSiegeReduceMarks(const char * msg)
 		pGuild->SetCastleSiegeMarks(pGuild->GetCastleSiegeMarks() - count);
 	}
 
-	SL_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD pMsg(pGuild->GetID(), pGuild->GetCastleSiegeMarks());
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	DS_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD pMsg(pGuild->GetID(), pGuild->GetCastleSiegeMarks());
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
-	sServerLink->CastleSiegeRegisterGuild(pGuild->GetID(), true, pGuild->GetCastleSiegeMarks());
+	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), true, pGuild->GetCastleSiegeMarks());
 	
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s unregistered mark successfully. Count %u.", guild_name.c_str(), pGuild->GetCastleSiegeMarks());
 }
 
 void ChatHandler::CommandCastleSiegeNPCLoad(const char * msg)
 {
-	sServerLink->CastleSiegeLoadNpcRequest();
+	sDataServer->CastleSiegeLoadNpcRequest();
 }
 
 void ChatHandler::CommandCastleSiegeFix(const char * msg)
@@ -3994,13 +3994,13 @@ void ChatHandler::CommandArcaWarRegisterMaster(const char * msg)
 		return;
 	}
 
-	SL_ARKA_WAR_MASTER_REGISTER pMsg;
+	DS_ARKA_WAR_MASTER_REGISTER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.player.guid = pGuild->GetID();
 	memcpy(pMsg.player.name, pGuild->GetMember(0)->GetName(), MAX_CHARACTER_LENGTH);
 	pMsg.guild = pGuild->GetID();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered.", pGuild->GetName());
 }
@@ -4025,12 +4025,12 @@ void ChatHandler::CommandArcaWarRegisterMember(const char * msg)
 		return;
 	}
 
-	SL_ARKA_WAR_MEMBER_REGISTER pMsg;
+	DS_ARKA_WAR_MEMBER_REGISTER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.guild = pPlayer->GetGuildID();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Player %s registered.", pPlayer->GetName());
 }
@@ -4053,12 +4053,12 @@ void ChatHandler::CommandArcaWarIncreaseMarks(const char * msg)
 		return;
 	}
 
-	SL_ARKA_WAR_SIGN_REGISTER pMsg;
+	DS_ARKA_WAR_SIGN_REGISTER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	this->GetPlayer()->BuildCustomPacketData(pMsg.player);
 	pMsg.guild = pGuild->GetID();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s sign registered.", pGuild->GetName());
 }
@@ -4072,11 +4072,11 @@ void ChatHandler::CommandArcaWarReload(const char * msg)
 
 	if ( command == 0 )
 	{
-		sServerLink->ArkaWarGuildRequest();
+		sDataServer->ArkaWarGuildRequest();
 	}
 	else
 	{
-		sServerLink->ArkaWarGuildSave();
+		sDataServer->ArkaWarGuildSave();
 	}
 }
 
@@ -4434,7 +4434,7 @@ void ChatHandler::CommandAdminCrywolf(const char * msg)
 	conversor >> state;
 
 	sCrywolf->SetOccupationState(state);
-	sServerLink->CrywolfDataSave();
+	sDataServer->CrywolfDataSave();
 }
 
 void ChatHandler::CommandAdminSummon(const char * msg)
@@ -4964,7 +4964,7 @@ void ChatHandler::CommandAdminNotify(const char* msg) {
 	if (!this->GetPlayer() || !this->GetPlayer()->IsAdministrator())
 		return;
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, msg);
+	sDataServer->NoticeSend(NOTICE_GLOBAL, msg);
 }
 
 void ChatHandler::CommandKickAccount(const char* msg) {
@@ -5280,7 +5280,7 @@ void ChatHandler::CommandAdminArcaWar(const char * msg)
 			return;
 		}
 
-		sServerLink->ArkaWarMasterRegister(this->GetPlayer(), pGuild->GetID());
+		sDataServer->ArkaWarMasterRegister(this->GetPlayer(), pGuild->GetID());
 	}
 	else if ( command == "regchar" )
 	{
@@ -5315,7 +5315,7 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 		}
 	}
 
-	sServerLink->CharacterOnOff(this->GetPlayer(), 2);
+	sDataServer->CharacterOnOff(this->GetPlayer(), 2);
 
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Invisibility Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) ? "ON" : "OFF");
 
@@ -5328,7 +5328,7 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_ATTACK);
 	}
 
-	sServerLink->CharacterOnOff(this->GetPlayer(), 2);
+	sDataServer->CharacterOnOff(this->GetPlayer(), 2);
 
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Attack Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_ATTACK) ? "ON" : "OFF");
 
@@ -5341,7 +5341,7 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
 	}
 
-	sServerLink->CharacterOnOff(this->GetPlayer(), 2);
+	sDataServer->CharacterOnOff(this->GetPlayer(), 2);
 
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Been Attacked Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) ? "ON" : "OFF");
 
@@ -5354,7 +5354,7 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_WHISPER);
 	}
 
-	sServerLink->CharacterOnOff(this->GetPlayer(), 2);
+	sDataServer->CharacterOnOff(this->GetPlayer(), 2);
 
 	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Whisper Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_WHISPER) ? "ON" : "OFF");
 
@@ -5388,7 +5388,7 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 				}
 			}
 
-			sServerLink->CharacterOnOff(this->GetPlayer(), 2);
+			sDataServer->CharacterOnOff(this->GetPlayer(), 2);
 
 			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Invisibility Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) ? "ON" : "OFF");
 		} break;
@@ -5404,7 +5404,7 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 				this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_ATTACK);
 			}
 
-			sServerLink->CharacterOnOff(this->GetPlayer(), 2);
+			sDataServer->CharacterOnOff(this->GetPlayer(), 2);
 
 			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Attack Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_ATTACK) ? "ON" : "OFF");
 		} break;
@@ -5420,7 +5420,7 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 				this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
 			}
 
-			sServerLink->CharacterOnOff(this->GetPlayer(), 2);
+			sDataServer->CharacterOnOff(this->GetPlayer(), 2);
 
 			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Been Attacked Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) ? "ON" : "OFF");
 		} break;
@@ -5436,7 +5436,7 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 				this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_WHISPER);
 			}
 
-			sServerLink->CharacterOnOff(this->GetPlayer(), 2);
+			sDataServer->CharacterOnOff(this->GetPlayer(), 2);
 
 			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Whisper Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_WHISPER) ? "ON" : "OFF");
 		} break;

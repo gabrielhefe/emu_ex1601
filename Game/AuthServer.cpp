@@ -11,7 +11,7 @@ std::unordered_map<uint8, LoginHandler<AuthServer>> AuthServer::InitHandlers()
 
 	handlers[HEADCODE_LOGIN_SERVER_COMPLETE_BAN]			= { "COMPLETE_BAN", sizeof(ACCOUNT_COMPLETE_BAN), &AuthServer::AccountCompleteBan };
 
-	handlers[HEADCODE_LOGIN_SERVER_ACCOUNT_DUPLICATE] = { "ACCOUNT_DUPLICATE", sizeof(SL_ACCOUNT_DUPLICATE), &AuthServer::AccountDuplicate };
+	handlers[HEADCODE_LOGIN_SERVER_ACCOUNT_DUPLICATE] = { "ACCOUNT_DUPLICATE", sizeof(DS_ACCOUNT_DUPLICATE), &AuthServer::AccountDuplicate };
 	
     return handlers;
 }
@@ -635,14 +635,14 @@ void AuthServer::AccountCompleteBan(uint8 * Packet)
 
 void AuthServer::AccountDuplicate(uint8 * Packet)
 {
-	POINTER_PCT(SL_ACCOUNT_DUPLICATE, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ACCOUNT_DUPLICATE, lpMsg, Packet, 0);
 
 	sObjectMgr->KickCharactersByAccount(lpMsg->account_id);
 }
 
 void AuthServer::AccountAuthorization(uint32 account_id, bool warning)
 {
-	SL_ACCOUNT_VALIDATE pMsg(account_id, warning);
+	DS_ACCOUNT_VALIDATE pMsg(account_id, warning);
 	pMsg.h.server = sGameServer->GetServerCode();
 	this->SendPacket(MAKE_PCT(pMsg));
 }

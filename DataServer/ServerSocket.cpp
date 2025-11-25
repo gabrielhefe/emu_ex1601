@@ -76,7 +76,7 @@ void ServerSocket::ReadHandler()
 
 void ServerSocket::HandleHeadcodeOnConnect(uint8 * Packet)
 {
-	POINTER_PCT(SL_ON_CONNECT, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ON_CONNECT, lpMsg, Packet, 0);
 
 this->m_ServerCode = lpMsg->h.server;
 
@@ -84,7 +84,7 @@ this->m_ServerCode = lpMsg->h.server;
 
 for ( std::map<uint8, EventState>::const_iterator it = EventStateMap.begin(); it != EventStateMap.end(); ++it )
 {
-SL_EVENT_STATE_UPDATE pMsg(it->first, it->second.m_State, it->second.m_OccupationState);
+DS_EVENT_STATE_UPDATE pMsg(it->first, it->second.m_State, it->second.m_OccupationState);
 this->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
 }
 }
@@ -98,9 +98,9 @@ void ServerSocket::HandleHeadcodeCommon(uint8 * Packet)
 
 void ServerSocket::HandleWhisper(uint8 * Packet)
 {
-	POINTER_PCT(SL_WHISPER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_WHISPER, lpMsg, Packet, 0);
 
-	SL_WHISPER pMsg;
+	DS_WHISPER pMsg;
 	pMsg.h.server = lpMsg->h.server;
 	pMsg.entry = lpMsg->entry;
 	pMsg.guid = lpMsg->guid;
@@ -139,7 +139,7 @@ if ( pCharacterData->m_Authority != AUTHORITY_CODE_ADMINISTRATOR || (pCharacterD
 
 void ServerSocket::CharacterCreateRequest(uint8 * Packet)
 {
-	POINTER_PCT(SL_CHARACTER_CREATE_REQUEST, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CHARACTER_CREATE_REQUEST, lpMsg, Packet, 0);
 
 	std::shared_ptr<CharacterCreateData> add_data(new CharacterCreateData(lpMsg->entry, lpMsg->character_class, lpMsg->character_name));
 	add_data->ms_time = lpMsg->ms_time;
@@ -165,8 +165,8 @@ void ServerSocket::CharacterCreateRequest(uint8 * Packet)
 
 void ServerSocket::CharacterDeleteRequest(uint8 * Packet)
 {
-	POINTER_PCT(SL_CHARACTER_DELETE_REQUEST, lpMsg, Packet, 0);
-	SL_CHARACTER_DELETE_RESULT pMsg;
+	POINTER_PCT(DS_CHARACTER_DELETE_REQUEST, lpMsg, Packet, 0);
+	DS_CHARACTER_DELETE_RESULT pMsg;
 	pMsg.result = CHARACTER_DELETE_RESULT_ERROR;
 	pMsg.entry = lpMsg->entry;
 	pMsg.ms_time = lpMsg->ms_time;
@@ -491,9 +491,9 @@ void ServerSocket::CastleSiegeRegisteredGuildAll(uint8 * Packet)
 
 void ServerSocket::AdminCommand(uint8 * Packet)
 {
-	POINTER_PCT(SL_ADMIN_COMMAND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ADMIN_COMMAND, lpMsg, Packet, 0);
 
-	SL_ADMIN_COMMAND pMsg;
+	DS_ADMIN_COMMAND pMsg;
 	pMsg.h.server = lpMsg->h.server;
 	pMsg.type = lpMsg->type;
 	pMsg.sub_type = lpMsg->sub_type;
@@ -583,9 +583,9 @@ void ServerSocket::AdminCommand(uint8 * Packet)
 
 void ServerSocket::AdminCommandLocation(uint8 * Packet)
 {
-	POINTER_PCT(SL_ADMIN_COMMAND_LOCATION, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ADMIN_COMMAND_LOCATION, lpMsg, Packet, 0);
 
-	SL_ADMIN_COMMAND_LOCATION pMsg;
+	DS_ADMIN_COMMAND_LOCATION pMsg;
 	pMsg.h.server = lpMsg->h.server;
 	pMsg.type = lpMsg->type;
 	pMsg.entry = lpMsg->entry;
@@ -673,7 +673,7 @@ void ServerSocket::GuildMatchingInsertSave(uint8 * Packet)
 
 void ServerSocket::EventStateUpdate(uint8 * Packet)
 {
-	POINTER_PCT(SL_EVENT_STATE_UPDATE, lpMsg, Packet, 0);
+	POINTER_PCT(DS_EVENT_STATE_UPDATE, lpMsg, Packet, 0);
 
 	EventState & EventStateData = EventStateMap[lpMsg->event_id];
 	EventStateData.m_State = lpMsg->state;

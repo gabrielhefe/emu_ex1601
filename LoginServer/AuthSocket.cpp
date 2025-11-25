@@ -32,9 +32,9 @@ std::unordered_map<uint8, LoginHandler<AuthSocket>> AuthSocket::InitHandlers()
 	handlers[HEADCODE_LOGIN_SERVER_ACCOUNT_KICK]				= { "ACCOUNT_KICK", sizeof(ACCOUNT_KICK), &AuthSocket::AccountKick };
 
 	handlers[HEADCODE_LOGIN_SERVER_COMPLETE_BAN]				= { "COMPLETE_BAN", sizeof(ACCOUNT_COMPLETE_BAN), &AuthSocket::AccountCompleteBan };
-	handlers[HEADCODE_LOGIN_SERVER_ACCOUNT_VALIDATE]			= { "ACCOUNT_VALIDATE", sizeof(SL_ACCOUNT_VALIDATE), &AuthSocket::AccountValidate };
+	handlers[HEADCODE_LOGIN_SERVER_ACCOUNT_VALIDATE]			= { "ACCOUNT_VALIDATE", sizeof(DS_ACCOUNT_VALIDATE), &AuthSocket::AccountValidate };
 
-	handlers[HEADCODE_LOGIN_SERVER_ACCOUNT_TYPE]				= { "ACCOUNT_TYPE", sizeof(SL_ACCOUNT_CONNECT_TYPE), &AuthSocket::AccountConnectType };
+	handlers[HEADCODE_LOGIN_SERVER_ACCOUNT_TYPE]				= { "ACCOUNT_TYPE", sizeof(DS_ACCOUNT_CONNECT_TYPE), &AuthSocket::AccountConnectType };
 
     return handlers;
 }
@@ -328,7 +328,7 @@ void AuthSocket::AccountCompleteBan(uint8 * Packet)
 
 void AuthSocket::AccountValidate(uint8 * Packet)
 {
-	POINTER_PCT(SL_ACCOUNT_VALIDATE, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ACCOUNT_VALIDATE, lpMsg, Packet, 0);
 
 	AccountDataPtr pAccountData = sLoginQueue->GetAccountData(lpMsg->h.GetServerGroup(), lpMsg->account_id);
 
@@ -378,7 +378,7 @@ void AuthSocket::AccountValidate(uint8 * Packet)
 
 void AuthSocket::AccountConnectType(uint8 * Packet)
 {
-	POINTER_PCT(SL_ACCOUNT_CONNECT_TYPE, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ACCOUNT_CONNECT_TYPE, lpMsg, Packet, 0);
 
 	SQLTransaction trans = LoginDatabase.BeginTransaction();
 

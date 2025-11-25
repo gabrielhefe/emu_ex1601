@@ -152,7 +152,7 @@ void CastleDeep::SetState_Playing()
 	this->GetRandomStage();
 	this->AddMonster();
 
-	sServerLink->NoticeSendNormal(NOTICE_GLOBAL, "Loren Deep Event has started.");
+	sDataServer->NoticeSendNormal(NOTICE_GLOBAL, "Loren Deep Event has started.");
 }
 
 void CastleDeep::ProcState_None()
@@ -241,5 +241,5 @@ void CastleDeep::SendRemainMinutes(std::string const& message, int32 period, int
 		return;
 	}
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, message.c_str(), this->GetCurrentMinute() + 1);
+	sDataServer->NoticeSend(NOTICE_GLOBAL, message.c_str(), this->GetCurrentMinute() + 1);
 }

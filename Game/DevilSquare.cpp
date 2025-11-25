@@ -653,7 +653,7 @@ void DevilSquareMgr::ProcState_Open()
 {
 	if ( this->GetNotificationTime()->Elapsed(EVENT_NOTIFICATION_TIME) )
 	{
-		sServerLink->EventNotification(EVENT_NOTIFICATION_DEVIL_SQUARE, 1);
+		sDataServer->EventNotification(EVENT_NOTIFICATION_DEVIL_SQUARE, 1);
 	}
 
 	this->SendRemainMinutes("[Devil Square] will start after %d minute(s)", 1, 4);
@@ -677,14 +677,14 @@ void DevilSquareMgr::ProcState_Playing()
 
 void DevilSquareMgr::SendOpen()
 {
-	sServerLink->EventNotification(EVENT_NOTIFICATION_DEVIL_SQUARE, 1);
+	sDataServer->EventNotification(EVENT_NOTIFICATION_DEVIL_SQUARE, 1);
 
 	sObjectMgr->SendNoticeToAll(NOTICE_GLOBAL, "[Devil Square] The gates of Devil Square are open!");
 }
 
 void DevilSquareMgr::SendStart()
 {
-	sServerLink->EventNotification(EVENT_NOTIFICATION_DEVIL_SQUARE, 0);
+	sDataServer->EventNotification(EVENT_NOTIFICATION_DEVIL_SQUARE, 0);
 }
 
 void DevilSquareMgr::EnterRequest(Player* pPlayer, uint8 * Packet)

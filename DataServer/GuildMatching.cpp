@@ -135,11 +135,11 @@ this->DGGuildMatchingNotifySend(it->second->m_Name, it->second->m_GuildID, 2);
 
 void GuildMatching::GuildMatchingListRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_LIST_RECV, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_LIST_RECV, lpMsg, Packet, 0);
 
 	uint8 buffer[8192];
-	POINTER_PCT(SL_GUILD_MATCHING_LIST_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_GUILD_MATCHING_LIST_BODY, body, buffer, sizeof(SL_GUILD_MATCHING_LIST_HEAD));
+	POINTER_PCT(DS_GUILD_MATCHING_LIST_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_LIST_BODY, body, buffer, sizeof(DS_GUILD_MATCHING_LIST_HEAD));
 	head->player = lpMsg->player;
 	head->result = 0;
 	head->CurPage = lpMsg->page;
@@ -180,17 +180,17 @@ body[head->count].GensType = pGuild->m_MatchingGensType;
 
 	head->MaxPage = ((PageCount==0)?1:(((PageCount-1)/9)+1));
 
-	head->h.set(HEADCODE_SERVER_LINK_GUILD_MATCHING_LIST, sizeof(SL_GUILD_MATCHING_LIST_HEAD) + (head->count * sizeof(SL_GUILD_MATCHING_LIST_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_GUILD_MATCHING_LIST, sizeof(DS_GUILD_MATCHING_LIST_HEAD) + (head->count * sizeof(DS_GUILD_MATCHING_LIST_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 
 void GuildMatching::GuildMatchingListSearchRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_LIST_SEARCH_RECV, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_LIST_SEARCH_RECV, lpMsg, Packet, 0);
 
 	uint8 buffer[8192];
-	POINTER_PCT(SL_GUILD_MATCHING_LIST_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_GUILD_MATCHING_LIST_BODY, body, buffer, sizeof(SL_GUILD_MATCHING_LIST_HEAD));
+	POINTER_PCT(DS_GUILD_MATCHING_LIST_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_LIST_BODY, body, buffer, sizeof(DS_GUILD_MATCHING_LIST_HEAD));
 	head->player = lpMsg->player;
 	head->result = 0;
 	head->CurPage = lpMsg->page;
@@ -235,15 +235,15 @@ void GuildMatching::GuildMatchingListSearchRecv(uint8 * Packet, std::shared_ptr<
 
 	head->MaxPage = ((PageCount==0)?1:(((PageCount-1)/9)+1));
 
-	head->h.set(HEADCODE_SERVER_LINK_GUILD_MATCHING_LIST, sizeof(SL_GUILD_MATCHING_LIST_HEAD) + (head->count * sizeof(SL_GUILD_MATCHING_LIST_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_GUILD_MATCHING_LIST, sizeof(DS_GUILD_MATCHING_LIST_HEAD) + (head->count * sizeof(DS_GUILD_MATCHING_LIST_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 
 void GuildMatching::GuildMatchingInsertRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_INSERT_RECV, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_INSERT_RECV, lpMsg, Packet, 0);
 
-	SL_GUILD_MATCHING_INSERT_SEND pMsg;
+	DS_GUILD_MATCHING_INSERT_SEND pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.result = 0;
 
@@ -285,8 +285,8 @@ pGuild->m_MatchingGensType = lpMsg->GensType;
 
 void GuildMatching::GuildMatchingCancelRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_CANCEL_RECV, lpMsg, Packet, 0);
-	SL_GUILD_MATCHING_CANCEL_SEND pMsg;
+	POINTER_PCT(DS_GUILD_MATCHING_CANCEL_RECV, lpMsg, Packet, 0);
+	DS_GUILD_MATCHING_CANCEL_SEND pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.result = 0;
 
@@ -316,9 +316,9 @@ stmt->setUInt32(pGuild->m_ID);
 
 void GuildMatching::GuildMatchingJoinInsertRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_INSERT_RECV, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_INSERT_RECV, lpMsg, Packet, 0);
 
-	SL_GUILD_MATCHING_JOIN_INSERT_SEND pMsg;
+	DS_GUILD_MATCHING_JOIN_INSERT_SEND pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.result = 0;
 
@@ -354,8 +354,8 @@ this->DGGuildMatchingNotifyMasterSend(pGuild->m_Member[0].m_Name, 0);
 
 void GuildMatching::GuildMatchingJoinCancelRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_CANCEL_RECV, lpMsg, Packet, 0);
-	SL_GUILD_MATCHING_JOIN_CANCEL_SEND pMsg;
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_CANCEL_RECV, lpMsg, Packet, 0);
+	DS_GUILD_MATCHING_JOIN_CANCEL_SEND pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.result = 0;
 	pMsg.flag = lpMsg->flag;
@@ -374,8 +374,8 @@ void GuildMatching::GuildMatchingJoinCancelRecv(uint8 * Packet, std::shared_ptr<
 
 void GuildMatching::GuildMatchingJoinAcceptRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_ACCEPT_RECV, lpMsg, Packet, 0);
-	SL_GUILD_MATCHING_JOIN_ACCEPT_SEND pMsg;
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_ACCEPT_RECV, lpMsg, Packet, 0);
+	DS_GUILD_MATCHING_JOIN_ACCEPT_SEND pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.result = 0;
 	pMsg.type = lpMsg->type;
@@ -414,11 +414,11 @@ if ( !pGuild || !pGuild->m_MatchingEnabled )
 
 void GuildMatching::GuildMatchingJoinListRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_LIST_RECV, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_LIST_RECV, lpMsg, Packet, 0);
 	
 	uint8 buffer[8192];
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_LIST_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_LIST_BODY, body, buffer, sizeof(SL_GUILD_MATCHING_JOIN_LIST_HEAD));
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_LIST_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_LIST_BODY, body, buffer, sizeof(DS_GUILD_MATCHING_JOIN_LIST_HEAD));
 	head->player = lpMsg->player;
 	head->count = 0;
 	head->result = 0;
@@ -437,15 +437,15 @@ body[head->count].Level = pData->m_Level;
 		}
 	}
 
-	head->h.set(HEADCODE_SERVER_LINK_GUILD_MATCHING_JOIN_LIST, sizeof(SL_GUILD_MATCHING_JOIN_LIST_HEAD) + (head->count * sizeof(SL_GUILD_MATCHING_JOIN_LIST_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_GUILD_MATCHING_JOIN_LIST, sizeof(DS_GUILD_MATCHING_JOIN_LIST_HEAD) + (head->count * sizeof(DS_GUILD_MATCHING_JOIN_LIST_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 
 void GuildMatching::GuildMatchingJoinInfoRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_INFO_RECV, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_INFO_RECV, lpMsg, Packet, 0);
 
-	SL_GUILD_MATCHING_JOIN_INFO_SEND pMsg;
+	DS_GUILD_MATCHING_JOIN_INFO_SEND pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.result = 0;
 
@@ -475,7 +475,7 @@ memcpy(pMsg.GuildMasterName, pGuild->m_Member[0].m_Name, MAX_CHARACTER_LENGTH + 
 
 void GuildMatching::GuildMatchingInsertSaveRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_INSERT_SAVE_RECV, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_INSERT_SAVE_RECV, lpMsg, Packet, 0);
 
 	Guild* pGuild = sGuildMgr->GetGuild(lpMsg->GuildID);
 
@@ -505,7 +505,7 @@ void GuildMatching::DGGuildMatchingNotifySend(const char* name, uint32 guild, ui
 		return;
 	}
 
-	SL_GUILD_MATCHING_NOTIFY_SEND pMsg;
+	DS_GUILD_MATCHING_NOTIFY_SEND pMsg;
 pMsg.id = pCharacterData->m_ID;
 	pMsg.GuildID = guild;
 	pMsg.result = result;
@@ -525,7 +525,7 @@ void GuildMatching::DGGuildMatchingNotifyMasterSend(const char* name, uint32 res
 		return;
 	}
 
-	SL_GUILD_MATCHING_NOTIFY_MASTER_SEND pMsg;
+	DS_GUILD_MATCHING_NOTIFY_MASTER_SEND pMsg;
 pMsg.id = pCharacterData->m_ID;
 	pMsg.result = result;
 

@@ -5916,7 +5916,7 @@ bool Player::UpgradeItemUsingMysteriousStone(uint8 source_slot, uint8 target_slo
 				target_item->SetExe(0);
 				modified = true;
 
-				sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade Ancient succes %s", this->GetName(), target_item->GetName());
+				sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] upgrade Ancient succes %s", this->GetName(), target_item->GetName());
 			}
 		}
 
@@ -10044,7 +10044,7 @@ void Player::EnterWorldSuccess(uint8 * Packet)
 	
 	this->SendPCRoom();
 
-	sServerLink->CharacterOnOff(this, 1);
+	sDataServer->CharacterOnOff(this, 1);
 
 	if ( !sItemMgr->IsUsingTransformationItem(this) )
 	{
@@ -11154,7 +11154,7 @@ bool Player::SummonPersonalWarehouse()
 
 void Player::FinalClose()
 {
-	sServerLink->CharacterOnOff(this, 0);
+	sDataServer->CharacterOnOff(this, 0);
 
 	this->CancelAllActivities();
 
@@ -12618,7 +12618,7 @@ void Player::SendWeather()
 //		}
 //	}
 //
-//	sServerLink->CharacterOnOff(this, 2);
+//	sDataServer->CharacterOnOff(this, 2);
 //}
 
 void Player::SendDataSingle(Object* pObject)
@@ -18892,7 +18892,7 @@ void Player::ItemEnhancementRequest(uint8 * Packet)
 				const char noticesucces[] = { "[%s] upgrade succes [%s +%d]" };
 				STRING_SAFE(notice_message, 100);
 				sprintf_s(notice_message, noticesucces, this->GetName(), pItem->GetName(), pItem->GetLevel());
-				sServerLink->NoticeSend(0, notice_message);
+				sDataServer->NoticeSend(0, notice_message);
 			}
 		}
 	}

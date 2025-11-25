@@ -406,7 +406,7 @@ void InvasionMgr::LaunchInvasion(uint32 invasion, uint32 time, int32 notify)
 	}
 
 	if (!data->GetOnStart().empty())
-		//sServerLink->NoticeSendNormal(NOTICE_GLOBAL, data->GetOnStart().c_str());
+		//sDataServer->NoticeSendNormal(NOTICE_GLOBAL, data->GetOnStart().c_str());
 		
 		//sObjectMgr->SendEventNotification(NOTICE_GLOBAL, data->GetOnStart().c_str());
 		sObjectMgr->SendNoticeToAllNormal(NOTICE_GLOBAL, data->GetOnStart().c_str());

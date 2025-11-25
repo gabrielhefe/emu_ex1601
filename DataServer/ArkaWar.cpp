@@ -42,9 +42,9 @@ void ArkaWar::GetArkaWarGuildSort(std::vector<ArkaWarGuild> & guild_list, int32 
 
 void ArkaWar::MasterRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_ARKA_WAR_MASTER_REGISTER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_MASTER_REGISTER, lpMsg, Packet, 0);
 
-	SL_ARKA_WAR_MASTER_REGISTER pMsg;
+	DS_ARKA_WAR_MASTER_REGISTER pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.guild = lpMsg->guild;
 
@@ -77,9 +77,9 @@ void ArkaWar::MasterRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socke
 	
 void ArkaWar::MemberRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_ARKA_WAR_MEMBER_REGISTER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_MEMBER_REGISTER, lpMsg, Packet, 0);
 
-	SL_ARKA_WAR_MEMBER_REGISTER pMsg;
+	DS_ARKA_WAR_MEMBER_REGISTER pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.guild = lpMsg->guild;
 
@@ -122,9 +122,9 @@ void ArkaWar::MemberRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socke
 	
 void ArkaWar::SignRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_ARKA_WAR_SIGN_REGISTER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_SIGN_REGISTER, lpMsg, Packet, 0);
 
-	SL_ARKA_WAR_SIGN_REGISTER pMsg;
+	DS_ARKA_WAR_SIGN_REGISTER pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.guild = lpMsg->guild;
 	pMsg.result = lpMsg->result;
@@ -150,9 +150,9 @@ void ArkaWar::SignRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 	
 void ArkaWar::Enter(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_ARKA_WAR_ENTER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_ENTER, lpMsg, Packet, 0);
 
-	SL_ARKA_WAR_ENTER pMsg;
+	DS_ARKA_WAR_ENTER pMsg;
 	pMsg.player = lpMsg->player;
 
 	ArkaWarMemberMap::const_iterator it = this->arka_war_member.find(lpMsg->player.guid);
@@ -169,9 +169,9 @@ void ArkaWar::Enter(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 
 void ArkaWar::MemberCount(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_ARKA_WAR_MEMBER_COUNT, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_MEMBER_COUNT, lpMsg, Packet, 0);
 
-	SL_ARKA_WAR_MEMBER_COUNT pMsg;
+	DS_ARKA_WAR_MEMBER_COUNT pMsg;
 	pMsg.player = lpMsg->player;
 	pMsg.guild = lpMsg->guild;
 
@@ -190,11 +190,11 @@ void ArkaWar::MemberCount(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 
 void ArkaWar::GuildRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_ARKA_WAR_GUILD_REQUEST, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_GUILD_REQUEST, lpMsg, Packet, 0);
 
 	uint8 buffer[8192];
-	POINTER_PCT(SL_ARKA_WAR_GUILD_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_ARKA_WAR_GUILD_BODY, body, buffer, sizeof(SL_ARKA_WAR_GUILD_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_GUILD_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_ARKA_WAR_GUILD_BODY, body, buffer, sizeof(DS_ARKA_WAR_GUILD_HEAD));
 	head->count = 0;
 
 	PreparedQueryResult result = MuDatabase.QueryStatement(QUERY_MUDATABASE_ARKA_WAR_SELECT);
@@ -213,14 +213,14 @@ void ArkaWar::GuildRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 		while(result->NextRow());
 	}
 
-	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_GUILD_REQUEST, sizeof(SL_ARKA_WAR_GUILD_HEAD) + (head->count * sizeof(SL_ARKA_WAR_GUILD_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_ARKA_WAR_GUILD_REQUEST, sizeof(DS_ARKA_WAR_GUILD_HEAD) + (head->count * sizeof(DS_ARKA_WAR_GUILD_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 	
 void ArkaWar::GuildSave(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_GUILD_HEAD, head, Packet, 0);
-	POINTER_PCT(SL_ARKA_WAR_GUILD_BODY, body, Packet, sizeof(SL_ARKA_WAR_GUILD_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_GUILD_HEAD, head, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_GUILD_BODY, body, Packet, sizeof(DS_ARKA_WAR_GUILD_HEAD));
 
 	SQLTransaction trans = MuDatabase.BeginTransaction();
 
@@ -238,17 +238,17 @@ void ArkaWar::GuildSave(uint8 * Packet)
 
 	MuDatabase.CommitTransaction(trans);
 
-	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_GUILD_REQUEST, sizeof(SL_ARKA_WAR_GUILD_HEAD) + (head->count * sizeof(SL_ARKA_WAR_GUILD_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_ARKA_WAR_GUILD_REQUEST, sizeof(DS_ARKA_WAR_GUILD_HEAD) + (head->count * sizeof(DS_ARKA_WAR_GUILD_BODY)));
 	sServerSocketMgr.SendPacketAll(Packet, head->h.get_size());
 }
 
 void ArkaWar::SignRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_ARKA_WAR_SIGN_REQUEST, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_SIGN_REQUEST, lpMsg, Packet, 0);
 
 	uint8 buffer[8192];
-	POINTER_PCT(SL_ARKA_WAR_SIGN_REQUEST_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_ARKA_WAR_SIGN_REQUEST_BODY, body, buffer, sizeof(SL_ARKA_WAR_SIGN_REQUEST_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_SIGN_REQUEST_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_ARKA_WAR_SIGN_REQUEST_BODY, body, buffer, sizeof(DS_ARKA_WAR_SIGN_REQUEST_HEAD));
 	head->count = 0;
 	head->player = lpMsg->player;
 
@@ -262,7 +262,7 @@ void ArkaWar::SignRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 		++head->count;
 }
 
-	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_SIGN_REQUEST, sizeof(SL_ARKA_WAR_SIGN_REQUEST_HEAD) + (head->count * sizeof(SL_ARKA_WAR_SIGN_REQUEST_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_ARKA_WAR_SIGN_REQUEST, sizeof(DS_ARKA_WAR_SIGN_REQUEST_HEAD) + (head->count * sizeof(DS_ARKA_WAR_SIGN_REQUEST_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 
@@ -315,11 +315,11 @@ void ArkaWar::MemberRemove(uint32 id)
 
 void ArkaWar::GetGuildList(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_ARKA_WAR_LIST, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_LIST, lpMsg, Packet, 0);
 
 	uint8 buffer[8192];
-	POINTER_PCT(SL_ARKA_WAR_LIST_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_ARKA_WAR_LIST_GUILD_BODY, body, buffer, sizeof(SL_ARKA_WAR_LIST_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_LIST_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_ARKA_WAR_LIST_GUILD_BODY, body, buffer, sizeof(DS_ARKA_WAR_LIST_HEAD));
 	head->count = 0;
 	head->type = 0;
 
@@ -364,15 +364,15 @@ void ArkaWar::GetGuildList(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 		++head->count;
 }
 
-	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_LIST, sizeof(SL_ARKA_WAR_LIST_HEAD) + (head->count * sizeof(SL_ARKA_WAR_LIST_GUILD_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_ARKA_WAR_LIST, sizeof(DS_ARKA_WAR_LIST_HEAD) + (head->count * sizeof(DS_ARKA_WAR_LIST_GUILD_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 	
 void ArkaWar::GetMemberList(std::shared_ptr<ServerSocket> socket)
 {
 	uint8 buffer[8192];
-	POINTER_PCT(SL_ARKA_WAR_LIST_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_ARKA_WAR_LIST_MEMBER_BODY, body, buffer, sizeof(SL_ARKA_WAR_LIST_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_LIST_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_ARKA_WAR_LIST_MEMBER_BODY, body, buffer, sizeof(DS_ARKA_WAR_LIST_HEAD));
 	head->count = 0;
 	head->type = 1;
 
@@ -384,7 +384,7 @@ void ArkaWar::GetMemberList(std::shared_ptr<ServerSocket> socket)
 		++head->count;
 }
 
-	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_LIST, sizeof(SL_ARKA_WAR_LIST_HEAD) + (head->count * sizeof(SL_ARKA_WAR_LIST_MEMBER_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_ARKA_WAR_LIST, sizeof(DS_ARKA_WAR_LIST_HEAD) + (head->count * sizeof(DS_ARKA_WAR_LIST_MEMBER_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 

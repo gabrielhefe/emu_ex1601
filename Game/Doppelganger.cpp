@@ -1726,7 +1726,7 @@ void Doppelganger::SetState_Open()
 	this->SetState(DOPPELGANGER_STATE_OPEN);
 	this->GetTime()->Start(DOPPELGANGER_OPEN_TIME * MINUTE * IN_MILLISECONDS);
 
-	sServerLink->EventNotification(EVENT_NOTIFICATION_DOPPELGANGER, 1);
+	sDataServer->EventNotification(EVENT_NOTIFICATION_DOPPELGANGER, 1);
 
 	this->SetCurrentMinute(-1);
 
@@ -1742,7 +1742,7 @@ void Doppelganger::SetState_Playing()
 {
 	this->SetState(DOPPELGANGER_STATE_PLAYING);
 
-	sServerLink->EventNotification(EVENT_NOTIFICATION_DOPPELGANGER, 0);
+	sDataServer->EventNotification(EVENT_NOTIFICATION_DOPPELGANGER, 0);
 
 	for ( int32 i = 0; i < MAX_DOPPELGANGER_GROUND; ++i )
 	{
@@ -1768,7 +1768,7 @@ void Doppelganger::ProcState_Open()
 {
 	if ( this->GetNotificationTime()->Elapsed(EVENT_NOTIFICATION_TIME) )
 	{
-		sServerLink->EventNotification(EVENT_NOTIFICATION_DOPPELGANGER, 1);
+		sDataServer->EventNotification(EVENT_NOTIFICATION_DOPPELGANGER, 1);
 	}
 
 	this->SendRemainMinutes("%d minute(s) left before Doppelganger start", 1, 5);

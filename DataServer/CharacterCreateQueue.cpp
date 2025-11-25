@@ -25,7 +25,7 @@ void CharacterCreateQueue::Update()
 
 void CharacterCreateQueue::Process(CharacterCreateDataPtr data)
 {
-	SL_CHARACTER_CREATE_RESULT pMsg;
+	DS_CHARACTER_CREATE_RESULT pMsg;
 	pMsg.result = CHARACTER_CREATE_RESULT_ERROR;
 	pMsg.entry = data->entry;
 	pMsg.h.server = data->server;

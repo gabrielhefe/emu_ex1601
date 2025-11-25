@@ -41,7 +41,7 @@ continue;
 
 void CharacterMgr::LoginLogout(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_CHARACTER_ON_OFF, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CHARACTER_ON_OFF, lpMsg, Packet, 0);
 
 CharacterDataPtr pCharacterData = this->GetCharacterData(lpMsg->guid);
 bool add = false;

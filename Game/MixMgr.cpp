@@ -326,7 +326,7 @@ uint16 MixMgr::GetSpiritStoneCount(uint8 type, int64 price) const
 		}
 	}
 
-	//sServerLink->NoticeSend(NOTICE_GLOBAL, "Count: %d - Division: %d - Price: %d", count, division, price);
+	//sDataServer->NoticeSend(NOTICE_GLOBAL, "Count: %d - Division: %d - Price: %d", count, division, price);
 
 	if (count == uint16(-1))
 	{

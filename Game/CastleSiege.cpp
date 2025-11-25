@@ -409,7 +409,7 @@ Monster* CCastleSiege::GetMonster(uint16 npc, uint8 id) const
 
 void CCastleSiege::LoadNPC(uint8 * Packet)
 {
-	sLog->outInfo("root", "Loading Castle Siege NPC From ServerLink");
+	sLog->outInfo("root", "Loading Castle Siege NPC From DataServer");
 
 	for ( CastleSiegeNpcDataList::iterator it = this->m_npc_data.begin(); it != this->m_npc_data.end(); ++it )
 	{
@@ -445,8 +445,8 @@ void CCastleSiege::LoadNPC(uint8 * Packet)
 		pMonster->SetEventGround(0);
 	}
 	
-	POINTER_PCT(SL_CASTLE_SIEGE_LOAD_NPC_HEAD, head, Packet, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_LOAD_NPC_BODY, body, Packet, sizeof(SL_CASTLE_SIEGE_LOAD_NPC_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_LOAD_NPC_HEAD, head, Packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_LOAD_NPC_BODY, body, Packet, sizeof(DS_CASTLE_SIEGE_LOAD_NPC_HEAD));
 
 	for ( int32 i = 0; i < head->count; ++i )
 	{
@@ -515,8 +515,8 @@ void CCastleSiege::SaveDBNpc()
 	this->GetSaveNpcTime()->Start();
 
 	uint8 buffer[15000];
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_NPC_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_NPC_BODY, body, buffer, sizeof(SL_CASTLE_SIEGE_SAVE_NPC_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_NPC_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_NPC_BODY, body, buffer, sizeof(DS_CASTLE_SIEGE_SAVE_NPC_HEAD));
 	head->count = 0;
 
 	///- Solamente tengo que enviar la informaci�n de los NPC que est�n vivos
@@ -535,9 +535,9 @@ void CCastleSiege::SaveDBNpc()
 		++head->count;
 	}
 
-	head->h.set(HEADCODE_SERVER_LINK_CASTLE_SIEGE_SAVE_NPC, sizeof(SL_CASTLE_SIEGE_SAVE_NPC_HEAD) + (sizeof(SL_CASTLE_SIEGE_SAVE_NPC_BODY) * head->count));
+	head->h.set(HEADCODE_DATA_SERVER_CASTLE_SIEGE_SAVE_NPC, sizeof(DS_CASTLE_SIEGE_SAVE_NPC_HEAD) + (sizeof(DS_CASTLE_SIEGE_SAVE_NPC_BODY) * head->count));
 
-	sServerLink->SendPacket(buffer, head->h.get_size());
+	sDataServer->SendPacket(buffer, head->h.get_size());
 }
 
 void CCastleSiege::CreateDBNpc()
@@ -1122,7 +1122,7 @@ void CCastleSiege::AddTributeMoney(int32 money)
 
 void CCastleSiege::DeleteGuildRegister()
 {
-	sServerLink->CastleSiegeClearGuild();
+	sDataServer->CastleSiegeClearGuild();
 
 	for ( int32 i = 0; i < CASTLE_SIEGE_JOIN_SIDE_MAX; ++i )
 		this->GetBasicGuildData(i)->Reset();
@@ -1145,7 +1145,7 @@ void CCastleSiege::LoadGuildRegister()
 
 	this->SetListLoaded(true);
 
-	sServerLink->CastleSiegeLoadRegisteredGuildRequest();
+	sDataServer->CastleSiegeLoadRegisteredGuildRequest();
 }
 
 void CCastleSiege::LoadGuildRegisterResult(uint8 * packet)
@@ -1153,8 +1153,8 @@ void CCastleSiege::LoadGuildRegisterResult(uint8 * packet)
 	CastleSiegeGuildDataList guild_list;
 
 	{
-		POINTER_PCT(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD, head, packet, 0);
-		POINTER_PCT(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_BODY, body, packet, sizeof(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD));
+		POINTER_PCT(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD, head, packet, 0);
+		POINTER_PCT(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_BODY, body, packet, sizeof(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD));
 
 		for ( int32 i = 0; i < head->count; ++i )
 		{
@@ -1210,8 +1210,8 @@ void CCastleSiege::LoadGuildRegisterResult(uint8 * packet)
 
 	{
 		uint8 buffer[15000];
-		POINTER_PCT(SL_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD, head, buffer, 0);
-		POINTER_PCT(SL_CASTLE_SIEGE_INSERT_FINAL_GUILD_BODY, body, buffer, sizeof(SL_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD));
+		POINTER_PCT(DS_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD, head, buffer, 0);
+		POINTER_PCT(DS_CASTLE_SIEGE_INSERT_FINAL_GUILD_BODY, body, buffer, sizeof(DS_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD));
 		head->count = 0;
 
 		for ( CastleSiegeGuildDataMap::iterator it = this->m_guild_data.begin(); it != this->m_guild_data.end(); ++it )
@@ -1223,9 +1223,9 @@ void CCastleSiege::LoadGuildRegisterResult(uint8 * packet)
 			++head->count;
 		}
 
-		head->h.set(HEADCODE_SERVER_LINK_CASTLE_SIEGE_INSERT_FINAL_GUILD, sizeof(SL_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD) + (sizeof(SL_CASTLE_SIEGE_INSERT_FINAL_GUILD_BODY) * head->count));
+		head->h.set(HEADCODE_DATA_SERVER_CASTLE_SIEGE_INSERT_FINAL_GUILD, sizeof(DS_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD) + (sizeof(DS_CASTLE_SIEGE_INSERT_FINAL_GUILD_BODY) * head->count));
 
-		sServerLink->SendPacket(buffer, head->h.get_size());
+		sDataServer->SendPacket(buffer, head->h.get_size());
 	}
 
 	this->SetPlayerJoinSide(false);
@@ -1390,12 +1390,12 @@ bool CCastleSiege::CheckResult()
 	{
 		if ( !pMiddle || pMiddle == pGuild )
 		{
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "%s guild has succeeded in defending the castle.", pGuild->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "%s guild has succeeded in defending the castle.", pGuild->GetName());
 		}
 		else
 		{
 			this->SetCastleOwner(this->GetMiddleOwner());
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "%s guild became a new castle lord.", pMiddle->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "%s guild became a new castle lord.", pMiddle->GetName());
 			result = true;
 		}
 
@@ -1406,13 +1406,13 @@ bool CCastleSiege::CheckResult()
 		if ( !pMiddle )
 		{
 			this->SetOccupied(false);
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "The castle lord has not been assigned.");
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "The castle lord has not been assigned.");
 		}
 		else
 		{
 			this->SetOccupied(true);
 			this->SetCastleOwner(this->GetMiddleOwner());
-			sServerLink->NoticeSend(NOTICE_GLOBAL, "%s guild became a new castle lord.", pMiddle->GetName());
+			sDataServer->NoticeSend(NOTICE_GLOBAL, "%s guild became a new castle lord.", pMiddle->GetName());
 			result = true;
 		}
 	}
@@ -1429,18 +1429,18 @@ bool CCastleSiege::CheckResult()
 
 void CCastleSiege::SaveDBTaxRate()
 {
-	SL_CASTLE_SIEGE_SAVE_TAX_RATE pMsg;
+	DS_CASTLE_SIEGE_SAVE_TAX_RATE pMsg;
 	pMsg.tax_hunt = this->GetTaxRateHunt();
 	pMsg.tax_chaos = this->GetTaxRateChaos();
 	pMsg.tax_store = this->GetTaxRateStore();
 	pMsg.hunt_allowed = this->IsHuntEnabled();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void CCastleSiege::UpdateDBMoney(int32 money, uint8 type, Player* pPlayer)
 {
-	SL_CASTLE_SIEGE_SAVE_MONEY pMsg(money, type);
+	DS_CASTLE_SIEGE_SAVE_MONEY pMsg(money, type);
 	pMsg.h.server = sGameServer->GetServerCode();
 	if ( pPlayer )
 	{
@@ -1450,7 +1450,7 @@ void CCastleSiege::UpdateDBMoney(int32 money, uint8 type, Player* pPlayer)
 		pMsg.character_id = pPlayer->GetGUID();
 	}
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void CCastleSiege::ResetTaxRate()
@@ -1462,11 +1462,11 @@ void CCastleSiege::ResetTaxRate()
 
 void CCastleSiege::SaveDBCastleOwner()
 {
-	SL_CASTLE_SIEGE_SAVE_OWNER_STATUS pMsg;
+	DS_CASTLE_SIEGE_SAVE_OWNER_STATUS pMsg;
 	pMsg.owner = this->GetCastleOwner();
 	pMsg.status = this->IsOccupied();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 bool CCastleSiege::GuardianStatueExist()
@@ -1597,7 +1597,7 @@ void CCastleSiege::SetState_Idle_1()
 {
 	this->SetState(CASTLE_SIEGE_STATE_IDLE_1);
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_IDLE_1, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_IDLE_1, this->IsOccupied());
 
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_Idle_1()");
 }
@@ -1606,7 +1606,7 @@ void CCastleSiege::SetState_RegisterGuild()
 {
 	this->SetState(CASTLE_SIEGE_STATE_REGISTER_GUILD);
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_REGISTER_GUILD, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_REGISTER_GUILD, this->IsOccupied());
 	
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_RegisterGuild()");
 }
@@ -1615,7 +1615,7 @@ void CCastleSiege::SetState_Idle_2()
 {
 	this->SetState(CASTLE_SIEGE_STATE_IDLE_2);
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_IDLE_2, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_IDLE_2, this->IsOccupied());
 
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_Idle_2()");
 }
@@ -1624,7 +1624,7 @@ void CCastleSiege::SetState_RegisterMark()
 {
 	this->SetState(CASTLE_SIEGE_STATE_REGISTER_MARK);
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_REGISTER_MARK, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_REGISTER_MARK, this->IsOccupied());
 
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_RegisterMark()");
 }
@@ -1633,7 +1633,7 @@ void CCastleSiege::SetState_Idle_3()
 {
 	this->SetState(CASTLE_SIEGE_STATE_IDLE_3);
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_IDLE_3, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_IDLE_3, this->IsOccupied());
 
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_Idle_3()");
 }
@@ -1645,7 +1645,7 @@ void CCastleSiege::SetState_Notify()
 	this->SetListLoaded(false);
 	this->LoadGuildRegister();
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_NOTIFY, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_NOTIFY, this->IsOccupied());
 	
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_Notify()");
 }
@@ -1656,7 +1656,7 @@ void CCastleSiege::SetState_Ready()
 
 	this->LoadGuildRegister();
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_READY, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_READY, this->IsOccupied());
 
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_Ready()");
 }
@@ -1695,7 +1695,7 @@ void CCastleSiege::SetState_Start()
 		this->SendStartState(1);
 	}
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_START, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_START, this->IsOccupied());
 
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_Start()");
 }
@@ -1708,7 +1708,7 @@ void CCastleSiege::SetState_End()
 	this->ResetPlayerJoinSide();
 	sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "Siege Warfare has been concluded.");
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_END, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_END, this->IsOccupied());
 
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_End()");
 }
@@ -1721,7 +1721,7 @@ void CCastleSiege::SetState_EndCycle()
 
 	sLog->outInfo(LOG_CASTLE_SIEGE, "SetState_EndCycle()");
 
-	sServerLink->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_ENDCYCLE, this->IsOccupied());
+	sDataServer->EventStateUpdate(EVENT_CASTLE_SIEGE, CASTLE_SIEGE_STATE_ENDCYCLE, this->IsOccupied());
 
 	this->ChangeState(CASTLE_SIEGE_STATE_REGISTER_GUILD);
 }
@@ -2290,13 +2290,13 @@ void CCastleSiege::RegisterGuildRequest(Player* pPlayer)
 		return;
 	}
 
-	SL_CASTLE_SIEGE_INSERT_REGISTERED_GUILD pMsg;
+	DS_CASTLE_SIEGE_INSERT_REGISTERED_GUILD pMsg;
 	pMsg.guild = pGuild->GetID();
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
 	this->RegisterGuildResult(pPlayer, 1, pGuild->GetName());
 
-	sServerLink->CastleSiegeRegisterGuild(pGuild->GetID(), true, 0);
+	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), true, 0);
 }
 
 void CCastleSiege::RegisterGuildResult(Player* pPlayer, uint8 result, const char * guild)
@@ -2342,13 +2342,13 @@ void CCastleSiege::GiveupGuildRequest(Player* pPlayer)
 		return;
 	}
 
-	SL_CASTLE_SIEGE_DELETE_REGISTERED_GUILD pMsg;
+	DS_CASTLE_SIEGE_DELETE_REGISTERED_GUILD pMsg;
 	pMsg.guild = pGuild->GetID();
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
 	this->GiveupGuildResult(pPlayer, 1, 1, pGuild->GetName());
 
-	sServerLink->CastleSiegeRegisterGuild(pGuild->GetID(), false, 0);
+	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), false, 0);
 }
 	
 void CCastleSiege::GiveupGuildResult(Player* pPlayer, uint8 result, uint8 giveup, const char * guild)
@@ -2377,7 +2377,7 @@ void CCastleSiege::RegisterGuildInfoRequest(Player* pPlayer)
 		return;
 	}
 
-	sServerLink->CastleSiegeRegisteredGuildRequest(pPlayer, pGuild);
+	sDataServer->CastleSiegeRegisteredGuildRequest(pPlayer, pGuild);
 }
 
 void CCastleSiege::RegisterGuildInfoResult(Player* pPlayer, uint8 result, const char * guild, uint32 mark, uint8 ranking)
@@ -2388,8 +2388,8 @@ void CCastleSiege::RegisterGuildInfoResult(Player* pPlayer, uint8 result, const 
 
 void CCastleSiege::RegisterGuildInfoCallBack(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD, head, packet, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_BODY, body, packet, sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD, head, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_BODY, body, packet, sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD));
 
 	Player* pPlayer = sObjectMgr->FindPlayer(head->entry);
 
@@ -2461,12 +2461,12 @@ void CCastleSiege::RegisterMarkRequest(Player* pPlayer, uint8 * Packet)
 	pPlayer->DecreaseItemDurabilityByUse(slot, 1.0f);
 	pGuild->SetCastleSiegeMarks(pGuild->GetCastleSiegeMarks() + 1);
 
-	SL_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD pMsg(pGuild->GetID(), pGuild->GetCastleSiegeMarks());
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	DS_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD pMsg(pGuild->GetID(), pGuild->GetCastleSiegeMarks());
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
 	this->RegisterMarkResult(pPlayer, 1, pGuild->GetName(), pGuild->GetCastleSiegeMarks());
 
-	sServerLink->CastleSiegeRegisterGuild(pGuild->GetID(), pGuild->IsRegisteredInCaslteSiege(), pGuild->GetCastleSiegeMarks());
+	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), pGuild->IsRegisteredInCaslteSiege(), pGuild->GetCastleSiegeMarks());
 }
 
 void CCastleSiege::RegisterMarkResult(Player* pPlayer, uint8 result, const char * guild, uint32 mark)
@@ -3215,13 +3215,13 @@ void CCastleSiege::GuildRegisterListRequest(Player* pPlayer)
 	if ( pPlayer->GetInterfaceState()->GetID() != InterfaceData::CastleGuard )
 		return;
 
-	sServerLink->CastleSiegeRegisteredGuildAllRequest(pPlayer);
+	sDataServer->CastleSiegeRegisteredGuildAllRequest(pPlayer);
 }
 
 void CCastleSiege::GuildRegisterListCallBack(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD, lpHead, packet, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_BODY, lpBody, packet, sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD, lpHead, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_BODY, lpBody, packet, sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD));
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpHead->entry);
 

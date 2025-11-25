@@ -1060,7 +1060,7 @@ void CChaosCastleMgr::SetState_Open()
 	this->SetState(EVENT_MGR_STATE_OPEN);
 	this->RunTime(EVENT_MGR_OPEN_TIME * MINUTE * IN_MILLISECONDS);
 
-	sServerLink->EventNotification(EVENT_NOTIFICATION_CHAOS_CASTLE, 1);
+	sDataServer->EventNotification(EVENT_NOTIFICATION_CHAOS_CASTLE, 1);
 
 	sLog->outInfo(LOG_CHAOS_CASTLE,"[ChaosCastleMgr] SetState_Open()");
 }
@@ -1070,7 +1070,7 @@ void CChaosCastleMgr::SetState_Playing()
 	this->SetState(EVENT_MGR_STATE_PLAYING);
 	this->RunTime(0);
 
-	sServerLink->EventNotification(EVENT_NOTIFICATION_CHAOS_CASTLE, 0);
+	sDataServer->EventNotification(EVENT_NOTIFICATION_CHAOS_CASTLE, 0);
 
 	FOR_EACH_GROUND(CHAOS_CASTLE)->SetState_StandBy();
 
@@ -1092,7 +1092,7 @@ void CChaosCastleMgr::ProcState_Open()
 {
 	if ( this->GetNotificationTime()->Elapsed(EVENT_NOTIFICATION_TIME) )
 	{
-		sServerLink->EventNotification(EVENT_NOTIFICATION_CHAOS_CASTLE, 1);
+		sDataServer->EventNotification(EVENT_NOTIFICATION_CHAOS_CASTLE, 1);
 	}
 
 	this->SendRemainMinutes("%d minute(s) left before Chaos Castle start", 1, 5);

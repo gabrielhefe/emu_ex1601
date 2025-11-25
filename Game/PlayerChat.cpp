@@ -88,11 +88,11 @@ void Player::ChatProcess(ChatType type, const char * msg, const char * whisper_n
 				STRING_SAFE(global_admin_message, 100);
 				sprintf_s(global_admin_message, global_admin_head, this->GetName(), &msg[1]);
 
-				sServerLink->NoticeSendNormal(NOTICE_GLOBAL, global_admin_message);
+				sDataServer->NoticeSendNormal(NOTICE_GLOBAL, global_admin_message);
 			}
 			else
 			{
-				sServerLink->NoticeSendNormal(NOTICE_GLOBAL, &msg[1]);
+				sDataServer->NoticeSendNormal(NOTICE_GLOBAL, &msg[1]);
 			}
 		} break;
 
@@ -131,7 +131,7 @@ void Player::ChatProcess(ChatType type, const char * msg, const char * whisper_n
 				sLog->outInfo(LOG_CHAT, "[ GUILD ] %s Say: [%s]", this->BuildLog().c_str(), msg);
 			}
 
-			sServerLink->ChatSend(HEADCODE_SERVER_LINK_GUILD_CHAT, this, msg);
+			sDataServer->ChatSend(HEADCODE_DATA_SERVER_GUILD_CHAT, this, msg);
 		} break;
 
 	case CHAT_ALLIANCE:
@@ -149,7 +149,7 @@ void Player::ChatProcess(ChatType type, const char * msg, const char * whisper_n
 				sLog->outInfo(LOG_CHAT, "[ ALLIANCE ] %s Say: [%s]", this->BuildLog().c_str(), msg);
 			}
 
-			sServerLink->ChatSend(HEADCODE_SERVER_LINK_ALLIANCE_CHAT, this, msg);
+			sDataServer->ChatSend(HEADCODE_DATA_SERVER_ALLIANCE_CHAT, this, msg);
 		} break;
 
 	case CHAT_GUILD_NOTICE:
@@ -176,7 +176,7 @@ void Player::ChatProcess(ChatType type, const char * msg, const char * whisper_n
 				sLog->outInfo(LOG_CHAT, "[ GUILD NOTICE ] %s Say: [%s]", this->BuildLog().c_str(), msg);
 			}
 
-			sServerLink->ChatSend(HEADCODE_SERVER_LINK_GUILD_NOTICE, this, &msg[2]);
+			sDataServer->ChatSend(HEADCODE_DATA_SERVER_GUILD_NOTICE, this, &msg[2]);
 		} break;
 
 	case CHAT_GENS:
@@ -257,7 +257,7 @@ void Player::ChatProcess(ChatType type, const char * msg, const char * whisper_n
 			if ( !success )
 				success = sGameServer->CanPost(this, converted_string);
 
-			if ( success ) ///- Te permito postear si no superaste la cantidad máxima o si acertaste en scramble
+				sDataServer->ChatSend(HEADCODE_DATA_SERVER_POST, this, msg);
 			{
 				this->MoneyReduce(sGameServer->GetCommandPostCost());
 				this->SetPostTime(time(nullptr));
@@ -401,7 +401,7 @@ void Player::WhisperRequest(uint8 * Packet)
 		sLog->outInfo(LOG_CHAT, "%s -- %s -- %s -> %s", __FUNCTION__, this->BuildLog().c_str(), name, safe_message.c_str());
 	}
 
-	sServerLink->WhisperRequest(this, name, message);
+	sDataServer->WhisperRequest(this, name, message);
 }
 
 void Player::WhisperOffline()

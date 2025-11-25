@@ -114,7 +114,7 @@ class Config;
 #include "FreeImage.h"
 #include "RandomValueMgr.h"
 #include "Readscript.h"
-#include "ServerLinkPacket.h"
+#include "DataServerPacket.h"
 #include "ConnectServerPacket.h"
 #include "LoginServerPacket.h"
 #include "SystemTimer.h"

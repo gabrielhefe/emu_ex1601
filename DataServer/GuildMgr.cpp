@@ -409,7 +409,7 @@ if ( it->second->m_Alliance != alliance )
 
 void GuildMgr::CreateRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_ADD, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_ADD, lpMsg, Packet, 0);
 
 	GuildCreateDataPtr add_data(new GuildCreateData(lpMsg->name, lpMsg->emblem));
 	memcpy(&add_data->player, &lpMsg->player);
@@ -421,8 +421,8 @@ void GuildMgr::CreateRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socke
 
 void GuildMgr::RemoveRequest(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_DEL, lpMsg, Packet, 0);
-	SL_GUILD_DEL pMsg(lpMsg->guild);
+	POINTER_PCT(DS_GUILD_DEL, lpMsg, Packet, 0);
+	DS_GUILD_DEL pMsg(lpMsg->guild);
 	pMsg.h.server = lpMsg->h.server;
 
 	if ( Guild* pGuild = this->GetGuild(lpMsg->guild) )
@@ -459,8 +459,8 @@ void GuildMgr::RemoveRequest(uint8 * Packet)
 
 void GuildMgr::MemberAddRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MEMBER_ADD, lpMsg, Packet, 0);
-	SL_GUILD_MEMBER_ADD pMsg(lpMsg->guild);
+	POINTER_PCT(DS_GUILD_MEMBER_ADD, lpMsg, Packet, 0);
+	DS_GUILD_MEMBER_ADD pMsg(lpMsg->guild);
 	pMsg.h.server = lpMsg->h.server;
 	memcpy(&pMsg.player, &lpMsg->player);
 	memcpy(&pMsg.to_add, &lpMsg->to_add);
@@ -523,8 +523,8 @@ return;
 	
 void GuildMgr::MemberDelRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_GUILD_MEMBER_DEL, lpMsg, Packet, 0);
-	SL_GUILD_MEMBER_DEL pMsg;
+	POINTER_PCT(DS_GUILD_MEMBER_DEL, lpMsg, Packet, 0);
+	DS_GUILD_MEMBER_DEL pMsg;
 	pMsg.h.server = lpMsg->h.server;
 	pMsg.guild = lpMsg->guild;
 	pMsg.id = lpMsg->id;
@@ -563,8 +563,8 @@ pGuildMember->Reset();
 
 void GuildMgr::MemberStatusRequest(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MEMBER_STATUS, lpMsg, Packet, 0);
-	SL_GUILD_MEMBER_STATUS pMsg(lpMsg->guild, lpMsg->name, lpMsg->status);
+	POINTER_PCT(DS_GUILD_MEMBER_STATUS, lpMsg, Packet, 0);
+	DS_GUILD_MEMBER_STATUS pMsg(lpMsg->guild, lpMsg->name, lpMsg->status);
 	pMsg.h.server = lpMsg->h.server;
 
 	Guild * pGuild = sGuildMgr->GetGuild(lpMsg->guild);
@@ -593,12 +593,12 @@ pGuild->m_Member[member_slot].m_Ranking = lpMsg->status;
 
 void GuildMgr::RelationshipRequest(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_RELATIONSHIP, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_RELATIONSHIP, lpMsg, Packet, 0);
 
 	Guild* pGuild01 = this->GetGuild(lpMsg->guild01);
 	Guild* pGuild02 = this->GetGuild(lpMsg->guild02);
 
-	SL_GUILD_RELATIONSHIP pMsg(lpMsg->guild01, lpMsg->guild02, lpMsg->type, lpMsg->operation);
+	DS_GUILD_RELATIONSHIP pMsg(lpMsg->guild01, lpMsg->guild02, lpMsg->type, lpMsg->operation);
 	pMsg.h.server = lpMsg->h.server;
 
 	if ( !pGuild01 || !pGuild02 )
@@ -655,7 +655,7 @@ pGuild02->m_Hostil = 0;
 
 void GuildMgr::Score(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_SCORE, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_SCORE, lpMsg, Packet, 0);
 
 Guild * pGuild = this->GetGuild(lpMsg->guild);
 
@@ -678,7 +678,7 @@ trans->Append(stmt);
 
 void GuildMgr::Notice(uint8 * Packet)
 {
-	POINTER_PCT(SL_CHAT_PACKET, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CHAT_PACKET, lpMsg, Packet, 0);
 
 	SQLTransaction trans = MuDatabase.BeginTransaction();
 

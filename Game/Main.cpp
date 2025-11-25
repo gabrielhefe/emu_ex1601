@@ -161,7 +161,7 @@ void MainApplication::End()
 	sObjectMgr->KickAll();
 
 	sWorldSocketMgr.StopNetwork();
-	sServerLink->Stop();
+	sDataServer->Stop();
 	sAuthServer->Stop();
 	sConnectServer->Stop();
 	
@@ -1341,7 +1341,7 @@ bool MainApplication::Run()
 	stmt->setUInt16(0, sGameServer->GetServerCode());
 	MuDatabase.Execute(stmt);
 
-	if ( !sServerLink->Start() )
+	if ( !sDataServer->Start() )
 		return false;
 
 	if ( !sAuthServer->Start() )
@@ -1509,15 +1509,15 @@ void MainApplication::Update(uint32 diff)
 
 	sAuthServer->UpdatePacket();
 
-	if (sGameServer->IsServerLinkServerReconnect() && sServerLink->IsStopped())
+	if (sGameServer->IsDataServerServerReconnect() && sDataServer->IsStopped())
 	{
-		if (sServerLink->GetReconnectTime()->Elapsed(sGameServer->GetServerLinkServerReconnecTime()))
+		if (sDataServer->GetReconnectTime()->Elapsed(sGameServer->GetDataServerServerReconnecTime()))
 		{
-			sServerLink->Start();
+			sDataServer->Start();
 		}
 	}
 
-	sServerLink->UpdatePacket();
+	sDataServer->UpdatePacket();
 
 	Custom::SystemTimer cur_time = Custom::SystemTimer();
 
