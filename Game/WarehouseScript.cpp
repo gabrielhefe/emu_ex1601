@@ -1,19 +1,19 @@
 void WarehouseScript::LoadDBData(PreparedQueryResult result)
 {
 	StoreScript::Clear();
-	this->SetZen(0);
-	this->SetPassword(0);
+	this->m_Zen = 0;
+	this->m_Password = 0;
 
 	if ( result )
 	{
 		Field* fields = result->Fetch();
 
-		this->SetZen(fields[0].GetUInt32());
-		this->SetPassword(fields[1].GetUInt16());
+		this->m_Zen = fields[0].GetUInt32();
+		this->m_Password = fields[1].GetUInt16();
 
-		if ( this->GetPassword() )
+		if ( this->m_Password )
 		{
-			this->SetLocked(true);
+			this->m_Locked = true;
 		}
 	}
 }
@@ -21,8 +21,8 @@ void WarehouseScript::LoadDBData(PreparedQueryResult result)
 void WarehouseScript::LoadDBDataNew()
 {
 	StoreScript::Clear();
-	this->SetZen(0);
-	this->SetPassword(0);
+	this->m_Zen = 0;
+	this->m_Password = 0;
 
 	QueryResult result = MuDatabase.PQuery("SELECT a.money, a.password FROM account_warehouse a WHERE a.account_id = %d", this->GetPlayer()->GetAccountData()->GetGUID());
 
@@ -30,12 +30,12 @@ void WarehouseScript::LoadDBDataNew()
 	{
 		Field* fields = result->Fetch();
 
-		this->SetZen(fields[0].GetUInt32());
-		this->SetPassword(fields[1].GetUInt16());
+		this->m_Zen = fields[0].GetUInt32();
+		this->m_Password = fields[1].GetUInt16();
 
-		if (this->GetPassword())
+		if (this->m_Password)
 		{
-			this->SetLocked(true);
+			this->m_Locked = true;
 		}
 	}
 }
@@ -67,7 +67,7 @@ void WarehouseScript::LoadDBItemListNew()
 
 void WarehouseScript::Open()
 {
-	EXPANDED_WAREHOUSE_STATUS pMsg1(this->GetExpanded());
+	EXPANDED_WAREHOUSE_STATUS pMsg1(this->m_Expanded);
 	this->GetPlayer()->sendPacket(MAKE_PCT(pMsg1));
 
 	TALK_TO_NPC_RESULT pMsg2(0x02);
@@ -93,13 +93,13 @@ void WarehouseScript::Open()
 	
 	this->GetPlayer()->sendPacket(buffer, head->h.get_size());
 
-	this->GetPlayer()->WarehouseMoneyInOutResult(1, this->GetZen(), this->GetPlayer()->MoneyGet());
+	this->GetPlayer()->WarehouseMoneyInOutResult(1, this->m_Zen, this->GetPlayer()->MoneyGet());
 
-	if ( !this->GetPassword() )
+	if ( !this->m_Password )
 	{
 		this->GetPlayer()->WarehouseStateSend(0x00);
 	}
-	else if ( !this->IsLocked() )
+	else if ( !this->m_Locked )
 	{
 		this->GetPlayer()->WarehouseStateSend(0x0C);
 	}
@@ -119,8 +119,8 @@ void WarehouseScript::SaveDBData(SQLTransaction & trans)
 	else {
 		PreparedStatement* stmt = MuDatabase.GetPreparedStatement(ACCOUNT_WAREHOUSE_DATA_REPLACE);
 		stmt->setUInt32(0, this->GetPlayer()->GetAccountData()->GetGUID());
-		stmt->setUInt32(1, this->GetZen());
-		stmt->setUInt16(2, this->GetPassword());
+		stmt->setUInt32(1, this->m_Zen);
+		stmt->setUInt16(2, this->m_Password);
 		trans->Append(stmt);
 
 		this->WarehouseSaveItemDbBinary();
@@ -130,11 +130,11 @@ void WarehouseScript::SaveDBData(SQLTransaction & trans)
 void WarehouseScript::Clear()
 {
 	StoreScript::Clear();
-	this->SetZen(0);
-	this->SetPassword(0);
-	this->SetExpanded(0);
-	this->SetExpandedTime(0);
-	this->SetLocked(false);
+	this->m_Zen = 0;
+	this->m_Password = 0;
+	this->m_Expanded = 0;
+	this->m_ExpandedTime = 0;
+	this->m_Locked = false;
 }
 
 uint8 WarehouseScript::RectCheck(uint8 x, uint8 y, uint8 width, uint8 height) const
@@ -211,36 +211,36 @@ void WarehouseScript::DeleteItem(uint8 slot)
 
 bool WarehouseScript::MoneyReachMaximum(uint32 ammount) const
 {
-	return (this->GetZen() + ammount) > sGameServer->GetWarehouseMaxMoney();
+	return (this->m_Zen + ammount) > sGameServer->GetWarehouseMaxMoney();
 }
 
 void WarehouseScript::MoneyAdd(uint32 ammount)
 {
 	if ( this->MoneyReachMaximum(ammount) )
 	{
-		this->SetZen(sGameServer->GetWarehouseMaxMoney());
+		this->m_Zen = sGameServer->GetWarehouseMaxMoney();
 	}
-	else
-	{
-		this->SetZen(this->GetZen() + ammount);
-	}
+        else
+        {
+                this->m_Zen = this->m_Zen + ammount;
+        }
 }
 
 void WarehouseScript::MoneyReduce(uint32 ammount)
 {
-	if ( this->GetZen() < ammount )
+	if ( this->m_Zen < ammount )
 	{
-		this->SetZen(0);
+		this->m_Zen = 0;
 	}
-	else
-	{
-		this->SetZen(this->GetZen() - ammount);
-	}
+        else
+        {
+                this->m_Zen = this->m_Zen - ammount;
+        }
 }
 
 bool WarehouseScript::MoneyHave(uint32 ammount)
 {
-	return this->GetZen() >= ammount;
+	return this->m_Zen >= ammount;
 }
 
 void Player::WarehouseClose()

@@ -4,7 +4,9 @@
 *
 * File: "GameServer.cpp"
 *
-*/
+ */
+
+#include <cstring>
 
 bool IsServerIN(std::string const& data)
 {
@@ -1265,17 +1267,17 @@ void GameServer::LoadFilter(char* pchFileName)
 
 	uint32 count = 0;
 
-	for (pugi::xml_node filter = Main.child("Filter"); filter; filter = filter.next_sibling()) {
-		filter_data* add_word = new filter_data;
+        for (pugi::xml_node filter = Main.child("Filter"); filter; filter = filter.next_sibling()) {
+                filter_data* add_word = new filter_data;
 
-		add_word->SetWord(filter.attribute("Word").as_string());
-		add_word->SetWordLower(add_word->GetWord());
-		add_word->SetWordUpper(add_word->GetWord());
-		add_word->ConvertWordLowerToLower();
-		add_word->ConvertWordUpperToUpper();
-		add_word->flags.set(filter.attribute("Flags").as_int());
-		add_word->action.set(filter.attribute("Action").as_int());
-		add_word->SetReplace(filter.attribute("Replace").as_string());
+                add_word->m_Word = filter.attribute("Word").as_string();
+                add_word->m_WordLower = add_word->m_Word;
+                add_word->m_WordUpper = add_word->m_Word;
+                strToLower(add_word->m_WordLower);
+                strToUpper(add_word->m_WordUpper);
+                add_word->m_Flags = filter.attribute("Flags").as_int();
+                add_word->m_Action = filter.attribute("Action").as_int();
+                add_word->m_Replace = filter.attribute("Replace").as_string();
 
 		this->filter_list.push_back(add_word);
 		count++;
@@ -1329,11 +1331,12 @@ void GameServer::LoadNotice(char* pchFileName)
 
 	for (pugi::xml_node data = Main.child("Data"); data; data = data.next_sibling()) {
 		notice_data* add_notice = new notice_data;
-		add_notice->SetNotice(data.attribute("Notice").as_string());
-		add_notice->SetType(data.attribute("Type").as_int());
-		add_notice->SetWorld(data.attribute("WorldID").as_int());
-		add_notice->SetFlag(data.attribute("Flag").as_int());
-		add_notice->SetTime(data.attribute("Time").as_int());
+		add_notice->m_Notice = data.attribute("Notice").as_string();
+		add_notice->m_Type = data.attribute("Type").as_int();
+		add_notice->m_World = data.attribute("WorldID").as_int();
+		add_notice->m_Flag = data.attribute("Flag").as_int();
+		add_notice->m_Time = data.attribute("Time").as_int();
+		add_notice->m_Tick = 0;
 
 		this->notice_list.push_back(add_notice);
 		count++;
@@ -1350,24 +1353,24 @@ bool GameServer::FilterText(std::string & text, uint8 flags)
 
 	for ( FilterList::const_iterator it = this->filter_list.begin(); it != this->filter_list.end(); ++it )
 	{
-		if ( !((*it)->flags.get() & flags) )
+		if ( !( (*it)->m_Flags & flags) )
 			continue;
 
-		switch ( (*it)->action.get() )
+		switch ( (*it)->m_Action )
 		{
 		case FILTER_ACTION_REPLACE:
 			{
-				Util::ReplaceString(text, (*it)->GetWord(), (*it)->GetReplace());
+				Util::ReplaceString(text, (*it)->m_Word, (*it)->m_Replace);
 			} break;
 
 		case FILTER_ACTION_CLEAR:
 			{
-				Util::ReplaceString(text, (*it)->GetWord(), "");
+				Util::ReplaceString(text, (*it)->m_Word, "");
 			} break;
 
 		case FILTER_ACTION_REJECT:
 			{
-				if ( text_lower == (*it)->GetWordLower() )
+				if ( text_lower == (*it)->m_WordLower )
 					return false;
 			} break;
 		}
@@ -1394,10 +1397,10 @@ void GameServer::UpdateNotice()
 		if ( !pNotice )
 			continue;
 
-		if ( (cur_time - pNotice->GetTick()) < pNotice->GetTime() )
+		if ( (cur_time - pNotice->m_Tick) < pNotice->m_Time )
 			continue;
 
-		pNotice->SetTick(cur_time);
+		pNotice->m_Tick = cur_time;
 
 		for ( PlayerSessionMap::const_iterator it = characters.begin(); it != characters.end(); ++it )
 		{
@@ -1406,19 +1409,19 @@ void GameServer::UpdateNotice()
 			if ( !pPlayer )
 				continue;
 
-			if ( pNotice->GetWorld() != pPlayer->GetWorldId() && pNotice->GetWorld() != uint16(-1) )
+			if ( pNotice->m_World != pPlayer->GetWorldId() && pNotice->m_World != uint16(-1) )
 				continue;
 
-			if ( pNotice->IsFlag(NOTICE_FLAG_PK) && !pPlayer->IsMurder() )
+			if ( (pNotice->m_Flag & NOTICE_FLAG_PK) && !pPlayer->IsMurder() )
 				continue;
 
-			if ( pNotice->IsFlag(NOTICE_FLAG_ADMIN) && !pPlayer->IsAdministrator() )
+			if ( (pNotice->m_Flag & NOTICE_FLAG_ADMIN) && !pPlayer->IsAdministrator() )
 				continue;
 
-			if ( pNotice->IsFlag(NOTICE_FLAG_HERO) && !pPlayer->IsHero() )
+			if ( (pNotice->m_Flag & NOTICE_FLAG_HERO) && !pPlayer->IsHero() )
 				continue;
 
-			pPlayer->SendNotice(NoticeType(pNotice->GetType()), pNotice->GetNotice().c_str());
+			pPlayer->SendNotice(NoticeType(pNotice->m_Type), pNotice->m_Notice.c_str());
 		}
 	}
 }
@@ -1605,10 +1608,10 @@ void GameServer::LoadGoblinPoint(char* pchFileName)
 
 	for (pugi::xml_node data = Main.child("Data"); data; data = data.next_sibling()) {
 		GoblinPointData* add_data = new GoblinPointData;
-		add_data->SetMonsterLevelMin(data.attribute("MonsterLevelMin").as_int());
-		add_data->SetMonsterLevelMax(data.attribute("MonsterLevelMax").as_int());
-		add_data->SetPlayerLevelMin(data.attribute("PlayerLevelMin").as_int());
-		add_data->SetPlayerLevelMax(data.attribute("PlayerLevelMax").as_int());
+		add_data->m_MonsterLevelMin = data.attribute("MonsterLevelMin").as_int();
+		add_data->m_MonsterLevelMax = data.attribute("MonsterLevelMax").as_int();
+		add_data->m_PlayerLevelMin = data.attribute("PlayerLevelMin").as_int();
+		add_data->m_PlayerLevelMax = data.attribute("PlayerLevelMax").as_int();
 
 		this->goblin_point_list.push_back(add_data);
 		count++;
@@ -1657,10 +1660,10 @@ void GameServer::LoadNonPKTime(char* pchFileName)
 
 	for (pugi::xml_node data = Main.child("Data"); data; data = data.next_sibling()) {
 		NonPKTimeData* add_data = new NonPKTimeData;
-		add_data->SetStartHour(data.attribute("StartHour").as_int());
-		add_data->SetStartMinute(data.attribute("StartMinute").as_int());
-		add_data->SetEndHour(data.attribute("EndHour").as_int());
-		add_data->SetEndMinute(data.attribute("EndMinute").as_int());
+		add_data->m_StartHour = data.attribute("StartHour").as_int();
+		add_data->m_StartMinute = data.attribute("StartMinute").as_int();
+		add_data->m_EndHour = data.attribute("EndHour").as_int();
+		add_data->m_EndMinute = data.attribute("EndMinute").as_int();
 
 		this->non_pk_time_list.push_back(add_data);
 		count++;
@@ -2168,7 +2171,7 @@ void GameServer::ApplyMACRestriction(std::string const& data, int32 operation, u
 
 		if ( operation == 0 ) // Agregar
 		{
-			if ( restriction_data.IsApplied(restriction) )
+			if ( restriction_data.m_Applied[restriction] )
 			{
 				PLAYER_POINTER(pPlayer)->SendNotice(CUSTOM_MESSAGE_ID_RED, "MAC %s already have %s restriction.", 
 					pTarget->GetAccountData()->GetMac(), PlayerAction::Name[restriction].c_str());
@@ -2176,15 +2179,15 @@ void GameServer::ApplyMACRestriction(std::string const& data, int32 operation, u
 				return;
 			}
 
-			restriction_data.SetApplied(restriction, true);
-			restriction_data.SetTime(restriction, time == 0 ? 0: (GetTickCount() + time));
+			restriction_data.m_Applied[restriction] = true;
+			restriction_data.m_Time[restriction] = time == 0 ? 0: (GetTickCount() + time);
 
 			PLAYER_POINTER(pPlayer)->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "MAC %s restricted for %s.", 
 				pTarget->GetAccountData()->GetMac(), PlayerAction::Name[restriction].c_str());
 		}
 		else // Borrar
 		{
-			if ( !restriction_data.IsApplied(restriction) )
+			if ( !restriction_data.m_Applied[restriction] )
 			{
 				PLAYER_POINTER(pPlayer)->SendNotice(CUSTOM_MESSAGE_ID_RED, "MAC %s is not restricted for %s.", 
 					pTarget->GetAccountData()->GetMac(), PlayerAction::Name[restriction].c_str());
@@ -2192,8 +2195,8 @@ void GameServer::ApplyMACRestriction(std::string const& data, int32 operation, u
 				return;
 			}
 
-			restriction_data.SetApplied(restriction, false);
-			restriction_data.SetTime(restriction, 0);
+			restriction_data.m_Applied[restriction] = false;
+			restriction_data.m_Time[restriction] = 0;
 			
 			PLAYER_POINTER(pPlayer)->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "MAC %s removed from %s restriction.", 
 				pTarget->GetAccountData()->GetMac(), PlayerAction::Name[restriction].c_str());
@@ -2207,7 +2210,7 @@ void GameServer::ApplyMACRestriction(std::string const& data, int32 operation, u
 
 		if ( operation == 2 ) // Agregar
 		{
-			if ( restriction_data.IsApplied(restriction) )
+			if ( restriction_data.m_Applied[restriction] )
 			{
 				PLAYER_POINTER(pPlayer)->SendNotice(CUSTOM_MESSAGE_ID_RED, "MAC %s already have %s restriction.", 
 					mac, PlayerAction::Name[restriction].c_str());
@@ -2215,15 +2218,15 @@ void GameServer::ApplyMACRestriction(std::string const& data, int32 operation, u
 				return;
 			}
 
-			restriction_data.SetApplied(restriction, true);
-			restriction_data.SetTime(restriction, time == 0 ? 0: (GetTickCount() + time));
+			restriction_data.m_Applied[restriction] = true;
+			restriction_data.m_Time[restriction] = time == 0 ? 0: (GetTickCount() + time);
 
 			PLAYER_POINTER(pPlayer)->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "MAC %s restricted for %s.", 
 				mac, PlayerAction::Name[restriction].c_str());
 		}
 		else // Borrar
 		{
-			if ( !restriction_data.IsApplied(restriction) )
+			if ( !restriction_data.m_Applied[restriction] )
 			{
 				PLAYER_POINTER(pPlayer)->SendNotice(CUSTOM_MESSAGE_ID_RED, "MAC %s is not restricted for %s.", 
 					mac, PlayerAction::Name[restriction].c_str());
@@ -2231,8 +2234,8 @@ void GameServer::ApplyMACRestriction(std::string const& data, int32 operation, u
 				return;
 			}
 
-			restriction_data.SetApplied(restriction, false);
-			restriction_data.SetTime(restriction, 0);
+			restriction_data.m_Applied[restriction] = false;
+			restriction_data.m_Time[restriction] = 0;
 			
 			PLAYER_POINTER(pPlayer)->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "MAC %s removed from %s restriction.", 
 				mac, PlayerAction::Name[restriction].c_str());
@@ -2246,7 +2249,7 @@ void GameServer::ApplyMACRestriction(std::string const& data, int32 operation, u
 			{
 				for ( int32 i = 0; i < PlayerAction::PLAYER_ACTION_MAX; ++i )
 				{
-					if ( !it->second.IsApplied(i) )
+					if ( !it->second.m_Applied[i] )
 						continue;
 
 					pPlayer->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "MAC: %s restricted for %s.", 
@@ -2266,7 +2269,7 @@ bool GameServer::IsMACRestriction(uint32 restriction, Player* pPlayer)
 		return false;
 	}
 
-	if ( !it->second.IsApplied(restriction) )
+	if ( !it->second.m_Applied[restriction] )
 	{
 		return false;
 	}
@@ -2281,13 +2284,13 @@ void GameServer::UpdateMACRestriction()
 	{
 		for ( int32 i = 0; i < PlayerAction::PLAYER_ACTION_MAX; ++i )
 		{
-			if ( !it->second.IsApplied(i) )
+			if ( !it->second.m_Applied[i] )
 				continue;
 
 			if ( it->second.TimePassed(i) )
 			{
-				it->second.SetApplied(i, false);
-				it->second.SetTime(i, 0);
+				it->second.m_Applied[i] = false;
+				it->second.m_Time[i] = 0;
 			}
 		}
 	}
@@ -2313,7 +2316,8 @@ void GameServer::LoadNotification(char* pchFileName)
 
 	for (pugi::xml_node data = Main.child("Data"); data; data = data.next_sibling()) {
 		notification* add_data = new notification;
-		add_data->SetText(data.attribute("Notify").as_string());
+		std::strncpy(add_data->m_Text, data.attribute("Notify").as_string(), sizeof(add_data->m_Text));
+		add_data->m_Text[sizeof(add_data->m_Text) - 1] = 0;
 
 		this->notification_list.push_back(add_data);
 		count++;
@@ -2348,7 +2352,7 @@ void GameServer::SendNotification(Player* pPlayer)
 
 	for ( NotificationList::const_iterator it = this->notification_list.begin(); it != this->notification_list.end(); ++it )
 	{
-		pPlayer->SendNoticeNormal(CUSTOM_MESSAGE_ID_BLUE, (*it)->GetText());
+		pPlayer->SendNoticeNormal(CUSTOM_MESSAGE_ID_BLUE, (*it)->m_Text);
 	}
 }
 
@@ -2371,11 +2375,11 @@ void GameServer::LoadOffsetData(char* pchFileName)
 
 	for (pugi::xml_node data = Main.child("Data"); data; data = data.next_sibling()) {
 		OffsetData* add_data = new OffsetData;
-		add_data->SetOffset(data.attribute("Offset").as_int());
-		add_data->SetValue(data.attribute("Value").as_int());
-		add_data->SetFix(data.attribute("Fix").as_int());
+		add_data->m_Offset = data.attribute("Offset").as_int();
+		add_data->m_Value = data.attribute("Value").as_int();
+		add_data->m_Fix = data.attribute("Fix").as_int();
 
-		this->offset_data_map[add_data->GetOffset()] = add_data;
+		this->offset_data_map[add_data->m_Offset] = add_data;
 		count++;
 	}
 	/*QueryResult result = GameServerDatabase.PQuery("SELECT * FROM offset_data i WHERE i.serial = '%s'", this->GetGameServerSerial());
@@ -2387,11 +2391,11 @@ void GameServer::LoadOffsetData(char* pchFileName)
 			FieldReader reader(result->Fetch());
 
 			OffsetData* add_data = new OffsetData;
-			add_data->SetOffset(reader.GetUInt32());
-			add_data->SetValue(reader.GetUInt8());
-			add_data->SetFix(reader.GetUInt8());
+			add_data->m_Offset = reader.GetUInt32();
+			add_data->m_Value = reader.GetUInt8();
+			add_data->m_Fix = reader.GetUInt8();
 
-			this->offset_data_map[add_data->GetOffset()] = add_data;
+			this->offset_data_map[add_data->m_Offset] = add_data;
 			count++;
 		} while (result->NextRow());
 	}*/
@@ -2415,9 +2419,9 @@ void GameServer::SendOffsetData(Player* pPlayer)
 			continue;
 		}
 
-		body[head->count].offset = 0xFFFFFFFF - pData->GetOffset();
-		body[head->count].value = 0xFF - pData->GetValue();
-		body[head->count].fix = pData->GetFix();
+		body[head->count].offset = 0xFFFFFFFF - pData->m_Offset;
+		body[head->count].value = 0xFF - pData->m_Value;
+		body[head->count].fix = pData->m_Fix;
 		++head->count;
 	}
 
@@ -2452,11 +2456,11 @@ void GameServer::LoadOffsetFPS(char* pchFileName)
 
 	for (pugi::xml_node data = Main.child("Data"); data; data = data.next_sibling()) {
 		OffsetFPS* add_data = new OffsetFPS;
-		add_data->SetOffset(data.attribute("Offset").as_int());
-		add_data->SetMod(data.attribute("Mod").as_int());
-		add_data->SetOriginal(data.attribute("Original").as_int());
+		add_data->m_Offset = data.attribute("Offset").as_int();
+		add_data->m_Mod = data.attribute("Mod").as_int();
+		add_data->m_Original = data.attribute("Original").as_int();
 
-		this->offset_fps_map[add_data->GetOffset()] = add_data;
+		this->offset_fps_map[add_data->m_Offset] = add_data;
 		count++;
 	}
 	/*QueryResult result = GameServerDatabase.PQuery("SELECT * FROM offset_fps i WHERE i.serial = '%s'", this->GetGameServerSerial());
@@ -2468,11 +2472,11 @@ void GameServer::LoadOffsetFPS(char* pchFileName)
 			FieldReader reader(result->Fetch());
 
 			OffsetFPS* add_data = new OffsetFPS;
-			add_data->SetOffset(reader.GetUInt32());
-			add_data->SetMod(reader.GetUInt8());
-			add_data->SetOriginal(reader.GetUInt8());
+			add_data->m_Offset = reader.GetUInt32();
+			add_data->m_Mod = reader.GetUInt8();
+			add_data->m_Original = reader.GetUInt8();
 
-			this->offset_fps_map[add_data->GetOffset()] = add_data;
+			this->offset_fps_map[add_data->m_Offset] = add_data;
 			count++;
 		} while (result->NextRow());
 	}*/
@@ -2586,11 +2590,11 @@ void GameServer::LoadOfflineAttackWorld(char* pchFileName)
 
 	for (pugi::xml_node offworld = Main.child("World"); offworld; offworld = offworld.next_sibling()) {
 		OfflineAttackWorld* pData = new OfflineAttackWorld;
-		pData->SetWorld(offworld.attribute("WorldID").as_int());
-		pData->SetLevelMin(offworld.attribute("LevelMin").as_int());
-		pData->SetLevelMax(offworld.attribute("LevelMax").as_int());
+		pData->m_World = offworld.attribute("WorldID").as_int();
+		pData->m_LevelMin = offworld.attribute("LevelMin").as_int();
+		pData->m_LevelMax = offworld.attribute("LevelMax").as_int();
 
-		this->offline_attack_world_map[pData->GetWorld()] = pData;
+		this->offline_attack_world_map[pData->m_World] = pData;
 		count++;
 	}
 
@@ -2607,7 +2611,7 @@ void GameServer::LoadOfflineAttackWorld(char* pchFileName)
 			pData->SetLevelMin(fields[1].GetInt16());
 			pData->SetLevelMax(fields[2].GetInt16());
 						
-			this->offline_attack_world_map[pData->GetWorld()] = pData;
+			this->offline_attack_world_map[pData->m_World] = pData;
 			count++;
 		}
 		while(result->NextRow());
@@ -2635,12 +2639,12 @@ void GameServer::LoadOfflineAttackZone(char* pchFileName)
 
 	for (pugi::xml_node zone = Main.child("Zone"); zone; zone = zone.next_sibling()) {
 		OfflineAttackZone* pData = new OfflineAttackZone;
-		pData->SetWorld(zone.attribute("WorldID").as_int());
-		pData->SetX1(zone.attribute("X1").as_int());
-		pData->SetY1(zone.attribute("Y1").as_int());
-		pData->SetX2(zone.attribute("X2").as_int());
-		pData->SetY2(zone.attribute("Y2").as_int());
-		pData->SetEnabled(zone.attribute("Enable").as_bool());
+		pData->m_World = zone.attribute("WorldID").as_int();
+		pData->m_X1 = zone.attribute("X1").as_int();
+		pData->m_Y1 = zone.attribute("Y1").as_int();
+		pData->m_X2 = zone.attribute("X2").as_int();
+		pData->m_Y2 = zone.attribute("Y2").as_int();
+		pData->m_Enabled = zone.attribute("Enable").as_bool();
 
 		this->m_OfflineAttackZoneList.push_back(pData);
 		count++;
@@ -2685,7 +2689,7 @@ void GameServer::SendOffsetFPS(Player* pPlayer)
 			continue;
 		}
 
-		body[head->count].offset = 0xFFFFFFFF - it->second->GetOffset();
+		body[head->count].offset = 0xFFFFFFFF - it->second->m_Offset;
 		body[head->count].value = 0xFF - it->second->GetMod();
 		body[head->count].fix = 0xFF - it->second->GetOriginal();
 		++head->count;
@@ -2802,13 +2806,13 @@ bool GameServer::IsOfflineAttackWorld(Player* pPlayer, uint16 world_id) const
 
 		if (pData)
 		{
-			if ((pPlayer->GetTotalLevel() >= pData->GetLevelMin()) && (pPlayer->GetTotalLevel() <= pData->GetLevelMax()))
+			if ((pPlayer->GetTotalLevel() >= pData->m_LevelMin) && (pPlayer->GetTotalLevel() <= pData->m_LevelMax))
 			{
 				return true;
 			}
 			else
 			{
-				pPlayer->SendMessageBox(1, "Offline Attack", "ERROR \n Can't use offline attack on this map. \n Level Range for this map is [%d / %d]", pData->GetLevelMin(), pData->GetLevelMax());
+				pPlayer->SendMessageBox(1, "Offline Attack", "ERROR \n Can't use offline attack on this map. \n Level Range for this map is [%d / %d]", pData->m_LevelMin, pData->m_LevelMax);
 				return false;
 			}
 		}
@@ -2835,20 +2839,20 @@ bool GameServer::IsOfflineAttackZone(Player* pPlayer, uint16 world_id, int16 x, 
 			continue;
 		}
 
-		if (pData->GetWorld() != world_id)
+		if (pData->m_World != world_id)
 		{
 			continue;
 		}
 
-		if (pData->IsEnabled())
+		if (pData->m_Enabled)
 		{
 			founded = true;
 		}
 
-		if ((x >= pData->GetX1() && x <= pData->GetX2()) &&
-			(y >= pData->GetY1() && y <= pData->GetY2()))
+		if ((x >= pData->m_X1 && x <= pData->m_X2) &&
+			(y >= pData->m_Y1 && y <= pData->m_Y2))
 		{
-			return pData->IsEnabled();
+			return pData->m_Enabled;
 		}
 	}
 

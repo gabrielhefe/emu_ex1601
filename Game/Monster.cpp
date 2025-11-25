@@ -1068,7 +1068,7 @@ void Monster::FindEnemy()
 				continue;
 			}
 
-			Player* pPlayer = sObjectMgr->FindPlayerByGUID(pData->GetGuid());
+			Player* pPlayer = sObjectMgr->FindPlayerByGUID(pData->m_Guid);
 
 			if ( !pPlayer )
 			{
@@ -1542,14 +1542,14 @@ void Monster::LogKillData(bool all, bool save_db)
 		stmt->setUInt16(this->GetEntry());
 		stmt->setString(this->GetName());
 		stmt->setUInt8(this->GetKillID());
-		stmt->setUInt32(pData->GetGuid());
-		stmt->setString(pData->GetName());
-		stmt->setInt64(pData->GetDamage(MONSTER_THREAT_DAMAGE_NORMAL));
-		stmt->setInt64(pData->GetDamage(MONSTER_THREAT_DAMAGE_REFLECT));
-		stmt->setInt64(pData->GetDamage(MONSTER_THREAT_DAMAGE_DEBUFF));
-		stmt->setInt64(pData->GetDamage(MONSTER_THREAT_DAMAGE_ELEMENTAL));
+		stmt->setUInt32(pData->m_Guid);
+		stmt->setString(pData->m_Name);
+		stmt->setInt64(pData->m_Damage[MONSTER_THREAT_DAMAGE_NORMAL]);
+		stmt->setInt64(pData->m_Damage[MONSTER_THREAT_DAMAGE_REFLECT]);
+		stmt->setInt64(pData->m_Damage[MONSTER_THREAT_DAMAGE_DEBUFF]);
+		stmt->setInt64(pData->m_Damage[MONSTER_THREAT_DAMAGE_ELEMENTAL]);
 		stmt->setUInt16(sGameServer->GetServerCode());
-		stmt->setString(ConvertTimeToString(pData->GetFirstHit()));
+		stmt->setString(ConvertTimeToString(pData->m_FirstHit));
 		trans->Append(stmt);
 	}
 

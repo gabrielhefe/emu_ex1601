@@ -45,11 +45,11 @@ void Monster::CalculateMaxAttacker()
 			continue;
 		}
 
-		this->SetMaxAttackerGUID(data->GetGuid());
+		this->SetMaxAttackerGUID(data->m_Guid);
 		this->ResetMaxAttackerName();
-		this->SetMaxAttackerName(data->GetName());
+		this->SetMaxAttackerName(data->m_Name);
 
-		Player* pPlayer = sObjectMgr->FindPlayerByGUID(data->GetGuid());
+		Player* pPlayer = sObjectMgr->FindPlayerByGUID(data->m_Guid);
 
 		if ( pPlayer )
 		{
@@ -62,7 +62,7 @@ void Monster::CalculateMaxAttacker()
 
 Player * Monster::GetMaxAggro()
 {
-	uint32 guid = GetThreatManager()->GetMostHatedID();
+	uint32 guid = this->GetThreatManager()->m_MostHatedID;
 	
 	return guid ? sObjectMgr->FindPlayerByGUID(guid): nullptr;
 }
@@ -98,16 +98,16 @@ void Monster::KillExperience()
 		if ( !data->GetTotalDamage() )
 			continue;
 
-		if ( data->GetGuid() != pMaxAttacker->GetGUID() )
+		if ( data->m_Guid != pMaxAttacker->GetGUID() )
 		{
 			if ( !pParty )
 				continue;
 
-			if ( !pParty->IsMember(data->GetGuid()) )
+			if ( !pParty->IsMember(data->m_Guid) )
 				continue;
 		}
 
-		if ( !(pPlayer = sObjectMgr->FindPlayerByGUID(data->GetGuid()) ) )
+		if ( !(pPlayer = sObjectMgr->FindPlayerByGUID(data->m_Guid) ) )
 			continue;
 
 		if ( !pPlayer->IsPlaying() || !pPlayer->IsLive() )

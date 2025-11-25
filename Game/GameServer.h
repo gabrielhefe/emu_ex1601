@@ -15,36 +15,36 @@ constexpr char* GOBLIN_POINT_SECTION = "GoblinPoint";
 
 struct filter_data
 {
-	DECLARE_PROPERTY_STRING(Word);
-	DECLARE_PROPERTY_STRING(WordLower);
-	DECLARE_PROPERTY_STRING(WordUpper);
-	DECLARE(uint8, flags);
-	DECLARE(uint8, action);
-	DECLARE_PROPERTY_STRING(Replace);
+	std::string m_Word;
+	std::string m_WordLower;
+	std::string m_WordUpper;
+	uint8 m_Flags;
+	uint8 m_Action;
+	std::string m_Replace;
 };
 
 typedef std::vector<filter_data*> FilterList;
 
 struct notice_data
 {
-	DECLARE_PROPERTY_STRING(Notice);
-	DECLARE_ENUM(uint8, Type);
-	DECLARE_ENUM(uint16, World);
-	DECLARE_FLAG(uint8, Flag);
-	DECLARE_ENUM(uint32, Tick);
-	DECLARE_ENUM(uint32, Time);
-	DECLARE_ENUM(uint16, Group);
-	DECLARE_ENUM(uint16, SubGroup);
+	std::string m_Notice;
+	uint8 m_Type;
+	uint16 m_World;
+	uint8 m_Flag;
+	uint32 m_Tick;
+	uint32 m_Time;
+	uint16 m_Group;
+	uint16 m_SubGroup;
 };
 
 typedef std::vector<notice_data*> NoticeList;
 
 struct GoblinPointData
 {
-	DECLARE_ENUM(int16, MonsterLevelMin);
-	DECLARE_ENUM(int16, MonsterLevelMax);
-	DECLARE_ENUM(int16, PlayerLevelMin);
-	DECLARE_ENUM(int16, PlayerLevelMax);
+	int16 m_MonsterLevelMin;
+	int16 m_MonsterLevelMax;
+	int16 m_PlayerLevelMin;
+	int16 m_PlayerLevelMax;
 };
 
 typedef std::vector<GoblinPointData*> GoblinPointDataList;
@@ -94,20 +94,20 @@ enum GameServerSignal
 
 struct NonPKTimeData
 {
-	DECLARE_ENUM(uint8, StartHour);
-	DECLARE_ENUM(uint8, StartMinute);
-	DECLARE_ENUM(uint8, EndHour);
-	DECLARE_ENUM(uint8, EndMinute);
+uint8 m_StartHour;
+uint8 m_StartMinute;
+uint8 m_EndHour;
+uint8 m_EndMinute;
 
-	int32 GetStartSecond() const
-	{
-		return this->GetStartHour() * HOUR + this->GetStartMinute() * MINUTE;
-	}
+int32 GetStartSecond() const
+{
+return this->m_StartHour * HOUR + this->m_StartMinute * MINUTE;
+}
 
-	int32 GetEndSecond() const
-	{
-		return this->GetEndHour() * HOUR + this->GetEndMinute() * MINUTE;
-	}
+int32 GetEndSecond() const
+{
+return this->m_EndHour * HOUR + this->m_EndMinute * MINUTE;
+}
 };
 
 typedef std::vector<NonPKTimeData*> NonPKTimeList;
@@ -126,45 +126,48 @@ struct MACRestrictionData
 {
 	MACRestrictionData()
 	{
-		this->ResetTime(0);
-		this->SetApplied(false);
+		for ( uint8 i = 0; i < PlayerAction::PLAYER_ACTION_MAX; ++i )
+		{
+			this->m_Time[i] = 0;
+			this->m_Applied[i] = false;
+		}
 	}
 
 	bool TimePassed(uint32 restriction) const
 	{
-		if ( !this->GetTime(restriction) )
+		if ( !this->m_Time[restriction] )
 			return false;
 
-		return GetTickCount() > this->GetTime(restriction);
+		return GetTickCount() > this->m_Time[restriction];
 	}
 
-	DECLARE_PROPERTY_ARRAY(uint32, Time, PlayerAction::PLAYER_ACTION_MAX);
-	DECLARE_ARRAY_BOOL(Applied, PlayerAction::PLAYER_ACTION_MAX);
+	uint32 m_Time[PlayerAction::PLAYER_ACTION_MAX];
+	bool m_Applied[PlayerAction::PLAYER_ACTION_MAX];
 };
 
 typedef std::map<std::string, MACRestrictionData> MACRestrictionDataMap;
 
 struct notification
 {
-	DECLARE_STRING_FIXED(Text, 100);
+	char m_Text[100];
 };
 
 typedef std::list<notification*> NotificationList;
 
 struct OffsetData
 {
-	DECLARE_ENUM(uint32, Offset);
-	DECLARE_ENUM(uint8, Value);
-	DECLARE_ENUM(uint8, Fix);
+	uint32 m_Offset;
+	uint8 m_Value;
+	uint8 m_Fix;
 };
 
 typedef std::map<uint32, OffsetData*> OffsetDataMap;
 
 struct OffsetFPS
 {
-	DECLARE_ENUM(uint32, Offset);
-	DECLARE_ENUM(uint8, Mod);
-	DECLARE_ENUM(uint8, Original);
+	uint32 m_Offset;
+	uint8 m_Mod;
+	uint8 m_Original;
 };
 
 typedef std::map<uint32, OffsetFPS*> OffsetFPSMap;
@@ -175,21 +178,21 @@ bool IsServerIN(std::string const& data);
 
 struct OfflineAttackWorld
 {
-	DECLARE_ENUM(uint16, World);
-	DECLARE_ENUM(int16, LevelMin);
-	DECLARE_ENUM(int16, LevelMax);
+	uint16 m_World;
+	int16 m_LevelMin;
+	int16 m_LevelMax;
 };
 
 typedef std::map<uint16, OfflineAttackWorld*> OfflineAttackWorldMap;
 
 struct OfflineAttackZone
 {
-	DECLARE_ENUM(uint16, World);
-	DECLARE_ENUM(int16, X1);
-	DECLARE_ENUM(int16, Y1);
-	DECLARE_ENUM(int16, X2);
-	DECLARE_ENUM(int16, Y2);
-	DECLARE_BOOL(Enabled);
+	uint16 m_World;
+	int16 m_X1;
+	int16 m_Y1;
+	int16 m_X2;
+	int16 m_Y2;
+	bool m_Enabled;
 };
 
 typedef std::vector<OfflineAttackZone*> OfflineAttackZoneList;
