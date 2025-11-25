@@ -10,34 +10,34 @@ MAP_CLEAR(ServerDataMap::iterator, this->m_ServerMap);
 
 ServerData * CServerList::FindServer(uint16 code)
 {
-ServerDataMap::const_iterator it = this->m_ServerMap.find(code);
+        ServerDataMap::const_iterator it = this->m_ServerMap.find(code);
 
-return it != this->m_ServerMap.end() ? it->second : nullptr;
+        return it != this->m_ServerMap.end() ? it->second : nullptr;
 }
 
 ServerData const* CServerList::FindServerByDisplay(uint16 id) const
 {
-for (ServerDataMap::const_iterator itr = this->m_ServerMap.begin(); itr != this->m_ServerMap.end(); ++itr)
-{
-ServerData const* pData = itr->second;
+        for (ServerDataMap::const_iterator itr = this->m_ServerMap.begin(); itr != this->m_ServerMap.end(); ++itr)
+        {
+                ServerData const* pData = itr->second;
 
 		if (!pData)
 		{
 			continue;
 		}
 
-                if (pData->displayID == id)
-		{
-			return pData;
-		}
-	}
+                if (pData->m_DisplayID == id)
+                {
+                        return pData;
+                }
+        }
 
 	return nullptr;
 }
 
 void CServerList::Initialize(uint32 updateInterval)
 {
-    m_UpdateInterval = updateInterval;
+    this->m_UpdateInterval = updateInterval;
 
 	this->LoadServerList("../Data/ServerMap.xml");
 	sMain->LoadAccountTime();
@@ -47,10 +47,10 @@ void CServerList::Initialize(uint32 updateInterval)
 
 void CServerList::UpdateServerList()
 {
-	 if (!m_UpdateInterval || m_NextUpdateTime > time(NULL))
+         if (!this->m_UpdateInterval || this->m_NextUpdateTime > time(NULL))
         return;
 
-    m_NextUpdateTime = time(NULL) + m_UpdateInterval;
+    this->m_NextUpdateTime = time(NULL) + this->m_UpdateInterval;
 
 	this->LoadServerList("../Data/ServerMap.xml");
 	sMain->LoadAccountTime();
@@ -76,21 +76,21 @@ void CServerList::SendChannel()
 				continue;
 			}
 
-                        if ((pData->server / MAX_SERVER_PER_GROUP) != i)
+                        if ((pData->m_Server / MAX_SERVER_PER_GROUP) != i)
 			{
 				continue;
 			}
 
-                        if (!pData->active || !pData->online || !pData->IsFlag(SERVER_FLAG_DISPLAY) || pData->IsFlag(SERVER_FLAG_DISABLED))
+                        if (!pData->m_Active || !pData->m_Online || !pData->IsFlag(SERVER_FLAG_DISPLAY) || pData->IsFlag(SERVER_FLAG_DISABLED))
                         {
                                 continue;
                         }
 
-                        body[head->count].server = pData->server;
+                        body[head->count].server = pData->m_Server;
                         body[head->count].data1 = 0;
                         body[head->count].data2 = 0;
-                        body[head->count].type = pData->type & 1;
-                        body[head->count].gold = pData->type >= 2 ? 1 : 0;
+                        body[head->count].type = pData->m_Type & 1;
+                        body[head->count].gold = pData->m_Type >= 2 ? 1 : 0;
 			++head->count;
 		}
 
@@ -141,7 +141,7 @@ void CServerList::LoadServerList(char* pchFileName)
 				add_server->SetPercent(0);
 				add_server->SetOnline(false);
 				add_server->SetActive(false);
-                                this->m_ServerMap[add_server->server] = add_server;
+                                this->m_ServerMap[add_server->m_Server] = add_server;
 			}
 
 			if ( !add_server->IsActive() )
@@ -153,8 +153,8 @@ void CServerList::LoadServerList(char* pchFileName)
 				add_server->RemoveFlag(SERVER_FLAG_DISABLED);
 			}
 			
-			sLog->outInfo(LOG_DEFAULT, "Added Server %u [%s]    Port: %u   IP: %s   Display: %d	AccountAllowed: %d	Disabled: %d", add_server->server,
-			add_server->name.c_str(), add_server->port, add_server->ip.c_str(), 
+			sLog->outInfo(LOG_DEFAULT, "Added Server %u [%s]    Port: %u   IP: %s   Display: %d	AccountAllowed: %d	Disabled: %d", add_server->m_Server,
+			add_server->m_Name.c_str(), add_server->m_Port, add_server->m_Ip.c_str(), 
 			add_server->IsFlag(SERVER_FLAG_DISPLAY), 
 			add_server->IsFlag(SERVER_FLAG_ACCOUNT_ALLOWED),
 			add_server->IsFlag(SERVER_FLAG_DISABLED));
@@ -186,23 +186,23 @@ void CServerList::LoadServerList(char* pchFileName)
 			add = true;
 		}
 
-                add_server->server = servercode;
-                add_server->displayID = server.attribute("ServerIndex").as_int();
-                add_server->name = server.attribute("ServerName").as_string();
-                add_server->port = server.attribute("ServerPort").as_int();
-                add_server->ip = server.attribute("ServerIP").as_string();
-                add_server->flag = server.attribute("Display").as_int();
-                add_server->type = server.attribute("ServerType").as_int();
+                add_server->m_Server = servercode;
+                add_server->m_DisplayID = server.attribute("ServerIndex").as_int();
+                add_server->m_Name = server.attribute("ServerName").as_string();
+                add_server->m_Port = server.attribute("ServerPort").as_int();
+                add_server->m_Ip = server.attribute("ServerIP").as_string();
+                add_server->m_Flag = server.attribute("Display").as_int();
+                add_server->m_Type = server.attribute("ServerType").as_int();
 
                 if (add)
                 {
-                        add_server->percent = 0;
-                        add_server->online = false;
-                        add_server->active = false;
-                        this->m_ServerMap[add_server->server] = add_server;
+                        add_server->m_Percent = 0;
+                        add_server->m_Online = false;
+                        add_server->m_Active = false;
+                        this->m_ServerMap[add_server->m_Server] = add_server;
                 }
 
-                if (!add_server->active)
+                if (!add_server->m_Active)
                 {
                         add_server->AddFlag(SERVER_FLAG_DISABLED);
                 }
@@ -211,8 +211,8 @@ void CServerList::LoadServerList(char* pchFileName)
 			add_server->RemoveFlag(SERVER_FLAG_DISABLED);
 		}
 
-		sLog->outInfo(LOG_DEFAULT, "Added Server %u [%s]    Port: %u   IP: %s   Display: %d	AccountAllowed: %d	Disabled: %d", add_server->server,
-			add_server->name.c_str(), add_server->port, add_server->ip.c_str(),
+		sLog->outInfo(LOG_DEFAULT, "Added Server %u [%s]    Port: %u   IP: %s   Display: %d	AccountAllowed: %d	Disabled: %d", add_server->m_Server,
+			add_server->m_Name.c_str(), add_server->m_Port, add_server->m_Ip.c_str(),
 			add_server->IsFlag(SERVER_FLAG_DISPLAY),
 			add_server->IsFlag(SERVER_FLAG_ACCOUNT_ALLOWED),
 			add_server->IsFlag(SERVER_FLAG_DISABLED));
@@ -252,14 +252,14 @@ void CServerList::ServerListRequest(std::shared_ptr<MainSocket> client)
 			continue;
 		}
 
-		if (!pData->IsFlag(SERVER_FLAG_DISPLAY) || pData->IsFlag(SERVER_FLAG_DISABLED) || !pData->online)
+		if (!pData->IsFlag(SERVER_FLAG_DISPLAY) || pData->IsFlag(SERVER_FLAG_DISABLED) || !pData->m_Online)
 		{
 			continue;
 		}
 
-		body[count].server_code = pData->displayID;
-		body[count].percent = pData->percent;
-		body[count].type = pData->type;
+		body[count].server_code = pData->m_DisplayID;
+		body[count].percent = pData->m_Percent;
+		body[count].type = pData->m_Type;
 		size += sizeof(SERVER_DATA_BODY);
 		count++;
 	}
@@ -281,7 +281,7 @@ void CServerList::ServerSelectRequest(std::shared_ptr<MainSocket> client, uint8 
 {
 	POINTER_PCT(SERVER_INFO_REQUEST, lpMsg, Packet, 0);
 
-	ServerData const* server_data = this->FindServerByDisplay(lpMsg->server_code);
+        ServerData const* server_data = this->FindServerByDisplay(lpMsg->server_code);
 
 	if ( !server_data )
 	{
@@ -289,13 +289,13 @@ void CServerList::ServerSelectRequest(std::shared_ptr<MainSocket> client, uint8 
 		return;
 	}
 
-        if ( !server_data->IsFlag(SERVER_FLAG_DISPLAY) || server_data->IsFlag(SERVER_FLAG_DISABLED) || !server_data->online )
+        if ( !server_data->IsFlag(SERVER_FLAG_DISPLAY) || server_data->IsFlag(SERVER_FLAG_DISABLED) || !server_data->m_Online )
         {
                 client->CloseSocket();
                 return;
         }
 
-	SERVER_INFO_RESULT pMsg(server_data->ip.c_str(), server_data->port);
+	SERVER_INFO_RESULT pMsg(server_data->m_Ip.c_str(), server_data->m_Port);
 
 	client->SendPacket((uint8*)&pMsg, pMsg.h.size);
 }
@@ -311,19 +311,19 @@ void CServerList::ServerSetInfo(std::shared_ptr<GSSocket> client, uint8 * Packet
 		return;
 	}
 
-        server_data->percent = lpMsg->percent;
-        server_data->active = lpMsg->active;
+        server_data->m_Percent = lpMsg->percent;
+        server_data->m_Active = lpMsg->active;
 	
-	if ( !lpMsg->active )
-	{
-		server_data->AddFlag(SERVER_FLAG_DISABLED);
-	}
+        if ( !lpMsg->active )
+        {
+                server_data->AddFlag(SERVER_FLAG_DISABLED);
+        }
 	else
 	{
 		server_data->RemoveFlag(SERVER_FLAG_DISABLED);
 	}
 
-	CS_GAMESERVER_FLAG pMsg(server_data->flag);
+	CS_GAMESERVER_FLAG pMsg(server_data->m_Flag);
 	client->SendPacket((uint8*)&pMsg, pMsg.h.get_size());
 }
 
@@ -350,8 +350,8 @@ void CServerList::ServerConnect(uint16 server)
 {
 	if ( ServerData * server_data = this->FindServer(server) )
 	{
-                server_data->online = true;
-		sLog->outInfo("root", "[ SERVER CONNECT ] Connecting Server - %s / %d", server_data->name.c_str(), server);
+                server_data->m_Online = true;
+		sLog->outInfo("root", "[ SERVER CONNECT ] Connecting Server - %s / %d", server_data->m_Name.c_str(), server);
 	}
 
 	/*SQLTransaction trans = LoginDatabase.BeginTransaction();
@@ -368,8 +368,8 @@ void CServerList::ServerClose(uint16 server)
 {
 	if ( ServerData * server_data = this->FindServer(server) )
 	{
-                server_data->online = false;
-		sLog->outInfo("root", "[ SERVER CLOSE ] Closing Server - %s / %d", server_data->name.c_str(), server);
+                server_data->m_Online = false;
+		sLog->outInfo("root", "[ SERVER CLOSE ] Closing Server - %s / %d", server_data->m_Name.c_str(), server);
 	}
 
 	/*SQLTransaction trans = LoginDatabase.BeginTransaction();

@@ -61,8 +61,8 @@ bool MainApplication::Run()
 	if ( !StartNetwork() )
 		return false;
 
-        m_Timers[WUPDATE_PINGDB].SetInterval(this->GetPingDB() * MINUTE * IN_MILLISECONDS);
-        m_Timers[WUPDATE_CHANNEL].SetInterval(30 * IN_MILLISECONDS);
+        this->m_Timers[WUPDATE_PINGDB].SetInterval(this->GetPingDB() * MINUTE * IN_MILLISECONDS);
+        this->m_Timers[WUPDATE_CHANNEL].SetInterval(30 * IN_MILLISECONDS);
 
 	return true;
 }
@@ -91,32 +91,32 @@ void MainApplication::LoadVersion()
 
 void MainApplication::LoadAccountTime()
 {
-        m_MaxConnectionCount = sConfig->GetIntDefault("Network.MaxConnectionCount", 0);
-        m_MaxConnectionIdle = sConfig->GetIntDefault("Network.MaxConnectionIdle", 0) * IN_MILLISECONDS;
+        this->m_MaxConnectionCount = sConfig->GetIntDefault("Network.MaxConnectionCount", 0);
+        this->m_MaxConnectionIdle = sConfig->GetIntDefault("Network.MaxConnectionIdle", 0) * IN_MILLISECONDS;
 
-        m_UpdateHeadcode = sConfig->GetIntDefault("Update.Headcode", 0);
+        this->m_UpdateHeadcode = sConfig->GetIntDefault("Update.Headcode", 0);
 }
 
 void MainApplication::Update(uint32 diff)
 {
         for (int32 i = 0; i < WUPDATE_COUNT; ++i)
         {
-                if (m_Timers[i].GetCurrent() >= 0)
-                        m_Timers[i].Update(diff);
+                if (this->m_Timers[i].GetCurrent() >= 0)
+                        this->m_Timers[i].Update(diff);
                 else
-                        m_Timers[i].SetCurrent(0);
+                        this->m_Timers[i].SetCurrent(0);
         }
 
-        if (m_Timers[WUPDATE_PINGDB].Passed())
+        if (this->m_Timers[WUPDATE_PINGDB].Passed())
         {
-                m_Timers[WUPDATE_PINGDB].Reset();
+                this->m_Timers[WUPDATE_PINGDB].Reset();
 
                 KeepDatabaseAlive();
         }
 
-        if (m_Timers[WUPDATE_CHANNEL].Passed())
+        if (this->m_Timers[WUPDATE_CHANNEL].Passed())
         {
-                m_Timers[WUPDATE_CHANNEL].Reset();
+                this->m_Timers[WUPDATE_CHANNEL].Reset();
 
                 sServer->SendChannel();
         }

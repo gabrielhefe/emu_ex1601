@@ -47,31 +47,31 @@ public:
     void OnSocketOpen(tcp::socket&& sock) override;
 	bool ConnectIPAllowed(std::shared_ptr<MainSocket> sock);
 
-	void IncreaseIP(std::string ip)
-	{
-		ip_count[ip]++;
-	}
+        void IncreaseIP(std::string ip)
+        {
+                this->m_IpCount[ip]++;
+        }
 
-	void DecreaseIP(std::string ip)
-	{
-		ip_count[ip]--;
-	}
+        void DecreaseIP(std::string ip)
+        {
+                this->m_IpCount[ip]--;
+        }
 protected:
     MainSocketMgr();
 
     NetworkThread<MainSocket>* CreateThreads() const override;
 
-	int32 GetIPCount(std::string ip)
-	{
-		return ip_count[ip];
-	}
+        int32 GetIPCount(std::string ip)
+        {
+                return this->m_IpCount[ip];
+        }
 private:
-	AsyncAcceptor* _instanceAcceptor;
-    int32 _socketSendBufferSize;
+        AsyncAcceptor* m_InstanceAcceptor;
+    int32 m_SocketSendBufferSize;
     int32 m_SockOutUBuff;
-    bool _tcpNoDelay;
-	int32 _max_connection_per_ip;
-	std::unordered_map<std::string, std::atomic<int32>> ip_count;
+    bool m_TcpNoDelay;
+        int32 m_MaxConnectionPerIp;
+        std::unordered_map<std::string, std::atomic<int32>> m_IpCount;
 };
 
 #endif
