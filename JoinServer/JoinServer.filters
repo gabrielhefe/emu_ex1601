@@ -23,7 +23,7 @@
     <ClCompile Include="WorldSocketMgr.cpp">
       <Filter>Conection</Filter>
     </ClCompile>
-    <ClCompile Include="LoginServerPCH.cpp">
+    <ClCompile Include="JoinServerPCH.cpp">
       <Filter>Main</Filter>
     </ClCompile>
   </ItemGroup>
@@ -43,7 +43,7 @@
     <ClInclude Include="WorldSocketMgr.h">
       <Filter>Conection</Filter>
     </ClInclude>
-    <ClInclude Include="LoginServerPCH.h">
+    <ClInclude Include="JoinServerPCH.h">
       <Filter>Main</Filter>
     </ClInclude>
   </ItemGroup>

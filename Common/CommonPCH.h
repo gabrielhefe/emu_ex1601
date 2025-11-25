@@ -116,7 +116,7 @@ class Config;
 #include "Readscript.h"
 #include "DataServerPacket.h"
 #include "ConnectServerPacket.h"
-#include "LoginServerPacket.h"
+#include "JoinServerPacket.h"
 #include "SystemTimer.h"
 #include "VarTemplate.h"
 #include "TickTimer.h"

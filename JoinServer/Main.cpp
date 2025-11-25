@@ -6,7 +6,7 @@ Config * sConfigCommon = sConfig;
 boost::asio::io_service _ioService;
 boost::asio::signal_set signals(_ioService, SIGINT, SIGTERM);
 
-MainApplication::MainApplication(): AppConsole("LoginServer", "LOGIN SERVER", MAIN_DB_FLAG_MU_LOGIN, sConfig)
+MainApplication::MainApplication(): AppConsole("JoinServer", "JOIN SERVER", MAIN_DB_FLAG_MU_LOGIN, sConfig)
 {
 }
 
@@ -20,11 +20,11 @@ int main()
 	sLog->LoadFolder();
 
 	sLog->LoadAppender("Console", APPENDER_CONSOLE, LOG_LEVEL_TRACE, APPENDER_FLAGS_NONE, "", "", "w");
-	sLog->LoadAppender("LoginServer", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "LoginServer.log", "w");
+	sLog->LoadAppender("JoinServer", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "JoinServer.log", "w");
 	sLog->LoadAppender("Database", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "Database.log", "w");
 	sLog->LoadAppender("Player", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "Player.log", "w");
 
-	sLog->LoadLogger("root", LOG_LEVEL_TRACE, " Console LoginServer");
+	sLog->LoadLogger("root", LOG_LEVEL_TRACE, " Console JoinServer");
 	sLog->LoadLogger("database", LOG_LEVEL_TRACE, "Database");
 	sLog->LoadLogger("player", LOG_LEVEL_TRACE, "Player");
 
