@@ -8,21 +8,21 @@
 
 void MonsterThreat::Create(Monster* pOwner)
 {
-	this->SetOwner(pOwner);
-	this->SetMostHatedID(0);
-	this->SetHighestThreat(0);
+	this->m_Owner = pOwner;
+	this->m_MostHatedID = 0;
+	this->m_HighestThreat = 0;
 }
 
 void MonsterThreat::ClearThreat()
 {
-	this->SetMostHatedID(0);
-	this->SetHighestThreat(0);
+	this->m_MostHatedID = 0;
+	this->m_HighestThreat = 0;
 	CLEAR_MAP(this->m_ThreatMap);
 }
 	
 void MonsterThreat::ClearDamage()
 {
-	LIST_CLEAR(DamageDataList::iterator, this->damage_list);
+	LIST_CLEAR(DamageDataList::iterator, this->m_DamageList);
 }
 
 void MonsterThreat::AddThreat(Player* pPlayer, int64 threat)
@@ -36,10 +36,10 @@ void MonsterThreat::AddThreat(Player* pPlayer, int64 threat)
     if ( pPlayer->IsAdministrator() && !pPlayer->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) )
         return;
 
-	if ( !pPlayer->IsLive() || !GetOwner()->IsLive() )
+	if ( !pPlayer->IsLive() || !this->m_Owner->IsLive() )
 		return;
 
-	if ( GetOwner()->GetAI() && !GetOwner()->GetAI()->AddAggro(pPlayer, threat) )
+	if ( this->m_Owner->GetAI() && !this->m_Owner->GetAI()->AddAggro(pPlayer, threat) )
 		return;
 
 	///- Busco el jugador en la lista
@@ -57,7 +57,7 @@ void MonsterThreat::AddThreat(Player* pPlayer, int64 threat)
 
 void MonsterThreat::AddDamage(Player* pPlayer, MonsterThreatDamageType type, int64 damage)
 {
-	if ( GetOwner()->IsSummoned() && GetOwner()->GetSummoner()->IsPlayer() )
+	if ( this->m_Owner->IsSummoned() && this->m_Owner->GetSummoner()->IsPlayer() )
 	{
 		return;
 	}
@@ -67,7 +67,7 @@ void MonsterThreat::AddDamage(Player* pPlayer, MonsterThreatDamageType type, int
 		return;
 	}
 
-	if ( !pPlayer->IsLive() || !GetOwner()->IsLive() )
+	if ( !pPlayer->IsLive() || !this->m_Owner->IsLive() )
 	{
 		return;
 	}
@@ -75,30 +75,30 @@ void MonsterThreat::AddDamage(Player* pPlayer, MonsterThreatDamageType type, int
 	///- Busco el jugador en la lista
 	DamageData* pData = this->GetDamageData(pPlayer);
 
-	if ( pData ) ///- Si el jugador existe le sumo el daño
+	if ( pData ) ///- Si el jugador existe le sumo el dao
 	{
 		pData->AddDamage(pPlayer->GetName(), type, damage);
 		return;
 	}
 
 	///- Agrego el jugador a la lista
-	this->damage_list.push_back(new DamageData(pPlayer->GetGUID(), pPlayer->GetName(), type, damage));
+	this->m_DamageList.push_back(new DamageData(pPlayer->GetGUID(), pPlayer->GetName(), type, damage));
 }
 
 bool ThreatSort(ThreatData a, ThreatData b)
 {
-	return a.GetThreat() < b.GetThreat();
+	return a.m_Threat < b.m_Threat;
 }
 
 void MonsterThreat::Update()
 {
-	if ( !GetOwner()->IsLive() )
+	if ( !this->m_Owner->IsLive() )
 		return;
 
 	if ( !this->IsUsingThreat() )
 		return;
 
-	if ( this->GetOwner()->PowerGet(POWER_LIFE) == this->GetOwner()->PowerGetTotal(POWER_LIFE) )
+	if ( this->m_Owner->PowerGet(POWER_LIFE) == this->m_Owner->PowerGetTotal(POWER_LIFE) )
 	{
 		this->ClearDamage();
 	}
@@ -106,7 +106,7 @@ void MonsterThreat::Update()
 	Object* pObject = nullptr;
 	Player* pPlayer = nullptr;
 
-	VIEWPORT_LOOP_OBJECT(GetOwner(), pObject)
+	VIEWPORT_LOOP_OBJECT(this->m_Owner, pObject)
 
 		pPlayer = pObject->ToPlayer();
 
@@ -122,7 +122,7 @@ void MonsterThreat::Update()
 		if ( pPlayer->HasBuff(BUFF_INVISIBILITY) )
 			continue;
 
-		if ( !IN_RANGE(GetOwner(), pPlayer, (GetOwner()->GetMonsterTemplate()->ViewRange + 2)) )
+		if ( !IN_RANGE(this->m_Owner, pPlayer, (this->m_Owner->GetMonsterTemplate()->ViewRange + 2)) )
 			continue;
 
 		this->AddThreat(pPlayer, 0);
@@ -134,7 +134,7 @@ void MonsterThreat::Update()
 
 void MonsterThreat::UpdateThreat()
 {
-	World* pWorld = GetOwner()->GetWorld();
+	World* pWorld = this->m_Owner->GetWorld();
 
 	if (!pWorld)
 		return;
@@ -153,16 +153,16 @@ void MonsterThreat::UpdateThreat()
 			continue;
 		}
 
-		pPlayer = data->GetPlayer();
+		pPlayer = data->m_Player;
 
-		if (!pPlayer || !pPlayer->IsPlaying() || !GetOwner()->SameDimension(pPlayer) || !pPlayer->IsLive())
+		if (!pPlayer || !pPlayer->IsPlaying() || !this->m_Owner->SameDimension(pPlayer) || !pPlayer->IsLive())
 		{
 			delete it->second;
 			this->m_ThreatMap.erase(it++);
 			continue;
 		}
 
-		if (pPlayer->GetGUID() != data->GetGuid())
+		if (pPlayer->GetGUID() != data->m_Guid)
 		{
 			delete it->second;
 			this->m_ThreatMap.erase(it++);
@@ -183,14 +183,14 @@ void MonsterThreat::UpdateThreat()
 			continue;
 		}
 
-		if (!pWorld->CheckWall(GetOwner()->GetX(), GetOwner()->GetY(), pPlayer->GetX(), pPlayer->GetY()))
+		if (!pWorld->CheckWall(this->m_Owner->GetX(), this->m_Owner->GetY(), pPlayer->GetX(), pPlayer->GetY()))
 		{
 			delete it->second;
 			this->m_ThreatMap.erase(it++);
 			continue;
 		}
 
-		if (!IN_RANGE(GetOwner(), pPlayer, (GetOwner()->GetMonsterTemplate()->ViewRange + 2)))
+		if (!IN_RANGE(this->m_Owner, pPlayer, (this->m_Owner->GetMonsterTemplate()->ViewRange + 2)))
 		{
 			delete it->second;
 			this->m_ThreatMap.erase(it++);
@@ -211,17 +211,17 @@ void MonsterThreat::UpdateThreat()
 			continue;
 		}
 
-		if (data->GetThreat() >= MaxThreat)
+		if (data->m_Threat >= MaxThreat)
 		{
-			MaxThreat = data->GetThreat();
-			MaxGUID = data->GetGuid();
+			MaxThreat = data->m_Threat;
+			MaxGUID = data->m_Guid;
 		}
 
 		++it;
 	}
 
-	this->SetMostHatedID(MaxGUID);
-	this->SetHighestThreat(MaxThreat);
+	this->m_MostHatedID = MaxGUID;
+	this->m_HighestThreat = MaxThreat;
 }
 
 bool MonsterThreat::IsInThreat(Unit* pTarget)
@@ -229,16 +229,16 @@ bool MonsterThreat::IsInThreat(Unit* pTarget)
 	if ( !this->IsUsingThreat() )
 		return true;
 
-	if ( !pTarget ) ///- Si el target es inválido, entonces no pertenece
+	if ( !pTarget ) ///- Si el target es invlido, entonces no pertenece
 		return false;
 
 	Player* pPlayer = nullptr;
 
-	if ( pTarget->IsSummoned() ) ///- Si es un objeto sumoneado, tengo que verificar que su dueño sea un jugador
+	if ( pTarget->IsSummoned() ) ///- Si es un objeto sumoneado, tengo que verificar que su dueo sea un jugador
 	{
 		Unit* pSummoner = pTarget->GetSummoner();
 
-		if ( !pSummoner ) ///- Si el objeto no tiene ningún dueño, entonces no lo proceso
+		if ( !pSummoner ) ///- Si el objeto no tiene ningn dueo, entonces no lo proceso
 			return false;
 
 		pPlayer = pSummoner->ToPlayer();
@@ -251,7 +251,7 @@ bool MonsterThreat::IsInThreat(Unit* pTarget)
 	if ( !pPlayer ) ///- Si no es un jugador, entonces no pertenece
 		return false;
 
-	if ( !pPlayer->IsPlaying() ) ///- Solamente proceso cuando está jugando
+	if ( !pPlayer->IsPlaying() ) ///- Solamente proceso cuando est jugando
 		return false;
 
 	ThreatData * pData = this->GetThreatData(pPlayer->GetGUID());
@@ -261,10 +261,10 @@ bool MonsterThreat::IsInThreat(Unit* pTarget)
 
 bool MonsterThreat::IsUsingThreat() const
 {
-	if ( GetOwner()->IsSummoned() || !GetOwner()->IsUnitAttackable() )
+	if ( this->m_Owner->IsSummoned() || !this->m_Owner->IsUnitAttackable() )
 		return false;
 
-	if ( GetOwner()->GetAI() && !GetOwner()->GetAI()->ManageThreat() )
+	if ( this->m_Owner->GetAI() && !this->m_Owner->GetAI()->ManageThreat() )
 		return false;
 
 	return true;
@@ -277,7 +277,7 @@ DamageData* MonsterThreat::GetDamageData(Player* pPlayer)
 		return nullptr;
 	}
 
-	for ( DamageDataList::iterator it = this->damage_list.begin(); it != this->damage_list.end(); ++it )
+	for ( DamageDataList::iterator it = this->m_DamageList.begin(); it != this->m_DamageList.end(); ++it )
 	{
 		DamageData* pData = (*it);
 
@@ -286,7 +286,7 @@ DamageData* MonsterThreat::GetDamageData(Player* pPlayer)
 			continue;
 		}
 
-		if ( pData->GetGuid() != pPlayer->GetGUID() )
+		if ( pData->m_Guid != pPlayer->GetGUID() )
 		{
 			continue;
 		}
@@ -299,7 +299,7 @@ DamageData* MonsterThreat::GetDamageData(Player* pPlayer)
 	
 DamageData* MonsterThreat::GetDamageData(uint32 char_id)
 {
-	for ( DamageDataList::iterator it = this->damage_list.begin(); it != this->damage_list.end(); ++it )
+	for ( DamageDataList::iterator it = this->m_DamageList.begin(); it != this->m_DamageList.end(); ++it )
 	{
 		DamageData* pData = (*it);
 
@@ -308,7 +308,7 @@ DamageData* MonsterThreat::GetDamageData(uint32 char_id)
 			continue;
 		}
 
-		if ( pData->GetGuid() != char_id )
+		if ( pData->m_Guid != char_id )
 		{
 			continue;
 		}

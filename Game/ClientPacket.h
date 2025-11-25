@@ -3627,10 +3627,10 @@ struct NEW_MAGIC_ATTACK_RESULT
 		this->SetMagic(skill);
 		this->SetSource(source);
 		this->SetTarget(target);
-		this->m_propTarget[0] &= 0x7F;
+		this->m_Target[0] &= 0x7F;
 
 		if ( success )
-			this->m_propTarget[0] |= 0x80;
+			this->m_Target[0] |= 0x80;
 	}
 	PBMSG_HEAD h;
 	INDEX_DATA(Source);
@@ -3666,11 +3666,11 @@ struct NORMAL_MAGIC_ATTACK_RESULT
 		this->SetMagic(skill);
 		this->SetSource(source);
 		this->SetTarget(target);
-		this->m_propTarget[0] &= 0x7F;
+		this->m_Target[0] &= 0x7F;
 
 		if ( success )
 		{
-			this->m_propTarget[0] |= 0x80;
+			this->m_Target[0] |= 0x80;
 		}
 	}
 	PBMSG_HEAD h;

@@ -137,10 +137,10 @@
 	limitmax(data, max);
 
 #define INDEX_DATA(name) \
-	uint8 m_prop##name[2]; \
-	uint16 Get##name() { return INDEX_GET(this->m_prop##name); } \
-	uint16 Get##name() const { return INDEX_GET(this->m_prop##name); } \
-	void Set##name(uint16 value) { INDEX_SET(this->m_prop##name, value); }
+        uint8 m_##name[2]; \
+        uint16 Get##name() { return INDEX_GET(this->m_##name); } \
+        uint16 Get##name() const { return INDEX_GET(this->m_##name); } \
+        void Set##name(uint16 value) { INDEX_SET(this->m_##name, value); }
 
 #define INDEX_SET(index, data) \
 	index[0] = SET_NUMBERH(data); \

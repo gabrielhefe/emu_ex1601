@@ -6,11 +6,11 @@ class WarehouseScript: public StoreScript
 	public:
 		explicit WarehouseScript(Player* pPlayer): StoreScript(pPlayer, warehouse_size, warehouse_size) {}
 
-		DECLARE_PROPERTY(uint32, Zen);
-		DECLARE_ENUM(uint16, Password);
-		DECLARE_BOOL(Locked);
-		DECLARE_PROPERTY(uint8, Expanded);
-		DECLARE_PROPERTY(time_t, ExpandedTime);
+                uint32 m_Zen;
+                uint16 m_Password;
+                bool m_Locked;
+                uint8 m_Expanded;
+                time_t m_ExpandedTime;
 
 		void LoadDBData(PreparedQueryResult result);
 		void LoadDBDataNew();

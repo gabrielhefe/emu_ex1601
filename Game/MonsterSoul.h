@@ -1,6 +1,8 @@
 #ifndef MONSTER_SOUL_H
 #define MONSTER_SOUL_H
 
+#include <string>
+
 #pragma pack(1)
 struct MONSTER_SOUL_NPC_DATA_BODY_2
 {
@@ -138,28 +140,28 @@ struct MONSTER_SOUL_REWARD : C1_HEADER_SUB
 
 struct MonsterSoulConverter
 {
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_ENUM(uint16, Item);
-	DECLARE_ENUM(int32, Amount);
+	uint32 m_ID;
+	uint16 m_Item;
+	int32 m_Amount;
 };
 
 struct MonsterSoulTransformation
 {
-	DECLARE_ENUM(uint32, Type);
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_ENUM(uint16, World);
-	DECLARE_ENUM(uint16, Monster);
-	DECLARE_ENUM(int32, RequiredSoul);
-	DECLARE_ENUM(int32, DropRate);
-	DECLARE_PROPERTY_STRING(Location);
+	uint32 m_Type;
+	uint32 m_ID;
+	uint16 m_World;
+	uint16 m_Monster;
+	int32 m_RequiredSoul;
+	int32 m_DropRate;
+	std::string m_Location;
 };
 
 struct MonsterSoulReward
 {
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_ENUM(uint8, SubID);
-	DECLARE_PROPERTY_STRING(ItemBag);
-	DECLARE_PROPERTY_STRING(RandomItemBag);
+	uint32 m_ID;
+	uint8 m_SubID;
+	std::string m_ItemBag;
+	std::string m_RandomItemBag;
 };
 
 typedef std::map<uint32, MonsterSoulConverter*> MonsterSoulConverterMap;

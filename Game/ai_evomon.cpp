@@ -8,33 +8,33 @@ public:
 
 	struct AI : public MonsterAI
 	{
-		DECLARE_ENUM(uint32, PlayerGUID);
-		DECLARE_PTR(Player, Player);
-		DECLARE_PTR(Monster, Evomon);
-		DECLARE_ENUM(uint8, EvomonID);
-		DECLARE_ENUM(uint16, EvomonMonster);
+                uint32 m_PlayerGUID;
+                Player* m_Player;
+                Monster* m_Evomon;
+                uint8 m_EvomonID;
+                uint16 m_EvomonMonster;
 
-		DECLARE_BOOL(Finished);
-		DECLARE_STRUCT(TickTimer, EvomonTime);
-		DECLARE_BOOL(EvomonTimeFinished);
+                bool m_Finished;
+                TickTimer m_EvomonTime;
+                bool m_EvomonTimeFinished;
 
-		DECLARE_PROPERTY(int32, Score);
-		DECLARE_BOOL(EvomonSpecial);
+                int32 m_Score;
+                bool m_EvomonSpecial;
 
-		DECLARE_STRUCT(TickTimer, GlobalTime);
+                TickTimer m_GlobalTime;
 
 		explicit AI(Monster* monster) : MonsterAI(monster)
 		{
-			this->SetPlayerGUID(0);
-			this->SetPlayer(nullptr);
-			this->SetEvomon(nullptr);
-			this->SetEvomonID(0);
-			this->SetEvomonMonster(-1);
-			this->SetFinished(false);
-			this->GetEvomonTime()->Reset();
-			this->SetEvomonTimeFinished(false);
-			this->SetScore(0);
-			this->SetEvomonSpecial(false);
+                        this->m_PlayerGUID = 0;
+                        this->m_Player = nullptr;
+                        this->m_Evomon = nullptr;
+                        this->m_EvomonID = 0;
+                        this->m_EvomonMonster = -1;
+                        this->m_Finished = false;
+                        this->m_EvomonTime.Reset();
+                        this->m_EvomonTimeFinished = false;
+                        this->m_Score = 0;
+                        this->m_EvomonSpecial = false;
 		}
 
 		virtual ~AI() { }
@@ -43,31 +43,31 @@ public:
 		{
 			me()->SetNextActionTime(1000);
 
-			if (!this->GetPlayer())
+			if (!this->m_Player)
 			{
 				this->RemoveEvomon();
 				me()->Remove();
 				return true;
 			}
 
-			if (this->GetPlayer()->GetConnectStatus() != CONNECT_STATUS_PLAYING)
+			if (this->m_Player->GetConnectStatus() != CONNECT_STATUS_PLAYING)
 			{
-				this->SetPlayer(nullptr);
+				this->m_Player = nullptr;
 				return true;
 			}
 
-			if (this->GetPlayer()->GetGUID() != this->GetPlayerGUID())
+			if (this->m_Player->GetGUID() != this->m_PlayerGUID)
 			{
-				this->SetPlayer(nullptr);
+				this->m_Player = nullptr;
 				return true;
 			}
 
-			if (this->IsFinished())
+			if (this->m_Finished)
 			{
-				if (this->GetPlayer())
+				if (this->m_Player)
 				{
-					this->GetPlayer()->SetEvomonPortal(nullptr);
-					this->GetPlayer()->SetEvomonTime(0);
+					this->m_Player->SetEvomonPortal(nullptr);
+					this->m_Player->SetEvomonTime(0);
 				}
 
 				this->RemoveEvomon();
@@ -76,9 +76,9 @@ public:
 				return true;
 			}
 
-			if (MyGetTickCount() > this->GetPlayer()->GetEvomonTime())
+			if (MyGetTickCount() > this->m_Player->GetEvomonTime())
 			{
-				this->SetFinished(true);
+				this->m_Finished = true;
 				return true;
 			}
 
@@ -89,65 +89,65 @@ public:
 
 		void OnCreate()
 		{
-			this->SetPlayerGUID(me()->m_AdditionalDataInt[0]);
-			this->SetPlayer((Player*)me()->m_AdditionalDataPtr[0]);
-			this->SetEvomonMonster(me()->m_AdditionalDataInt[1]);
+                        this->m_PlayerGUID = me()->m_AdditionalDataInt[0];
+                        this->m_Player = static_cast<Player*>(me()->m_AdditionalDataPtr[0]);
+                        this->m_EvomonMonster = me()->m_AdditionalDataInt[1];
 		}
 
 		void CreateEvomon()
 		{
-			if (this->IsFinished())
+			if (this->m_Finished)
 			{
 				return;
 			}
 
-			if (this->GetEvomon())
+			if (this->m_Evomon)
 			{
-				if (!this->GetEvomon()->IsPlaying())
+				if (!this->m_Evomon->IsPlaying())
 				{
-					if (this->IsEvomonSpecial())
+					if (this->m_EvomonSpecial)
 					{
-						sEvomon->GiveSpecialReward(this->GetPlayer());
+						sEvomon->GiveSpecialReward(this->m_Player);
 					}
 
-					this->SetEvomon(nullptr);
-					this->SetEvomonID(sEvomon->GetNextEvomon(this->GetEvomonID(), this->GetEvomonMonster()));
-					this->GetEvomonTime()->Reset();
-					this->SetEvomonTimeFinished(false);
-					me()->ViewportCreate(VIEWPORT_CREATE_FLAG_ME);
-				}
+					this->m_Evomon = nullptr;
+                                        this->m_EvomonID = sEvomon->GetNextEvomon(this->m_EvomonID, this->m_EvomonMonster);
+                                        this->m_EvomonTime.Reset();
+                                        this->m_EvomonTimeFinished = false;
+                                        me()->ViewportCreate(VIEWPORT_CREATE_FLAG_ME);
+                                }
 
 				return;
 			}
 
-			if (!this->IsEvomonTimeFinished())
+			if (!this->m_EvomonTimeFinished)
 			{
-				if (!this->GetEvomonTime()->Elapsed(3000))
-				{
-					return;
-				}
+                                if (!this->m_EvomonTime.Elapsed(3000))
+                                {
+                                        return;
+                                }
 
-				this->SetEvomonTimeFinished(true);
+				this->m_EvomonTimeFinished = true;
 			}
 
-			EvomonInfo const* pEvomonInfo = sEvomon->GetEvomon(this->GetEvomonID(), this->GetEvomonMonster());
+			EvomonInfo const* pEvomonInfo = sEvomon->GetEvomon(this->m_EvomonID, this->m_EvomonMonster);
 
 			if (!pEvomonInfo)
 			{
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Awakening Failed. Awakening has failed due to low chance.");
-				sEvomon->GiveReward(this->GetPlayer(), this->GetScore());
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Awakening Failed. Awakening has failed due to low chance.");
+				sEvomon->GiveReward(this->m_Player, this->m_Score);
 
 				me()->AddBuff(BUFF_EVOMON_AWAKENING_FAILURE, 5, 0, me());
-				this->SetFinished(true);
+				this->m_Finished = true;
 				return;
 			}
 
 			me()->SetLevel(pEvomonInfo->GetLevel());
-			this->SetScore(pEvomonInfo->GetLevel());
+			this->m_Score = pEvomonInfo->GetLevel();
 
-			this->SetEvomonSpecial(roll_chance_i(pEvomonInfo->GetSpecialRate(), 10000));
+                        this->m_EvomonSpecial = roll_chance_i(pEvomonInfo->GetSpecialRate(), 10000);
 
-			uint16 monster_id = this->IsEvomonSpecial() ? pEvomonInfo->GetSpecialMonster() : pEvomonInfo->GetMonster();
+			uint16 monster_id = this->m_EvomonSpecial ? pEvomonInfo->GetSpecialMonster() : pEvomonInfo->GetMonster();
 
 			Monster* pMonster = sObjectMgr->MonsterTryAdd(monster_id, me()->GetWorldId());
 
@@ -166,25 +166,25 @@ public:
 				pMonster->SetWorldId(me()->GetWorldId());
 				pMonster->SetBasicLocation(me()->GetX(), me()->GetY(), me()->GetX(), me()->GetY());
 				pMonster->SetRespawnType(GAME_OBJECT_RESPAWN_DELETE);
-				pMonster->SetSummonPlayer(this->GetPlayer());
+				pMonster->SetSummonPlayer(this->m_Player);
 				pMonster->SetInstance(me()->GetInstance());
 				pMonster->SetScriptName("evomon_ai");
 				pMonster->AddToWorld();
 
-				this->SetEvomon(pMonster);
+				this->m_Evomon = pMonster;
 
 				me()->AddBuff(BUFF_EVOMON_AWAKENING_SUCCESS, 3, 0, me());
 
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Awakening Succeeded. After a moment awakened monster appears.");
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Awakening Succeeded. After a moment awakened monster appears.");
 			}
 		}
 
 		void RemoveEvomon()
 		{
-			if (this->GetEvomon())
+			if (this->m_Evomon)
 			{
-				this->GetEvomon()->Remove();
-				this->SetEvomon(nullptr);
+				this->m_Evomon->Remove();
+				this->m_Evomon = nullptr;
 			}
 		}
 	};

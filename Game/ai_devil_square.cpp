@@ -47,7 +47,7 @@ public:
 					continue;
 				}
 
-				if ( !(pPlayer = sObjectMgr->FindPlayerByGUID(data->GetGuid())) )
+				if ( !(pPlayer = sObjectMgr->FindPlayerByGUID(data->m_Guid)) )
 					continue;
 
 				if ( pPlayer->GetEventId() != EVENT_DEVIL_SQUARE || pPlayer->GetEventGround() != me()->GetEventGround() )

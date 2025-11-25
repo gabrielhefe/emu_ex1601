@@ -352,7 +352,7 @@ bool Object::ViewportExist(Object* pObject)
 
 bool Object::ViewportAdd(Object* pObject)
 {
-	/// - No debería pasar, pero ante la duda revisamos que el objeto no sea nulo
+	/// - No deberÃ­a pasar, pero ante la duda revisamos que el objeto no sea nulo
 	if ( !pObject )
 	{
 		return false;
@@ -402,7 +402,7 @@ bool Object::ViewportAdd(Object* pObject)
 
 void Object::ViewportRemove(Object* pObject)
 {
-	/// - No debería pasar, pero ante la duda revisamos que el objeto no sea nulo
+	/// - No deberÃ­a pasar, pero ante la duda revisamos que el objeto no sea nulo
 	if ( !pObject )
 		return;
 
@@ -671,12 +671,12 @@ void Object::ViewportConstructMonster(Object* pUnit, Monster* pMonster, uint8 * 
 
 	if ( pMonster->GetState() == OBJECT_STATE_STAND_BY )
 	{
-		body.m_propIndex[0] |= 0x80;
+		body.m_Index[0] |= 0x80;
 	}
 
 	/*if( pMonster->IsTeleporting() )
 	{
-		body.m_propIndex[0] |= 0x40;
+		body.m_Index[0] |= 0x40;
 	}*/
 
 	if ( pUnit->IsUnit() )
@@ -687,11 +687,11 @@ void Object::ViewportConstructMonster(Object* pUnit, Monster* pMonster, uint8 * 
 			{
 				if ( pMonster->GetCastleSiegeJoinSide() == pUnit->ToUnit()->GetCastleSiegeJoinSide() )
 				{
-					body.m_propClass[0] |= 0x80;
+					body.m_Class[0] |= 0x80;
 				}
 			}
 
-			body.m_propClass[0] |= (((LifeStoneBasicAI*)pAI)->GetCreationState() << 4 & 0x70);
+			body.m_Class[0] |= (((LifeStoneBasicAI*)pAI)->GetCreationState() << 4 & 0x70);
 		}
 	}
 
@@ -755,12 +755,12 @@ void Object::ViewportConstructMonsterSummon(Object* pUnit, Monster* pMonster, ui
 
 	if ( pMonster->GetState() == OBJECT_STATE_STAND_BY )
 	{
-		body.m_propIndex[0] |= 0x80;
+		body.m_Index[0] |= 0x80;
 	}
 
 	/*if( pMonster->IsTeleporting() )
 	{
-		body.m_propIndex[0] |= 0x40;
+		body.m_Index[0] |= 0x40;
 	}*/
 
 	body.elemental_attribute = pMonster->GetElementalAttribute();
@@ -836,7 +836,7 @@ void Object::ViewportConstructPlayer(Object* pUnit, Player* pPlayer, uint8 * buf
 
 	if ( pPlayer->GetState() == OBJECT_STATE_STAND_BY && !pPlayer->IsTeleporting() )
 	{
-		player_body.m_propIndex[0] |= 0x80;
+		player_body.m_Index[0] |= 0x80;
 	}
 
 	if ( pUnit->IsPlayer() && pUnit->ToPlayer()->IsGenPVP(pPlayer) )
@@ -930,7 +930,7 @@ void Object::ViewportConstructPlayerChange(Object* pUnit, Player* pPlayer, uint8
 
 	if ( pPlayer->GetState() == OBJECT_STATE_STAND_BY && !pPlayer->IsTeleporting() )
 	{
-		body.m_propIndex[0] |= 0x80;
+		body.m_Index[0] |= 0x80;
 	}
 
 	if ( (pUnit->IsPlayer() && pUnit->ToPlayer()->IsGenPVP(pPlayer)) )
@@ -1013,8 +1013,8 @@ void Object::ViewportConstructCastleMachine(Object* pUnit, Unit* pConstruct, uin
 
 	if ( pConstruct->IsPlayer() )
 	{
-		body.m_propClass[0] = CS_SET_CLASS(pConstruct->ToPlayer()->GetClass());
-		body.m_propClass[1] = 0;
+		body.m_Class[0] = CS_SET_CLASS(pConstruct->ToPlayer()->GetClass());
+		body.m_Class[1] = 0;
 	}
 	else if ( pConstruct->IsCreature() )
 	{
@@ -1045,7 +1045,7 @@ void Object::ViewportConstructWorldItem(Object* pUnit, WorldItem* pWorldItem, ui
 
 	if ( pWorldItem->GetState() == WORLD_ITEM_STATE_STANDBY )
 	{
-		body.m_propIndex[0] |= 0x80;
+		body.m_Index[0] |= 0x80;
 	}
 
 	body.x = cast(uint8, pWorldItem->GetX());
@@ -1144,7 +1144,7 @@ bool Object::ViewportAttack(Object* pTarget)
 
 	ViewportDataList::const_iterator it = this->viewport_data.find(pTarget->GetHighGUID());
 
-	/// - Reviso si lo tengo en VP y está activo
+	/// - Reviso si lo tengo en VP y estÃ¡ activo
 	if ( it != this->viewport_data.end() )
 	{
 		if ( it->second->GetStatus() != Viewport::STATUS_READY )

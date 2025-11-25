@@ -38,23 +38,23 @@ public:
 
 	struct ChampionAI: public MonsterAI
 	{
-		DECLARE_PROPERTY(int32, StormCount);
-		DECLARE_STRUCT(TickTimer, PushBackTime);
-		DECLARE_STRUCT(TickTimer, AOEDamageTime);
-		DECLARE_STRUCT(TickTimer, StormTime);
-		DECLARE_STRUCT(TickTimer, DarknessTime);
+		int32 m_StormCount;
+		TickTimer m_PushBackTime;
+		TickTimer m_AOEDamageTime;
+		TickTimer m_StormTime;
+		TickTimer m_DarknessTime;
 		
 		explicit ChampionAI(Monster* monster): MonsterAI(monster)
 		{
-			this->GetPushBackTime()->Reset();
-			this->GetAOEDamageTime()->Reset();
-			this->GetStormTime()->Reset();
+			this->m_PushBackTime.Reset();
+			this->m_AOEDamageTime.Reset();
+			this->m_StormTime.Reset();
 
-			this->GetPushBackTime()->Start(15000);
-			this->GetAOEDamageTime()->Start(2000);
-			this->GetStormTime()->Start(1000);
-			this->GetDarknessTime()->Start(30000);
-			this->SetStormCount(0);
+			this->m_PushBackTime.Start(15000);
+			this->m_AOEDamageTime.Start(2000);
+			this->m_StormTime.Start(1000);
+			this->m_DarknessTime.Start(30000);
+			this->m_StormCount = 0;
 		}
 
 		virtual ~ChampionAI() {}
@@ -70,36 +70,36 @@ public:
 			}
 			else
 			{
-				if ( this->GetPushBackTime()->Elapsed() )
+				if ( this->m_PushBackTime.Elapsed() )
 				{
 					this->PushBackAll();
 					me()->Say(TALKING_TEST_5);
 				}
 
-				if ( this->GetAOEDamageTime()->Elapsed() )
+				if ( this->m_AOEDamageTime.Elapsed() )
 				{
 					this->AOEAll();
 				}
 
-				if ( this->GetStormTime()->Elapsed() )
+				if ( this->m_StormTime.Elapsed() )
 				{
-					this->IncreaseStormCount(1);
+					this->m_StormCount += 1;
 
-					if ( this->GetStormCount() == 30 ||
-						 this->GetStormCount() == 31 ||
-						 this->GetStormCount() == 32 ||
-						 this->GetStormCount() == 33 ||
-						 this->GetStormCount() == 34 )
+					if ( this->m_StormCount == 30 ||
+						 this->m_StormCount == 31 ||
+						 this->m_StormCount == 32 ||
+						 this->m_StormCount == 33 ||
+						 this->m_StormCount == 34 )
 					{
 						this->StormMadness();
 					}
-					else if ( this->GetStormCount() == 35 )
+					else if ( this->m_StormCount == 35 )
 					{
-						this->SetStormCount(0);
+						this->m_StormCount = 0;
 					}
 				}
 
-				if ( this->GetDarknessTime()->Elapsed() )
+				if ( this->m_DarknessTime.Elapsed() )
 				{
 					this->CallToDarkness();
 				}
@@ -427,7 +427,7 @@ public:
 
 /*
 Drop Random ( nixies, ferea, mcgriffi, sylvester )
-PK incrementa daño 1% por kill
+PK incrementa daÃ±o 1% por kill
 Para pegar al boss necesitas 3 kill
 Para que inicie el boss necesitas 20 pjs
 */

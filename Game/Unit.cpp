@@ -1762,7 +1762,7 @@ bool Unit::AttackAllowed(Unit * mTarget, bool targeted, bool reflect)
 		return false;
 	}
 
-	if ( !reflect && mTarget->GetRegenStatus() != REGEN_NONE ) // TODO: Quizás haya que sacarlo
+	if ( !reflect && mTarget->GetRegenStatus() != REGEN_NONE ) // TODO: Quizs haya que sacarlo
 	{
 		return false;
 	}
@@ -4105,8 +4105,8 @@ void Unit::SendDamage(Unit *mTarget, int32 life_damage, int32 shield_damage, uin
 
 	if (interrupt)
 	{
-		pMsg.m_propTarget[0] &= 0x7F;
-		pMsg.m_propTarget[0] |= 0x80;
+		pMsg.m_Target[0] &= 0x7F;
+		pMsg.m_Target[0] |= 0x80;
 	}
 
 	pMsg.attribute = special;
@@ -5000,11 +5000,11 @@ int32 FrustrumY[MAX_ARRAY_FRUSTRUM];
 
 void InitFrustrum()
 {
-	float CameraViewFar    = 2400.0f;	// À§ÂÊ ³¡
-	float CameraViewNear   = CameraViewFar * 0.19f;// ¾Æ·¡ ³¡
-	float CameraViewTarget = CameraViewFar * 0.53f;// Ä³¸¯ÅÍÀÇ Áß¾Ó À§Ä¡
-	float WidthFar  = 1190.0f;// À§ÂÊÀÇ °¡·Î Æø
-	float WidthNear = 550.0f;// ¾Æ·¡ÂÊÀÇ °¡·Î Æø
+	float CameraViewFar    = 2400.0f;	// ìœ„ìª½ ë
+	float CameraViewNear   = CameraViewFar * 0.19f;// ì•„ë˜ ë
+	float CameraViewTarget = CameraViewFar * 0.53f;// ìºë¦­í„°ì˜ ì¤‘ì•™ ìœ„ì¹˜
+	float WidthFar  = 1190.0f;// ìœ„ìª½ì˜ ê°€ë¡œ í­
+	float WidthNear = 550.0f;// ì•„ë˜ìª½ì˜ ê°€ë¡œ í­
 		
 	vec3_t p[4];
 

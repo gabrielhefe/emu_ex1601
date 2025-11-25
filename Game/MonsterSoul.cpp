@@ -28,16 +28,16 @@ void MonsterSoul::LoadConverter(char* pchFileName)
 
 	uint32 count = 0;
 
-	for (pugi::xml_node data = Main.child("Data"); data; data = data.next_sibling()) {
-		MonsterSoulConverter* pData = new MonsterSoulConverter;
+for (pugi::xml_node data = Main.child("Data"); data; data = data.next_sibling()) {
+MonsterSoulConverter* pData = new MonsterSoulConverter;
 
-		pData->SetID(data.attribute("ID").as_int());
-		pData->SetItem(ITEMGET(data.attribute("Type").as_int(), data.attribute("Index").as_int()));
-		pData->SetAmount(data.attribute("Amount").as_int());
+pData->m_ID = data.attribute("ID").as_int();
+pData->m_Item = ITEMGET(data.attribute("Type").as_int(), data.attribute("Index").as_int());
+pData->m_Amount = data.attribute("Amount").as_int();
 
-		this->m_MonsterSoulConverterMap[pData->GetID()] = pData;
-		count++;
-	}
+this->m_MonsterSoulConverterMap[pData->m_ID] = pData;
+count++;
+}
 
 	sLog->outInfo(LOG_DEFAULT, ">> Loaded %u monster soul converter definitions", count);
 	sLog->outInfo(LOG_DEFAULT, " ");
@@ -61,16 +61,16 @@ void MonsterSoul::LoadTransformation(char* pchFileName)
 
 	uint32 count = 0;
 
-	for (pugi::xml_node type = Main.child("MonsterSoul"); type; type = type.next_sibling()) {
-		for (pugi::xml_node data = type.child("Data"); data; data = data.next_sibling()) {
-			MonsterSoulTransformation* pData = new MonsterSoulTransformation;
-			pData->SetType(type.attribute("Type").as_int());
-			pData->SetID(data.attribute("ID").as_int());
-			pData->SetWorld(data.attribute("World").as_int());
-			pData->SetMonster(data.attribute("Monster").as_int());
-			pData->SetRequiredSoul(data.attribute("ReqSoul").as_int());
-			pData->SetDropRate(data.attribute("DropRate").as_int());
-			pData->SetLocation(data.attribute("Location").as_string());
+for (pugi::xml_node type = Main.child("MonsterSoul"); type; type = type.next_sibling()) {
+for (pugi::xml_node data = type.child("Data"); data; data = data.next_sibling()) {
+MonsterSoulTransformation* pData = new MonsterSoulTransformation;
+pData->m_Type = type.attribute("Type").as_int();
+pData->m_ID = data.attribute("ID").as_int();
+pData->m_World = data.attribute("World").as_int();
+pData->m_Monster = data.attribute("Monster").as_int();
+pData->m_RequiredSoul = data.attribute("ReqSoul").as_int();
+pData->m_DropRate = data.attribute("DropRate").as_int();
+pData->m_Location = data.attribute("Location").as_string();
 
 			this->m_MonsterSoulTransformationList.push_back(pData);
 			count++;
@@ -99,14 +99,14 @@ void MonsterSoul::LoadReward(char* pchFileName)
 
 	uint32 count = 0;
 
-	for (pugi::xml_node level = Main.child("MonsterSoul"); level; level = level.next_sibling()) {
-		for (pugi::xml_node sublevel = level.child("Reward"); sublevel; sublevel = sublevel.next_sibling()) {
-			MonsterSoulReward* pData = new MonsterSoulReward;
+for (pugi::xml_node level = Main.child("MonsterSoul"); level; level = level.next_sibling()) {
+for (pugi::xml_node sublevel = level.child("Reward"); sublevel; sublevel = sublevel.next_sibling()) {
+MonsterSoulReward* pData = new MonsterSoulReward;
 
-			pData->SetID(level.attribute("Level").as_int());
-			pData->SetSubID(sublevel.attribute("SubLevel").as_int());
-			pData->SetItemBag(sublevel.attribute("ItemBag").as_string());
-			pData->SetRandomItemBag(sublevel.attribute("RandomItemBag").as_string());
+pData->m_ID = level.attribute("Level").as_int();
+pData->m_SubID = sublevel.attribute("SubLevel").as_int();
+pData->m_ItemBag = sublevel.attribute("ItemBag").as_string();
+pData->m_RandomItemBag = sublevel.attribute("RandomItemBag").as_string();
 
 			this->m_MonsterSoulRewardList.push_back(pData);
 			count++;
@@ -119,14 +119,14 @@ void MonsterSoul::LoadReward(char* pchFileName)
 	{
 		do
 		{
-			Field* fields = result->Fetch();
+Field* fields = result->Fetch();
 
-			MonsterSoulReward * pData = new MonsterSoulReward;
+MonsterSoulReward* pData = new MonsterSoulReward;
 
-			pData->SetID(fields[0].GetUInt32());
-			pData->SetSubID(fields[1].GetUInt8());
-			pData->SetItemBag(fields[2].GetString());
-			pData->SetRandomItemBag(fields[3].GetString());
+pData->m_ID = fields[0].GetUInt32();
+pData->m_SubID = fields[1].GetUInt8();
+pData->m_ItemBag = fields[2].GetString();
+pData->m_RandomItemBag = fields[3].GetString();
 
 			this->m_MonsterSoulRewardList.push_back(pData);
 			count++;
@@ -160,7 +160,7 @@ MonsterSoulConverter const* MonsterSoul::GetConverterByItem(uint16 id) const
 			continue;
 		}
 
-		if (pData->GetItem() == id)
+		if (pData->m_Item == id)
 		{
 			return pData;
 		}
@@ -180,7 +180,7 @@ MonsterSoulTransformation const* MonsterSoul::GetTransformation(uint32 type, uin
 			continue;
 		}
 
-		if (pData->GetType() == type && pData->GetID() == id)
+		if (pData->m_Type == type && pData->m_ID == id)
 		{
 			return pData;
 		}
@@ -200,7 +200,7 @@ MonsterSoulReward const* MonsterSoul::GetReward(uint32 id, uint8 sub_id) const
 			continue;
 		}
 
-		if (pData->GetID() == id && pData->GetSubID() == sub_id)
+		if (pData->m_ID == id && pData->m_SubID == sub_id)
 		{
 			return pData;
 		}
@@ -216,7 +216,7 @@ bool MonsterSoul::IsSoulConverter(Item const* pItem) const
 		return false;
 	}
 
-	return this->IsSoulConverter(pItem->GetItem());
+	return this->IsSoulConverter(pItem->m_Item);
 }
 
 bool MonsterSoul::IsSoulConverter(uint16 item) const
@@ -231,19 +231,19 @@ bool MonsterSoul::IsPurchaseAllowed(Player* pPlayer, Item const* pItem)
 		return true;
 	}
 
-	return !use_inventory_range(pPlayer->ItemFind(pItem->GetItem(), 0));
+	return !use_inventory_range(pPlayer->ItemFind(pItem->m_Item, 0));
 }
 
 void MonsterSoul::ExpireSoulConverter(Player* pPlayer, Item const* pItem)
 {
-	MonsterSoulConverter const* pConverter = this->GetConverterByItem(pItem->GetItem());
+	MonsterSoulConverter const* pConverter = this->GetConverterByItem(pItem->m_Item);
 
 	if (!pConverter)
 	{
 		return;
 	}
 
-	pPlayer->RemoveMonsterSoulData(pConverter->GetID());
+	pPlayer->RemoveMonsterSoulData(pConverter->m_ID);
 
 	this->SendStatus(pPlayer);
 }
@@ -295,7 +295,7 @@ void MonsterSoul::SendPurchaseList(Player* pPlayer)
 		MONSTER_SOUL_NPC_DATA_BODY_1* body = (MONSTER_SOUL_NPC_DATA_BODY_1*)&buffer[write_size];
 		write_size += sizeof(MONSTER_SOUL_NPC_DATA_BODY_1);
 
-		body->type = pData->GetID();
+		body->type = pData->m_ID;
 		body->data[0] = 0;
 		body->data[1] = 0;
 		body->expire_date = time(nullptr) + sGameServer->GetMonsterSoulDurationTime();
@@ -304,7 +304,7 @@ void MonsterSoul::SendPurchaseList(Player* pPlayer)
 		body->status = 0;
 		body->slot = 0;
 
-		uint8 slot = pPlayer->ItemFind(pData->GetItem(), 0);
+		uint8 slot = pPlayer->ItemFind(pData->m_Item, 0);
 		bool finished = true;
 
 		if (use_inventory_range(slot))
@@ -312,13 +312,13 @@ void MonsterSoul::SendPurchaseList(Player* pPlayer)
 			body->slot = slot;
 			body->expire_date = pPlayer->GetInventory()->GetItem(slot)->GetExpireDate();
 			
-			MonsterSoulData* pPlayerData = pPlayer->GetMonsterSoulData(pData->GetID());
+			MonsterSoulData* pPlayerData = pPlayer->GetMonsterSoulData(pData->m_ID);
 
 			if (pPlayerData)
 			{
 				for (MonsterSoulAmountDataMap::const_iterator it = pPlayerData->m_AmountMap.begin(); it != pPlayerData->m_AmountMap.end(); ++it)
 				{
-					MonsterSoulTransformation const* pMonsterData = this->GetTransformation(pData->GetID(), it->first);
+					MonsterSoulTransformation const* pMonsterData = this->GetTransformation(pData->m_ID, it->first);
 
 					if (pMonsterData)
 					{
@@ -328,9 +328,9 @@ void MonsterSoul::SendPurchaseList(Player* pPlayer)
 						data->id = it->first;
 						data->amount = it->second;
 
-						if (data->amount >= pMonsterData->GetRequiredSoul())
+						if (data->amount >= pMonsterData->m_RequiredSoul)
 						{
-							data->amount = pMonsterData->GetRequiredSoul();
+							data->amount = pMonsterData->m_RequiredSoul;
 						}
 						else
 						{
@@ -358,7 +358,7 @@ void MonsterSoul::SendPurchaseList(Player* pPlayer)
 
 void MonsterSoul::SoulConverterPurchase(Player* pPlayer, Item * pItem)
 {
-	MonsterSoulConverter const* pConverter = this->GetConverterByItem(pItem->GetItem());
+	MonsterSoulConverter const* pConverter = this->GetConverterByItem(pItem->m_Item);
 
 	if (!pConverter)
 	{
@@ -372,14 +372,14 @@ void MonsterSoul::SoulConverterPurchase(Player* pPlayer, Item * pItem)
 		return;
 	}
 
-	pPlayer->RemoveMonsterSoulData(pConverter->GetID());
+	pPlayer->RemoveMonsterSoulData(pConverter->m_ID);
 
 	MonsterSoulData* pData = new MonsterSoulData;
-	pData->SetType(pConverter->GetID());
+	pData->SetType(pConverter->m_ID);
 
-	pPlayer->m_MonsterSoulDataMap[pConverter->GetID()] = pData;
+	pPlayer->m_MonsterSoulDataMap[pConverter->m_ID] = pData;
 
-	for (int32 i = 0; i < pConverter->GetAmount(); ++i)
+	for (int32 i = 0; i < pConverter->m_Amount; ++i)
 	{
 		RandomValue<uint32> m_RandomValue(0);
 
@@ -392,17 +392,17 @@ void MonsterSoul::SoulConverterPurchase(Player* pPlayer, Item * pItem)
 				continue;
 			}
 
-			if (pMonsterData->GetType() != pConverter->GetID())
+			if (pMonsterData->m_Type != pConverter->m_ID)
 			{
 				continue;
 			}
 
-			if (pData->m_AmountMap.find(pMonsterData->GetID()) != pData->m_AmountMap.end())
+			if (pData->m_AmountMap.find(pMonsterData->m_ID) != pData->m_AmountMap.end())
 			{
 				continue;
 			}
 
-			m_RandomValue.AddValue(pMonsterData->GetID(), 0);
+			m_RandomValue.AddValue(pMonsterData->m_ID, 0);
 		}
 
 		pData->m_AmountMap[m_RandomValue.GetRandomValue(RANDOM_POOL_RANDOM)] = 0;
@@ -432,26 +432,26 @@ void MonsterSoul::SendStatus(Player* pPlayer)
 			continue;
 		}
 
-		uint8 slot = pPlayer->ItemFind(pData->GetItem(), 0);
+		uint8 slot = pPlayer->ItemFind(pData->m_Item, 0);
 
 		if (!use_inventory_range(slot))
 		{
-			pPlayer->RemoveMonsterSoulData(pData->GetID());
+			pPlayer->RemoveMonsterSoulData(pData->m_ID);
 			continue;
 		}
 
-		MonsterSoulData* pPlayerData = pPlayer->GetMonsterSoulData(pData->GetID());
+		MonsterSoulData* pPlayerData = pPlayer->GetMonsterSoulData(pData->m_ID);
 
 		if (!pPlayerData)
 		{
-			pPlayer->ItemDelete(pData->GetItem(), 0, use_inventory_size);
+			pPlayer->ItemDelete(pData->m_Item, 0, use_inventory_size);
 			continue;
 		}
 
 		MONSTER_SOUL_QUEST_BODY_1* body = (MONSTER_SOUL_QUEST_BODY_1*)&buffer[write_size];
 		write_size += sizeof(MONSTER_SOUL_QUEST_BODY_1);
 
-		body->type = pData->GetID();
+		body->type = pData->m_ID;
 		body->data[0] = 0;
 		body->data[1] = 0;
 		body->expire_date = pPlayer->GetInventory()->GetItem(slot)->GetExpireDate();
@@ -464,7 +464,7 @@ void MonsterSoul::SendStatus(Player* pPlayer)
 
 		for (MonsterSoulAmountDataMap::const_iterator it = pPlayerData->m_AmountMap.begin(); it != pPlayerData->m_AmountMap.end(); ++it)
 		{
-			MonsterSoulTransformation const* pMonsterData = this->GetTransformation(pData->GetID(), it->first);
+			MonsterSoulTransformation const* pMonsterData = this->GetTransformation(pData->m_ID, it->first);
 
 			if (pMonsterData)
 			{
@@ -474,9 +474,9 @@ void MonsterSoul::SendStatus(Player* pPlayer)
 				data->id = it->first;
 				data->amount = it->second;
 
-				if (data->amount >= pMonsterData->GetRequiredSoul())
+				if (data->amount >= pMonsterData->m_RequiredSoul)
 				{
-					data->amount = pMonsterData->GetRequiredSoul();
+					data->amount = pMonsterData->m_RequiredSoul;
 				}
 				else
 				{
@@ -518,30 +518,30 @@ void MonsterSoul::MonsterKill(Player* pPlayer, Monster* pMonster)
 
 		for (MonsterSoulAmountDataMap::iterator it = pData->m_AmountMap.begin(); it != pData->m_AmountMap.end(); ++it)
 		{
-			MonsterSoulTransformation const* pMonsterData = this->GetTransformation(pData->GetType(), it->first);
+			MonsterSoulTransformation const* pMonsterData = this->GetTransformation(pData->m_Type, it->first);
 
 			if (!pMonsterData)
 			{
 				continue;
 			}
 
-			if (it->second >= pMonsterData->GetRequiredSoul())
+			if (it->second >= pMonsterData->m_RequiredSoul)
 			{
 				continue;
 			}
 
-			if ((pMonsterData->GetWorld() == pMonster->GetWorldId()) || (KUBERA_MAP_RANGE(pMonsterData->GetWorld()) && KUBERA_MAP_RANGE(pMonster->GetWorldId())))
+			if ((pMonsterData->m_World == pMonster->GetWorldId()) || (KUBERA_MAP_RANGE(pMonsterData->m_World) && KUBERA_MAP_RANGE(pMonster->GetWorldId())))
 			{
-				if (pMonsterData->GetMonster() != pMonster->GetClass())
+				if (pMonsterData->m_Monster != pMonster->GetClass())
 				{
 					continue;
 				}
 
-				if (roll_chance_i(pMonsterData->GetDropRate(), 1000000))
+				if (roll_chance_i(pMonsterData->m_DropRate, 1000000))
 				{
 					it->second++;
 
-					this->SendUpdateData(pPlayer, pMonsterData->GetType());
+					this->SendUpdateData(pPlayer, pMonsterData->m_Type);
 
 					this->ShareSoulToParty(pPlayer, pMonsterData);
 				}
@@ -586,20 +586,20 @@ void MonsterSoul::ShareSoulToParty(Player* pPlayer, MonsterSoulTransformation co
 			continue;
 		}
 
-		MonsterSoulData* pData = pMember->GetMonsterSoulData(pMonsterData->GetType());
+		MonsterSoulData* pData = pMember->GetMonsterSoulData(pMonsterData->m_Type);
 
 		if (!pData)
 		{
 			continue;
 		}
 
-		MonsterSoulAmountDataMap::iterator itr = pData->m_AmountMap.find(pMonsterData->GetID());
+		MonsterSoulAmountDataMap::iterator itr = pData->m_AmountMap.find(pMonsterData->m_ID);
 
 		if (itr != pData->m_AmountMap.end())
 		{
 			itr->second++;
 
-			this->SendUpdateData(pMember, pMonsterData->GetType());
+			this->SendUpdateData(pMember, pMonsterData->m_Type);
 		}
 	}
 }
@@ -625,7 +625,7 @@ void MonsterSoul::SendUpdateData(Player* pPlayer, uint32 type)
 		return;
 	}
 
-	uint8 slot = pPlayer->ItemFind(pConverter->GetItem(), 0);
+	uint8 slot = pPlayer->ItemFind(pConverter->m_Item, 0);
 
 	if (!use_inventory_range(slot))
 	{
@@ -655,9 +655,9 @@ void MonsterSoul::SendUpdateData(Player* pPlayer, uint32 type)
 			body[head->amount].id = it->first;
 			body[head->amount].amount = it->second;
 
-			if (body[head->amount].amount >= pMonsterData->GetRequiredSoul())
+			if (body[head->amount].amount >= pMonsterData->m_RequiredSoul)
 			{
-				body[head->amount].amount = pMonsterData->GetRequiredSoul();
+				body[head->amount].amount = pMonsterData->m_RequiredSoul;
 			}
 			else
 			{
@@ -692,7 +692,7 @@ bool MonsterSoul::SoulConverterUse(Player* pPlayer, uint16 item, uint8 slot, uin
 		return false;
 	}
 
-	MonsterSoulData const* pData = pPlayer->GetMonsterSoulData(pConverter->GetID());
+	MonsterSoulData const* pData = pPlayer->GetMonsterSoulData(pConverter->m_ID);
 
 	if (!pData)
 	{
@@ -703,14 +703,14 @@ bool MonsterSoul::SoulConverterUse(Player* pPlayer, uint16 item, uint8 slot, uin
 
 	for (MonsterSoulAmountDataMap::const_iterator itr = pData->m_AmountMap.begin(); itr != pData->m_AmountMap.end(); ++itr)
 	{
-		MonsterSoulTransformation const* pMonsterInfo = this->GetTransformation(pData->GetType(), itr->first);
+		MonsterSoulTransformation const* pMonsterInfo = this->GetTransformation(pData->m_Type, itr->first);
 
 		if (!pMonsterInfo)
 		{
 			continue;
 		}
 
-		if (itr->second < pMonsterInfo->GetRequiredSoul())
+		if (itr->second < pMonsterInfo->m_RequiredSoul)
 		{
 			finished = false;
 			break;
@@ -722,7 +722,7 @@ bool MonsterSoul::SoulConverterUse(Player* pPlayer, uint16 item, uint8 slot, uin
 		return true;
 	}
 
-	MonsterSoulReward const* pReward = this->GetReward(pData->GetType(), type);
+	MonsterSoulReward const* pReward = this->GetReward(pData->m_Type, type);
 
 	if (!pReward)
 	{
@@ -730,15 +730,15 @@ bool MonsterSoul::SoulConverterUse(Player* pPlayer, uint16 item, uint8 slot, uin
 	}
 
 	pPlayer->ClearItem(slot);
-	pPlayer->RemoveMonsterSoulData(pData->GetType());
+	pPlayer->RemoveMonsterSoulData(pData->m_Type);
 
 	Item new_item;
-	sItemBagMgr->RunItemBag(pPlayer, pReward->GetItemBag(), new_item);
+	sItemBagMgr->RunItemBag(pPlayer, pReward->m_ItemBag, new_item);
 
-	if (sItemBagMgr->RunItemBag(pPlayer, pReward->GetRandomItemBag(), new_item))
+	if (sItemBagMgr->RunItemBag(pPlayer, pReward->m_RandomItemBag, new_item))
 	{
 		MONSTER_SOUL_REWARD pMsg;
-		pMsg.id = pConverter->GetID();
+		pMsg.id = pConverter->m_ID;
 		pMsg.reward_type = type;
 		pMsg.item = new_item.GetItem();
 		pMsg.amount = 1;
