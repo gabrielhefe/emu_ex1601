@@ -192,7 +192,7 @@ void DevilSquare::UpdatePlayerStatus()
 		{
 			this->Log("Removed Player %s : Not in event.", pPlayer->GetName());
 
-			pPlayer->SendNotice(NOTICE_NORMAL_BLUE, "Failed. Your score is %d. Try again next time", this->GetPlayer(i)->ToDS()->GetScore());
+                        pPlayer->SendNotice(NOTICE_NORMAL_BLUE, "Failed. Your score is %d. Try again next time", this->GetPlayer(i)->ToDS()->m_Score);
 			pPlayer->EventResetData();
 			this->GetPlayer(i)->Reset();
 			continue;
@@ -222,12 +222,12 @@ bool Sort(DevilSquarePlayer* pPlayer1, DevilSquarePlayer* pPlayer2)
 	if ( !pPlayer2 || !pPlayer2->GetPlayer() )
 		return true;
 	
-	if ( pPlayer1->GetScore() == pPlayer2->GetScore() )
-	{
-		return (pPlayer1->GetPlayer()->GetTotalLevel() > pPlayer2->GetPlayer()->GetTotalLevel());
-	}
+        if ( pPlayer1->m_Score == pPlayer2->m_Score )
+        {
+                return (pPlayer1->GetPlayer()->GetTotalLevel() > pPlayer2->GetPlayer()->GetTotalLevel());
+        }
 
-	return (pPlayer1->GetScore() > pPlayer2->GetScore());
+        return (pPlayer1->m_Score > pPlayer2->m_Score);
 }
 
 void DevilSquare::BubbleSort()
@@ -243,7 +243,7 @@ void DevilSquare::BubbleSort()
 		if ( pPlayer )
 		{
 			pPlayer->QuestMUObjectiveUpdate(QUEST_MU_OBJECTIVE_DEVIL_SQUARE_CLEAR);
-			pPlayer->QuestMUObjectiveUpdate(QUEST_MU_OBJECTIVE_DEVIL_SQUARE_POINTS, nullptr, this->GetPlayer(i)->ToDS()->GetScore());
+pPlayer->QuestMUObjectiveUpdate(QUEST_MU_OBJECTIVE_DEVIL_SQUARE_POINTS, nullptr, this->GetPlayer(i)->ToDS()->m_Score);
 		}
 	}
 
@@ -273,8 +273,8 @@ void DevilSquare::CalculatePlayerScore()
 		if ( !pPlayer )
 			continue;
 
-		memcpy(body[count].name, pPlayer->GetName(), MAX_CHARACTER_LENGTH);
-		body[count].score = this->GetRanking(i)->GetScore();
+                memcpy(body[count].name, pPlayer->GetName(), MAX_CHARACTER_LENGTH);
+                body[count].score = this->GetRanking(i)->m_Score;
 		body[count].exp = 0;
 		body[count].zen = 0;
 
@@ -311,8 +311,8 @@ void DevilSquare::CalculatePlayerScore()
 
 		head->my_rank = rank + 1;
 
-		memcpy(body[0].name, pPlayer->GetName(), MAX_CHARACTER_LENGTH);
-		body[0].score = this->GetRanking(i)->GetScore();
+                memcpy(body[0].name, pPlayer->GetName(), MAX_CHARACTER_LENGTH);
+                body[0].score = this->GetRanking(i)->m_Score;
 		body[0].exp = 0;
 		body[0].zen = 0;
 		
@@ -324,7 +324,7 @@ void DevilSquare::CalculatePlayerScore()
 
 		rank++;
 
-		pPlayer->UpdateStatistic(STATISTIC_DEVIL_SQUARE_POINTS, this->GetRanking(i)->GetScore());
+                pPlayer->UpdateStatistic(STATISTIC_DEVIL_SQUARE_POINTS, this->GetRanking(i)->m_Score);
 		pPlayer->MoneyAdd(body[0].zen);
 
 		if ( sCrywolf->GetOccupationState() == CRYWOLF_OCCUPATION_FAIL && sGameServer->IsCrywolfPenaltyApply() )
@@ -340,8 +340,8 @@ void DevilSquare::CalculatePlayerScore()
 
 		sEventMgr->GiveContributionReward(pPlayer, EVENT_DEVIL_SQUARE, this->GetGround() + 1, head->my_rank, GremoryCaseReward::DEVIL_SQUARE);
 
-		sEventMgr->AddEventScore(pPlayer->GetGUID(), pPlayer->GetName(), EVENT_DEVIL_SQUARE, this->GetGround(), this->GetRanking(i)->GetScore());
-	}
+                sEventMgr->AddEventScore(pPlayer->GetGUID(), pPlayer->GetName(), EVENT_DEVIL_SQUARE, this->GetGround(), this->GetRanking(i)->m_Score);
+        }
 }
 
 devil_square_ranking * DevilSquare::GetRankingData(uint8 position) const

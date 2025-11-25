@@ -29,13 +29,14 @@ struct devil_square_ranking
 
 struct DevilSquarePlayer: public EventGroundPlayer
 {
-	private:
-		void Init()
-		{
-			this->SetScore(0);
-		}
+    private:
+            void Init()
+            {
+                    this->m_Score = 0;
+            }
 
-		DECLARE_PROPERTY(int32, Score);
+    public:
+            int32 m_Score;
 };
 
 typedef std::map<uint8, devil_square_ranking*> DevilSquareRankingMap;
