@@ -1,6 +1,9 @@
 #ifndef CUSTOM_RANK_SV_H
 #define CUSTOM_RANK_SV_H
 
+#include <list>
+#include <string>
+
 #define MAX_VIEW_RANK_PLAYER 100
 
 struct RankServer_Head : C2_HEADER_SUB {
@@ -17,28 +20,28 @@ struct RankServer_Body {
 };
 
 struct RankServerData {
-	DECLARE_ENUM(uint8, Rank);
-	DECLARE_ENUM(uint16, GUID);
-	DECLARE_PROPERTY_STRING(pPlayerName);
-	DECLARE_ENUM(uint8, Class);
-	DECLARE_ENUM(uint8, Reset);
-	DECLARE_ENUM(uint16, Level);
-	DECLARE_ENUM(uint16, MasterLevel);
-	DECLARE_ENUM(uint16, MajesticLevel);
+        uint8 m_Rank;
+        uint16 m_GUID;
+        std::string m_PlayerName;
+        uint8 m_Class;
+        uint8 m_Reset;
+        uint16 m_Level;
+        uint16 m_MasterLevel;
+        uint16 m_MajesticLevel;
 };
 
 typedef std::list<RankServerData*> RankData;
 
 class CCustomRankServer {
-	SingletonInstance(CCustomRankServer);
+        SingletonInstance(CCustomRankServer);
 public:
-	CCustomRankServer();
-	virtual ~CCustomRankServer();
+        CCustomRankServer();
+        virtual ~CCustomRankServer();
 
-	void LoadRankServer();
-	void SendRankServerData(Player* pPlayer);
+        void LoadRankServer();
+        void SendRankServerData(Player* pPlayer);
 private:
-	RankData sv_rank_list_data;
+        RankData m_SvRankListData;
 };
 
 #endif
