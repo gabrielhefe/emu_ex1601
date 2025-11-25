@@ -7,9 +7,9 @@ class NpcSellScript
 		explicit NpcSellScript(Player* pPlayer);
 		~NpcSellScript();
 
-		DECLARE_PTR(Player, Player);
-		DECLARE_ARRAY_STRUCT(Item, Item, MAX_ITEM_SOLD);
-		DECLARE_PROPERTY(int32, Count);
+                Player* m_Player;
+                Item m_Item[MAX_ITEM_SOLD];
+                int32 m_Count;
 
 		void Clear();
 		void AssignItem(Item const&, uint8 slot, uint32 price);
