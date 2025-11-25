@@ -9,11 +9,11 @@
 
 struct GuildMatchingJoinInfo
 {
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_STRING_FIXED(Name, MAX_CHARACTER_LENGTH + 1);
-	DECLARE_ENUM(uint32, GuildID);
-	DECLARE_ENUM(uint8, Class);
-	DECLARE_ENUM(uint32, Level);
+uint32 m_ID;
+char m_Name[MAX_CHARACTER_LENGTH + 1];
+uint32 m_GuildID;
+uint8 m_Class;
+uint32 m_Level;
 };
 
 typedef std::map<uint32, GuildMatchingJoinInfo*> GuildMatchingJoinInfoMap;

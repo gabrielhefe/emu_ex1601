@@ -3,22 +3,22 @@
 
 struct CharacterData
 {
-	CharacterData()
-	{
-		this->SetID(0);
-		this->ResetName();
-		this->SetServer(-1);
-		this->SetGuild(0);
-		this->SetAuthority(0);
-		this->SetAdminPanelFlags(0);
-	}
+CharacterData()
+{
+this->m_ID = 0;
+memset(this->m_Name, 0, sizeof(this->m_Name));
+this->m_Server = -1;
+this->m_Guild = 0;
+this->m_Authority = 0;
+this->m_AdminPanelFlags = 0;
+}
 
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_STRING_FIXED(Name, MAX_CHARACTER_LENGTH + 1);
-	DECLARE_ENUM(uint16, Server);
-	DECLARE_ENUM(uint32, Guild);
-	DECLARE_ENUM(uint8, Authority);
-	DECLARE_ENUM(uint32, AdminPanelFlags);
+uint32 m_ID;
+char m_Name[MAX_CHARACTER_LENGTH + 1];
+uint16 m_Server;
+uint32 m_Guild;
+uint8 m_Authority;
+uint32 m_AdminPanelFlags;
 
 	std::shared_ptr<ServerSocket> socket;
 };

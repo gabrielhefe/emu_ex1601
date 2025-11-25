@@ -10,32 +10,32 @@ ArkaWar::~ArkaWar()
 
 bool ArkaWarGuildSort(ArkaWarGuild const& pGuild01, ArkaWarGuild const& pGuild02)
 {
-	if ( pGuild01.GetSigns() == pGuild02.GetSigns() )
-	{
-		return pGuild01.GetRegisterTime() < pGuild02.GetRegisterTime();
-	}
+	if ( pGuild01.m_Signs == pGuild02.m_Signs )
+{
+	return pGuild01.m_RegisterTime < pGuild02.m_RegisterTime;
+}
 	else
-	{
-		return pGuild01.GetSigns() >= pGuild02.GetSigns();
-	}
+{
+	return pGuild01.m_Signs >= pGuild02.m_Signs;
+}
 }
 
 void ArkaWar::GetArkaWarGuildSort(std::vector<ArkaWarGuild> & guild_list, int32 min_member)
 {
 	for ( ArkaWarGuildMap::const_iterator it = this->arka_war_guild.begin(); it != this->arka_war_guild.end(); ++it )
-	{
-		if ( it->second->GetMemberCount() < min_member )
-		{
-			continue;
-		}
+{
+	if ( it->second->m_MemberCount < min_member )
+{
+		continue;
+}
 
-		ArkaWarGuild add_guild;
-		add_guild.SetID(it->second->GetID());
-		add_guild.SetSigns(it->second->GetSigns());
-		add_guild.SetMemberCount(it->second->GetMemberCount());
-		add_guild.SetRegisterTime(it->second->GetRegisterTime());
-		guild_list.push_back(add_guild);
-	}
+	ArkaWarGuild add_guild;
+		add_guild.m_ID = it->second->m_ID;
+		add_guild.m_Signs = it->second->m_Signs;
+		add_guild.m_MemberCount = it->second->m_MemberCount;
+		add_guild.m_RegisterTime = it->second->m_RegisterTime;
+	guild_list.push_back(add_guild);
+}
 
 	std::sort(guild_list.begin(), guild_list.end(), ArkaWarGuildSort);
 }
@@ -58,19 +58,19 @@ void ArkaWar::MasterRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socke
 	}
 
 	ArkaWarGuild * add_guild = new ArkaWarGuild;
-	add_guild->SetID(lpMsg->guild);
-	add_guild->SetSigns(0);
-	add_guild->SetMemberCount(1);
-	add_guild->SetAdmited(false);
-	add_guild->SetRegisterTime(time(nullptr));
+	add_guild->m_ID = lpMsg->guild;
+	add_guild->m_Signs = 0;
+	add_guild->m_MemberCount = 1;
+	add_guild->m_Admited = false;
+	add_guild->m_RegisterTime = time(nullptr);
 	this->arka_war_guild[lpMsg->guild] = add_guild;
 
 	ArkaWarMember * add_member = new ArkaWarMember;
-	add_member->SetID(lpMsg->player.guid);
-	add_member->SetName(lpMsg->player.name);
-	add_member->SetGuild(lpMsg->guild);
+	add_member->m_ID = lpMsg->player.guid;
+	memcpy(add_member->m_Name, lpMsg->player.name, MAX_CHARACTER_LENGTH + 1);
+	add_member->m_Guild = lpMsg->guild;
 
-	this->arka_war_member[add_member->GetID()] = add_member;
+	this->arka_war_member[add_member->m_ID] = add_member;
 
 	socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
 }
@@ -101,21 +101,21 @@ void ArkaWar::MemberRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socke
 		return;
 	}
 
-	if ( itr->second->GetMemberCount() > lpMsg->max_member )
-	{
-		pMsg.result = 3;
-		socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
-		return;
-	}
+	if ( itr->second->m_MemberCount > lpMsg->max_member )
+{
+	pMsg.result = 3;
+	socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
+	return;
+}
 
-	itr->second->IncreaseMemberCount(1);
+	itr->second->m_MemberCount += 1;
 
 	ArkaWarMember * add_member = new ArkaWarMember;
-	add_member->SetID(lpMsg->player.guid);
-	add_member->SetName(lpMsg->player.name);
-	add_member->SetGuild(lpMsg->guild);
+	add_member->m_ID = lpMsg->player.guid;
+	memcpy(add_member->m_Name, lpMsg->player.name, MAX_CHARACTER_LENGTH + 1);
+	add_member->m_Guild = lpMsg->guild;
 
-	this->arka_war_member[add_member->GetID()] = add_member;
+	this->arka_war_member[add_member->m_ID] = add_member;
 
 	socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
 }
@@ -139,11 +139,11 @@ void ArkaWar::SignRegister(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 	}
 
 	if ( lpMsg->result == 1 )
-	{
-		it->second->IncreaseSigns(lpMsg->signs);
-	}
+{
+		it->second->m_Signs += lpMsg->signs;
+}
 
-	pMsg.signs = it->second->GetSigns();
+	pMsg.signs = it->second->m_Signs;
 
 	socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
 }
@@ -184,7 +184,7 @@ void ArkaWar::MemberCount(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 		return;
 	}
 
-	pMsg.count = it->second->GetMemberCount();
+	pMsg.count = it->second->m_MemberCount;
 	socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
 }
 
@@ -256,11 +256,11 @@ void ArkaWar::SignRequest(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 	this->GetArkaWarGuildSort(ArkaWarGuildList, 0);
 
 	for ( std::vector<ArkaWarGuild>::const_iterator it = ArkaWarGuildList.begin(); it != ArkaWarGuildList.end(); ++it )
-	{
-		body[head->count].guild = it->GetID();
-		body[head->count].signs = it->GetSigns();
+{
+	body[head->count].guild = it->m_ID;
+	body[head->count].signs = it->m_Signs;
 		++head->count;
-	}
+}
 
 	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_SIGN_REQUEST, sizeof(SL_ARKA_WAR_SIGN_REQUEST_HEAD) + (head->count * sizeof(SL_ARKA_WAR_SIGN_REQUEST_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
@@ -282,11 +282,11 @@ void ArkaWar::GuildRemove(uint32 id)
 void ArkaWar::MemberGuildRemove(uint32 id)
 {
 	for ( ArkaWarMemberMap::const_iterator it = this->arka_war_member.begin(); it != this->arka_war_member.end(); )
-	{
-		if ( it->second->GetGuild() == id )
-		{
-			delete it->second;
-			this->arka_war_member.erase(it++);
+{
+	if ( it->second->m_Guild == id )
+{
+		delete it->second;
+	this->arka_war_member.erase(it++);
 		}
 		else
 		{
@@ -301,12 +301,12 @@ void ArkaWar::MemberRemove(uint32 id)
 
 	if ( it != this->arka_war_member.end() )
 	{
-		ArkaWarGuildMap::const_iterator it2 = this->arka_war_guild.find(it->second->GetGuild());
+	ArkaWarGuildMap::const_iterator it2 = this->arka_war_guild.find(it->second->m_Guild);
 
-		if ( it2 != this->arka_war_guild.end() )
-		{
-			it2->second->ReduceMemberCount(1);
-		}
+	if ( it2 != this->arka_war_guild.end() )
+{
+		it2->second->m_MemberCount -= 1;
+}
 
 		delete it->second;
 		this->arka_war_member.erase(it);
@@ -334,23 +334,23 @@ void ArkaWar::GetGuildList(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 	}
 
 	for ( int32 i = 0; i < guild_count; ++i )
-	{
-		ArkaWarGuildMap::iterator it = this->arka_war_guild.find(ArkaWarGuildList[i].GetID());
+{
+	ArkaWarGuildMap::iterator it = this->arka_war_guild.find(ArkaWarGuildList[i].m_ID);
 
-		if ( it != this->arka_war_guild.end() )
-		{
-			it->second->SetAdmited(true);
-		}
-	}
+	if ( it != this->arka_war_guild.end() )
+{
+		it->second->m_Admited = true;
+}
+}
 
 	for ( ArkaWarGuildMap::const_iterator it = this->arka_war_guild.begin(); it != this->arka_war_guild.end(); )
 	{
-		if ( !it->second->IsAdmited() )
-		{
-			this->MemberGuildRemove(it->second->GetID());
-			delete it->second;
-			this->arka_war_guild.erase(it++);
-		}
+	if ( !it->second->m_Admited )
+{
+		this->MemberGuildRemove(it->second->m_ID);
+		delete it->second;
+	this->arka_war_guild.erase(it++);
+}
 		else
 		{
 			++it;
@@ -359,10 +359,10 @@ void ArkaWar::GetGuildList(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
 
 	for ( ArkaWarGuildMap::const_iterator it = this->arka_war_guild.begin(); it != this->arka_war_guild.end(); ++it )
 	{
-		body[head->count].guild = it->second->GetID();
-		body[head->count].members = it->second->GetMemberCount();
+	body[head->count].guild = it->second->m_ID;
+	body[head->count].members = it->second->m_MemberCount;
 		++head->count;
-	}
+}
 
 	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_LIST, sizeof(SL_ARKA_WAR_LIST_HEAD) + (head->count * sizeof(SL_ARKA_WAR_LIST_GUILD_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());
@@ -377,12 +377,12 @@ void ArkaWar::GetMemberList(std::shared_ptr<ServerSocket> socket)
 	head->type = 1;
 
 	for ( ArkaWarMemberMap::const_iterator it = this->arka_war_member.begin(); it != this->arka_war_member.end(); ++it )
-	{
-		body[head->count].id = it->second->GetID();
-		memcpy(body[head->count].name, it->second->GetName(), MAX_CHARACTER_LENGTH + 1);
-		body[head->count].guild = it->second->GetGuild();
+{
+	body[head->count].id = it->second->m_ID;
+		memcpy(body[head->count].name, it->second->m_Name, MAX_CHARACTER_LENGTH + 1);
+	body[head->count].guild = it->second->m_Guild;
 		++head->count;
-	}
+}
 
 	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_LIST, sizeof(SL_ARKA_WAR_LIST_HEAD) + (head->count * sizeof(SL_ARKA_WAR_LIST_MEMBER_BODY)));
 	socket->QueuePacket(buffer, head->h.get_size());

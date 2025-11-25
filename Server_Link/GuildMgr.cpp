@@ -1,23 +1,23 @@
 Guild::Guild()
 {
-	this->SetID(0);
-	this->SetAlliance(0);
-	this->SetHostil(0);
-	this->SetScore(0);
-	this->SetRegisteredMarks(0);
-	this->ResetName();
-	memset(this->emblem, 0, MAX_GUILD_EMBLEM_LENGTH);
-	this->ResetNotice();
+this->m_ID = 0;
+this->m_Alliance = 0;
+this->m_Hostil = 0;
+this->m_Score = 0;
+this->m_RegisteredMarks = 0;
+memset(this->m_Name, 0, sizeof(this->m_Name));
+memset(this->emblem, 0, MAX_GUILD_EMBLEM_LENGTH);
+memset(this->m_Notice, 0, sizeof(this->m_Notice));
 
-	for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
-	{
-		this->GetMember(i)->Reset();
-	}
+for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
+{
+this->m_Member[i].Reset();
+}
 
-	this->SetRemove(false);
-	this->SetCastleSiegeRegistered(false);
+this->m_Remove = false;
+this->m_CastleSiegeRegistered = false;
 
-	this->ResetMatching();
+this->ResetMatching();
 }
 
 Guild::~Guild()
@@ -26,9 +26,9 @@ Guild::~Guild()
 
 void Guild::Create(uint32 id, const char * name, uint8 * emblem, bool db)
 {
-	this->SetID(id);
-	this->SetName(name);
-	memcpy(this->emblem, emblem, MAX_GUILD_EMBLEM_LENGTH);
+this->m_ID = id;
+memcpy(this->m_Name, name, sizeof(this->m_Name));
+memcpy(this->emblem, emblem, MAX_GUILD_EMBLEM_LENGTH);
 
 	if ( db )
 	{
@@ -38,10 +38,10 @@ void Guild::Create(uint32 id, const char * name, uint8 * emblem, bool db)
 
 		SQLTransaction trans = MuDatabase.BeginTransaction();
 
-		PreparedStatement *stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_INSERT);
-		stmt->setUInt32(0, this->GetID());
-		stmt->setString(1, base64::encode((uint8*)this->GetName(), MAX_GUILD_NAME_LENGTH));
-		stmt->setString(2, ss.str());
+PreparedStatement *stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_INSERT);
+stmt->setUInt32(0, this->m_ID);
+stmt->setString(1, base64::encode((uint8*)this->m_Name, MAX_GUILD_NAME_LENGTH));
+stmt->setString(2, ss.str());
 		trans->Append(stmt);
 
 		MuDatabase.CommitTransaction(trans);
@@ -50,21 +50,21 @@ void Guild::Create(uint32 id, const char * name, uint8 * emblem, bool db)
 
 void Guild::AddMember(uint32 id, const char * name, uint8 ranking, uint8 slot, uint16 server, bool db)
 {
-	this->GetMember(slot)->SetID(id);
-	this->GetMember(slot)->SetName(name);
-	this->GetMember(slot)->SetRanking(ranking);
-	this->GetMember(slot)->SetServer(server);
+this->m_Member[slot].m_ID = id;
+memcpy(this->m_Member[slot].m_Name, name, sizeof(this->m_Member[slot].m_Name));
+this->m_Member[slot].m_Ranking = ranking;
+this->m_Member[slot].m_Server = server;
 
 	if ( db )
 	{
 		SQLTransaction trans = MuDatabase.BeginTransaction();
 
-		PreparedStatement * stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_INSERT_MEMBER);
-		stmt->setUInt8(0, slot);
-		stmt->setUInt32(1, this->GetID());
-		stmt->setUInt32(2, id);
-		stmt->setUInt8(3, ranking);
-		trans->Append(stmt);
+PreparedStatement * stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_INSERT_MEMBER);
+stmt->setUInt8(0, slot);
+stmt->setUInt32(1, this->m_ID);
+stmt->setUInt32(2, id);
+stmt->setUInt8(3, ranking);
+trans->Append(stmt);
 
 		MuDatabase.CommitTransaction(trans);
 	}
@@ -72,23 +72,23 @@ void Guild::AddMember(uint32 id, const char * name, uint8 ranking, uint8 slot, u
 
 uint8 Guild::GetEmptySlot() const
 {
-	for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
-	{
-		if ( !this->GetMember(i)->GetID() )
-			return i;
-	}
+for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
+{
+if ( !this->m_Member[i].m_ID )
+return i;
+}
 
 	return 0;
 }
 
 uint8 Guild::GetMemberSlot(const char * name) const
 {
-	for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
-	{
-		if ( memcmp(this->GetMember(i)->GetName(), name, MAX_CHARACTER_LENGTH) )
-		{
-			continue;
-		}
+for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
+{
+if ( memcmp(this->m_Member[i].m_Name, name, MAX_CHARACTER_LENGTH) )
+{
+continue;
+}
 
 		return i;
 	}
@@ -98,12 +98,12 @@ uint8 Guild::GetMemberSlot(const char * name) const
 
 uint8 Guild::GetTotalMembers() const
 {
-	uint8 count = 0;
+uint8 count = 0;
 
-	for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
-	{
-		if ( !this->GetMember(i)->GetID() )
-			continue;
+for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
+{
+if ( !this->m_Member[i].m_ID )
+continue;
 
 		++count;
 	}
@@ -113,54 +113,54 @@ uint8 Guild::GetTotalMembers() const
 
 std::string Guild::BuildLog() const
 {
-	std::ostringstream stream;
+std::ostringstream stream;
 
-	stream << "[" << this->GetID() << " - " << this->GetName() << "]";
-	stream << " - ";
-	stream << "Master [" << this->GetMember(0)->GetName() << "]";
+stream << "[" << this->m_ID << " - " << this->m_Name << "]";
+stream << " - ";
+stream << "Master [" << this->m_Member[0].m_Name << "]";
 
-	return stream.str();
+return stream.str();
 }
 
 void Guild::UpdateRelationshipDB()
 {
-	SQLTransaction trans = MuDatabase.BeginTransaction();
+SQLTransaction trans = MuDatabase.BeginTransaction();
 
-	PreparedStatement*stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_UPDATE_ALLIANCE);
-	stmt->setUInt32(0, this->GetAlliance());
-	stmt->setUInt32(1, this->GetID());
-	trans->Append(stmt);
+PreparedStatement*stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_UPDATE_ALLIANCE);
+stmt->setUInt32(0, this->m_Alliance);
+stmt->setUInt32(1, this->m_ID);
+trans->Append(stmt);
 
-	stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_UPDATE_HOSTIL);
-	stmt->setUInt32(0, this->GetHostil());
-	stmt->setUInt32(1, this->GetID());
-	trans->Append(stmt);
+stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_UPDATE_HOSTIL);
+stmt->setUInt32(0, this->m_Hostil);
+stmt->setUInt32(1, this->m_ID);
+trans->Append(stmt);
 
-	MuDatabase.CommitTransaction(trans);
+MuDatabase.CommitTransaction(trans);
 }
 
 GuildMember* Guild::GetMemberData(uint32 id)
 {
-	for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
-	{
-		if ( this->GetMember(i)->GetID() == id )
-			return this->GetMember(i);
-	}
+for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
+{
+if ( this->m_Member[i].m_ID == id )
+return &this->m_Member[i];
+}
 
-	return nullptr;
+return nullptr;
 }
 
 void Guild::ResetMatching()
 {
-	this->SetMatchingEnabled(false);
-	this->ResetMatchingText();
-	this->SetMatchingInterestType(0);
-	this->SetMatchingLevelRange(0);
-	this->SetMatchingClassType(0);
-	this->SetMatchingBoardNumber(0);
-	this->SetMatchingMasterClass(0);
-	this->SetMatchingMasterLevel(0);
-	this->SetMatchingGensType(0);
+this->m_MatchingEnabled = false;
+memset(this->m_MatchingText, 0, sizeof(this->m_MatchingText));
+this->m_MatchingInterestType = 0;
+this->m_MatchingLevelRange = 0;
+this->m_MatchingClassType = 0;
+this->m_MatchingBoardNumber = 0;
+this->m_MatchingMasterClass = 0;
+this->m_MatchingMasterLevel = 0;
+this->m_MatchingGensType = 0;
 }
 
 GuildMgr::GuildMgr()
@@ -189,9 +189,9 @@ void GuildMgr::LoadGuilds()
 		{
 			Field* fields = result->Fetch();
 
-			Guild* pGuild = new Guild;
-			pGuild->SetID(fields[0].GetUInt32());
-			pGuild->SetName(fields[1].GetBase64String().c_str());
+Guild* pGuild = new Guild;
+pGuild->m_ID = fields[0].GetUInt32();
+memcpy(pGuild->m_Name, fields[1].GetBase64String().c_str(), sizeof(pGuild->m_Name));
 			
 			const char* data = fields[2].GetCString();
 
@@ -203,16 +203,16 @@ void GuildMgr::LoadGuilds()
 					pGuild->emblem[i] = cast(uint8, atoi(tokens[i]));
 			}
 
-			pGuild->SetNotice(fields[3].GetBase64String().c_str());
-			pGuild->SetAlliance(fields[4].GetUInt32());
-			pGuild->SetHostil(fields[5].GetUInt32());
-			pGuild->SetScore(fields[6].GetUInt32());
-			pGuild->SetRegisteredMarks(fields[7].GetUInt32());
-			pGuild->SetCastleSiegeRegistered(fields[8].GetUInt32() ? true: false);
+memcpy(pGuild->m_Notice, fields[3].GetBase64String().c_str(), sizeof(pGuild->m_Notice));
+pGuild->m_Alliance = fields[4].GetUInt32();
+pGuild->m_Hostil = fields[5].GetUInt32();
+pGuild->m_Score = fields[6].GetUInt32();
+pGuild->m_RegisteredMarks = fields[7].GetUInt32();
+pGuild->m_CastleSiegeRegistered = fields[8].GetUInt32() ? true: false;
 
 			this->AddGuild(pGuild);
 
-			sLog->outInfo("guild", "[ LOAD ] Added Guild [%u - %s]", pGuild->GetID(), pGuild->GetName());
+sLog->outInfo("guild", "[ LOAD ] Added Guild [%u - %s]", pGuild->m_ID, pGuild->m_Name);
 
 			++count;
 		}
@@ -230,7 +230,7 @@ void GuildMgr::LoadGuilds()
 			continue;
 		}
 
-		pGuild->SetRemove(pGuild->GetTotalMembers() <= 0);
+pGuild->m_Remove = pGuild->GetTotalMembers() <= 0;
 	}
 
 	for ( GuildMap::iterator it = this->guild_map.begin(); it != this->guild_map.end(); )
@@ -244,11 +244,11 @@ void GuildMgr::LoadGuilds()
 		}
 
 
-		if (!pGuild->IsRemove())
-		{
-			++it;
-			continue;
-		}
+if (!pGuild->m_Remove)
+{
+++it;
+continue;
+}
 
 		SQLTransaction trans = MuDatabase.BeginTransaction();
 
@@ -262,7 +262,7 @@ void GuildMgr::LoadGuilds()
 
 		MuDatabase.CommitTransaction(trans);
 
-		sLog->outInfo("guild", "[ LOAD ] Removed Guild [%u - %s]", pGuild->GetID(), pGuild->GetName());
+sLog->outInfo("guild", "[ LOAD ] Removed Guild [%u - %s]", pGuild->m_ID, pGuild->m_Name);
 
 		delete it->second;
 		this->guild_map.erase(it++);
@@ -334,13 +334,13 @@ void GuildMgr::LoadGuildMembers()
 				continue;
 			}
 
-			pGuild->GetMember(slot)->SetID(fields[2].GetUInt32());
-			pGuild->GetMember(slot)->SetRanking(fields[3].GetUInt8());
-			pGuild->GetMember(slot)->SetName(fields[4].GetCString());
-			pGuild->GetMember(slot)->SetServer(fields[5].GetBool() ? fields[6].GetUInt16() : -1);
+pGuild->m_Member[slot].m_ID = fields[2].GetUInt32();
+pGuild->m_Member[slot].m_Ranking = fields[3].GetUInt8();
+memcpy(pGuild->m_Member[slot].m_Name, fields[4].GetCString(), sizeof(pGuild->m_Member[slot].m_Name));
+pGuild->m_Member[slot].m_Server = fields[5].GetBool() ? fields[6].GetUInt16() : -1;
 
-			sLog->outInfo("guild", "[ LOAD ] Added Guild [%u - %s] Member [%d - %u - %s]",
-				pGuild->GetID(), pGuild->GetName(), slot, pGuild->GetMember(slot)->GetID(), pGuild->GetMember(slot)->GetName());
+sLog->outInfo("guild", "[ LOAD ] Added Guild [%u - %s] Member [%d - %u - %s]",
+pGuild->m_ID, pGuild->m_Name, slot, pGuild->m_Member[slot].m_ID, pGuild->m_Member[slot].m_Name);
 		} while (result->NextRow());
 	}
 }
@@ -358,7 +358,7 @@ Guild* GuildMgr::GetGuild(std::string name) const
 
 	for ( GuildMap::const_iterator it = guild_map.begin(); it != guild_map.end(); ++it )
 	{
-		std::string lower_name = it->second->GetName();
+std::string lower_name = it->second->m_Name;
 		strToLower(lower_name);
 
 		if ( lower_name == name )
@@ -372,7 +372,7 @@ Guild* GuildMgr::GetGuild(std::string name) const
 
 void GuildMgr::AddGuild(Guild* pGuild)
 {
-	this->guild_map[pGuild->GetID()] = pGuild;
+this->guild_map[pGuild->m_ID] = pGuild;
 }
 
 void GuildMgr::RemoveGuild(uint32 id)
@@ -398,7 +398,7 @@ uint8 GuildMgr::GetInvolvedGuilds(uint32 alliance) const
 		if ( !it->second )
 			continue;
 
-		if ( it->second->GetAlliance() != alliance )
+if ( it->second->m_Alliance != alliance )
 			continue;
 
 		++count;
@@ -504,13 +504,13 @@ void GuildMgr::MemberAddRequest(uint8 * Packet, std::shared_ptr<ServerSocket> so
 		return;
 	}
 
-	if (pGuild->GetMemberData(add_guid))
-	{
-		pMsg.to_add.entry = -1;
-		pMsg.player.entry = -1;
-		socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
-		return;
-	}
+if (pGuild->GetMemberData(add_guid))
+{
+pMsg.to_add.entry = -1;
+pMsg.player.entry = -1;
+socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
+return;
+}
 
 	lpMsg->to_add.guid = add_guid;
 	pMsg.to_add.guid = add_guid;
@@ -533,29 +533,29 @@ void GuildMgr::MemberDelRequest(uint8 * Packet, std::shared_ptr<ServerSocket> so
 
 	if ( pGuild )
 	{
-		GuildMember * pGuildMember = pGuild->GetMemberData(lpMsg->id);
+GuildMember * pGuildMember = pGuild->GetMemberData(lpMsg->id);
 
-		if (pGuildMember)
-		{
-			SQLTransaction trans = MuDatabase.BeginTransaction();
+if (pGuildMember)
+{
+SQLTransaction trans = MuDatabase.BeginTransaction();
 
-			PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_DELETE_MEMBER_ID);
-			stmt->setUInt32(0, pGuildMember->GetID());
-			trans->Append(stmt);
+PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_DELETE_MEMBER_ID);
+stmt->setUInt32(0, pGuildMember->m_ID);
+trans->Append(stmt);
 
-			MuDatabase.CommitTransaction(trans);
-			
-			CharacterDataPtr pCharacterData = sCharacterMgr->GetCharacterData(pGuildMember->GetID());
+MuDatabase.CommitTransaction(trans);
 
-			if ( pCharacterData )
-			{
-				pCharacterData->SetGuild(0);
-			}
+CharacterDataPtr pCharacterData = sCharacterMgr->GetCharacterData(pGuildMember->m_ID);
 
-			sArkaWar->MemberRemove(pGuildMember->GetID());
+if ( pCharacterData )
+{
+pCharacterData->m_Guild = 0;
+}
 
-			pGuildMember->Reset();
-		}
+sArkaWar->MemberRemove(pGuildMember->m_ID);
+
+pGuildMember->Reset();
+}
 	}
 
 	sServerSocketMgr.SendPacketAll((uint8*)&pMsg, pMsg.h.get_size());
@@ -571,22 +571,22 @@ void GuildMgr::MemberStatusRequest(uint8 * Packet)
 
 	if ( pGuild )
 	{
-		uint8 member_slot = pGuild->GetMemberSlot(lpMsg->name);
+uint8 member_slot = pGuild->GetMemberSlot(lpMsg->name);
 
-		if ( member_slot != uint8(-1) )
-		{
-			SQLTransaction trans = MuDatabase.BeginTransaction();
+if ( member_slot != uint8(-1) )
+{
+SQLTransaction trans = MuDatabase.BeginTransaction();
 
-			PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_UPDATE_MEMBER_RANKING);
-			stmt->setUInt8(0, lpMsg->status);
-			stmt->setUInt32(1, pGuild->GetMember(member_slot)->GetID());
-			trans->Append(stmt);
+PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_UPDATE_MEMBER_RANKING);
+stmt->setUInt8(0, lpMsg->status);
+stmt->setUInt32(1, pGuild->m_Member[member_slot].m_ID);
+trans->Append(stmt);
 
-			MuDatabase.CommitTransaction(trans);
-			
-			pGuild->GetMember(member_slot)->SetRanking(lpMsg->status);
-		}
-	}
+MuDatabase.CommitTransaction(trans);
+
+pGuild->m_Member[member_slot].m_Ranking = lpMsg->status;
+}
+}
 
 	sServerSocketMgr.SendPacketAll((uint8*)&pMsg, pMsg.h.get_size());
 }
@@ -607,43 +607,43 @@ void GuildMgr::RelationshipRequest(uint8 * Packet)
 		return;
 	}
 
-	if ( lpMsg->operation ) // join
-	{
-		switch( lpMsg->type )
-		{
-		case GUILD_RELATIONSHIP_UNION:
-			{
-				pGuild01->SetAlliance(pGuild01->GetID());
-				pGuild02->SetAlliance(pGuild01->GetID());
-			} break;
+if ( lpMsg->operation ) // join
+{
+switch( lpMsg->type )
+{
+case GUILD_RELATIONSHIP_UNION:
+{
+pGuild01->m_Alliance = pGuild01->m_ID;
+pGuild02->m_Alliance = pGuild01->m_ID;
+} break;
 
-		case GUILD_RELATIONSHIP_RIVAL:
-			{
-				pGuild01->SetHostil(pGuild02->GetID());
-				pGuild02->SetHostil(pGuild01->GetID());
-			} break;
-		}
-	}
-	else // break
-	{
-		switch( lpMsg->type )
-		{
-		case GUILD_RELATIONSHIP_UNION:
-			{
-				if ( this->GetInvolvedGuilds(pGuild01->GetAlliance()) <= 2 )
-				{
-					pGuild01->SetAlliance(0);
-				}
+case GUILD_RELATIONSHIP_RIVAL:
+{
+pGuild01->m_Hostil = pGuild02->m_ID;
+pGuild02->m_Hostil = pGuild01->m_ID;
+} break;
+}
+}
+else // break
+{
+switch( lpMsg->type )
+{
+case GUILD_RELATIONSHIP_UNION:
+{
+if ( this->GetInvolvedGuilds(pGuild01->m_Alliance) <= 2 )
+{
+pGuild01->m_Alliance = 0;
+}
 
-				pGuild02->SetAlliance(0);
-			} break;
+pGuild02->m_Alliance = 0;
+} break;
 
-		case GUILD_RELATIONSHIP_RIVAL:
-			{
-				pGuild01->SetHostil(0);
-				pGuild02->SetHostil(0);
-			} break;
-		}
+case GUILD_RELATIONSHIP_RIVAL:
+{
+pGuild01->m_Hostil = 0;
+pGuild02->m_Hostil = 0;
+} break;
+}
 	}
 
 	pGuild01->UpdateRelationshipDB();
@@ -657,18 +657,18 @@ void GuildMgr::Score(uint8 * Packet)
 {
 	POINTER_PCT(SL_GUILD_SCORE, lpMsg, Packet, 0);
 
-	Guild * pGuild = this->GetGuild(lpMsg->guild);
+Guild * pGuild = this->GetGuild(lpMsg->guild);
 
-	if ( pGuild )
-	{
-		pGuild->SetScore(pGuild->GetScore() + lpMsg->score);
+if ( pGuild )
+{
+pGuild->m_Score += lpMsg->score;
 
-		SQLTransaction trans = MuDatabase.BeginTransaction();
+SQLTransaction trans = MuDatabase.BeginTransaction();
 
-		PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_UPDATE_SCORE);
-		stmt->setInt32(0, pGuild->GetScore());
-		stmt->setUInt32(1, lpMsg->guild);
-		trans->Append(stmt);
+PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_GUILD_UPDATE_SCORE);
+stmt->setInt32(0, pGuild->m_Score);
+stmt->setUInt32(1, lpMsg->guild);
+trans->Append(stmt);
 
 		MuDatabase.CommitTransaction(trans);
 	}
@@ -694,24 +694,24 @@ void GuildMgr::Notice(uint8 * Packet)
 
 void GuildMgr::MemberOnlineOffline(CharacterDataPtr pCharacterData)
 {
-	if ( !pCharacterData )
-		return;
+if ( !pCharacterData )
+return;
 
-	if ( !pCharacterData->GetID() )
-		return;
+if ( !pCharacterData->m_ID )
+return;
 
-	Guild* pGuild = this->GetGuild(pCharacterData->GetGuild());
+Guild* pGuild = this->GetGuild(pCharacterData->m_Guild);
 
-	if ( !pGuild )
-		return;
+if ( !pGuild )
+return;
 
-	for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
-	{
-		if ( pGuild->GetMember(i)->GetID() == pCharacterData->GetID() )
-		{
-			pGuild->GetMember(i)->SetName(pCharacterData->GetName());
-			pGuild->GetMember(i)->SetServer(pCharacterData->GetServer());
-			break;
-		}
-	}
+for ( uint8 i = 0; i < MAX_GUILD_MEMBER; ++i )
+{
+if ( pGuild->m_Member[i].m_ID == pCharacterData->m_ID )
+{
+memcpy(pGuild->m_Member[i].m_Name, pCharacterData->m_Name, sizeof(pGuild->m_Member[i].m_Name));
+pGuild->m_Member[i].m_Server = pCharacterData->m_Server;
+break;
+}
+}
 }
