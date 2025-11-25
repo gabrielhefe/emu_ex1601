@@ -199,11 +199,12 @@ class ChatHandler
 		void ReloadTeleport(const char * msg);
 		void ReloadCashShop(const char * msg);
 		void ReloadMix(const char * msg);
-		void ReloadWorld(const char * msg);
-		void ReloadPentagram(const char * msg);
+                void ReloadWorld(const char * msg);
+                void ReloadPentagram(const char * msg);
 
-		DECLARE_PROPERTY_PTR(Player, Player);
-		DECLARE_STRING_FIXED(WhisperName, MAX_CHARACTER_LENGTH + 1);
+        private:
+                Player* m_Player;
+                char m_WhisperName[MAX_CHARACTER_LENGTH + 1];
 };
 
 #endif

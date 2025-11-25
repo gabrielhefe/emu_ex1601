@@ -6,6 +6,8 @@
 *
 */
 
+#include <cstring>
+
 static size_t GetCommandTableSize(const ChatCommand* commands)
 {
 	if (!commands)
@@ -272,9 +274,13 @@ namespace CommandAdmin
 
 ChatHandler::ChatHandler(Player * pPlayer, const char * whisper_name)
 {
-	this->SetPlayer(pPlayer);
-	this->ResetWhisperName();
-	this->SetWhisperName(whisper_name);
+	this->m_Player = pPlayer;
+	std::memset(this->m_WhisperName, 0, sizeof(this->m_WhisperName));
+
+        if ( whisper_name )
+        {
+                std::strncpy(this->m_WhisperName, whisper_name, sizeof(this->m_WhisperName) - 1);
+        }
 }
 
 ChatHandler::~ChatHandler()
@@ -286,20 +292,20 @@ bool ChatHandler::IsAvailable(ChatCommand const& table)
 {
 	if ( table.Authority == AUTHORITY_CODE_ADMINISTRATOR )
 	{
-		if ( !this->GetPlayer()->IsAdministrator() )
+		if ( !this->m_Player->IsAdministrator() )
 		{
 			return false;
 		}
 
-		if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+		if ( !this->m_Player->IsAuthorizationEnabled() )
 		{
 			return false;
 		}
 	}
 
-	if ( table.flag != ADMIN_FLAG_NONE && !this->GetPlayer()->IsAdministratorFlag(table.flag) )
+	if ( table.flag != ADMIN_FLAG_NONE && !this->m_Player->IsAdministratorFlag(table.flag) )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You don't have permission to use this command");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You don't have permission to use this command");
 		return false;
 	}
 
@@ -326,7 +332,7 @@ void ChatHandler::ExecuteCommand(const char * text)
 	if ( this->ExecuteCommandInTable(CommandNormal::chat_command, text, fullcmd) )
 	{
 		sLog->outInfo(LOG_CHAT, "[ COMMAND ] %s Used Command: %s",
-			this->GetPlayer()->BuildLog().c_str(), const_cmd.c_str());
+			this->m_Player->BuildLog().c_str(), const_cmd.c_str());
 	}
 }
 
@@ -350,11 +356,11 @@ void ChatHandler::ExecuteCommandAdmin(const char * text)
 	if ( this->ExecuteCommandInTable(CommandAdmin::chat_command_admin, text, fullcmd) )
 	{
 		sLog->outInfo(LOG_CHAT, "[ COMMAND ADMIN ] %s Used Command: %s",
-			this->GetPlayer()->BuildLog().c_str(), const_cmd.c_str());
+			this->m_Player->BuildLog().c_str(), const_cmd.c_str());
 	}
 	else
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "There is no such command.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "There is no such command.");
 	}
 }
 
@@ -400,8 +406,8 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand * table, const char * text, 
 
 		if ( !table[i].sintax.empty() && !strlen(newtext.c_str()) )
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Syntax");
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, " %s", table[i].sintax.c_str());
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Syntax");
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, " %s", table[i].sintax.c_str());
 			return true;
 		}
 
@@ -435,7 +441,7 @@ bool ChatHandler::ShowHelpForCommand(ChatCommand* table, const char* cmd)
             }
 
             if (!table[i].sintax.empty())
-				this->GetPlayer()->SendNotice(NOTICE_NORMAL_BLUE, table[i].sintax.c_str());
+				this->m_Player->SendNotice(NOTICE_NORMAL_BLUE, table[i].sintax.c_str());
 
             if (table[i].SubTable)
                 if (ShowHelpForSubCommands(table[i].SubTable, table[i].name, subcmd ? subcmd : ""))
@@ -456,7 +462,7 @@ bool ChatHandler::ShowHelpForCommand(ChatCommand* table, const char* cmd)
                 continue;
 
             if (!table[i].sintax.empty())
-				this->GetPlayer()->SendNotice(NOTICE_NORMAL_BLUE, table[i].sintax.c_str());
+				this->m_Player->SendNotice(NOTICE_NORMAL_BLUE, table[i].sintax.c_str());
 
             if (table[i].SubTable)
                 if (this->ShowHelpForSubCommands(table[i].SubTable, "", ""))
@@ -482,7 +488,7 @@ bool ChatHandler::ShowHelpForSubCommands(ChatCommand* table, char const* cmd, ch
         if (*subcmd && !hasStringAbbr(table[i].name, subcmd))
             continue;
 
-		this->GetPlayer()->SendNotice(NOTICE_NORMAL_BLUE, table[i].name);
+		this->m_Player->SendNotice(NOTICE_NORMAL_BLUE, table[i].name);
 		list += "\n    ";
         list += table[i].name;
 
@@ -500,31 +506,31 @@ bool ChatHandler::CommandAddValid()
 {
 	if ( !sGameServer->IsCommandAddStatEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Add Stat command disabled.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Add Stat command disabled.");
 		return false;
 	}
 
-	if ( this->GetPlayer()->GetTotalLevel() < sGameServer->GetCommandAddStatMinLevel() )
+	if ( this->m_Player->GetTotalLevel() < sGameServer->GetCommandAddStatMinLevel() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Required level %d to use add stat command.", sGameServer->GetCommandAddStatMinLevel());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Required level %d to use add stat command.", sGameServer->GetCommandAddStatMinLevel());
 		return false;
 	}
 
-	if ( !this->GetPlayer()->MoneyHave(sGameServer->GetCommandAddStatCost()) )
+	if ( !this->m_Player->MoneyHave(sGameServer->GetCommandAddStatCost()) )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Required %u zen to use add stat command.", sGameServer->GetCommandAddStatCost());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Required %u zen to use add stat command.", sGameServer->GetCommandAddStatCost());
 		return false;
 	}
 
-	this->GetPlayer()->MoneyReduce(sGameServer->GetCommandAddStatCost());
+	this->m_Player->MoneyReduce(sGameServer->GetCommandAddStatCost());
 	
 	return true;
 }
 
 void ChatHandler::CommandAddStrength(const char * msg)
 {
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -535,13 +541,13 @@ void ChatHandler::CommandAddStrength(const char * msg)
 	int32 points = 0;
 	conversor >> points;
 
-	this->GetPlayer()->AddNormalPoints(points, STRENGTH);
+	this->m_Player->AddNormalPoints(points, STRENGTH);
 }
 	
 void ChatHandler::CommandAddAgility(const char * msg)
 {
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -552,13 +558,13 @@ void ChatHandler::CommandAddAgility(const char * msg)
 	int32 points = 0;
 	conversor >> points;
 
-	this->GetPlayer()->AddNormalPoints(points, AGILITY);
+	this->m_Player->AddNormalPoints(points, AGILITY);
 }
 	
 void ChatHandler::CommandAddVitality(const char * msg)
 {
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -569,13 +575,13 @@ void ChatHandler::CommandAddVitality(const char * msg)
 	int32 points = 0;
 	conversor >> points;
 
-	this->GetPlayer()->AddNormalPoints(points, VITALITY);
+	this->m_Player->AddNormalPoints(points, VITALITY);
 }
 	
 void ChatHandler::CommandAddEnergy(const char * msg)
 {
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -586,13 +592,13 @@ void ChatHandler::CommandAddEnergy(const char * msg)
 	int32 points = 0;
 	conversor >> points;
 
-	this->GetPlayer()->AddNormalPoints(points, ENERGY);
+	this->m_Player->AddNormalPoints(points, ENERGY);
 }
 
 void ChatHandler::CommandAddLeadership(const char * msg)
 {
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -603,7 +609,7 @@ void ChatHandler::CommandAddLeadership(const char * msg)
 	int32 points = 0;
 	conversor >> points;
 
-	this->GetPlayer()->AddNormalPoints(points, LEADERSHIP);
+	this->m_Player->AddNormalPoints(points, LEADERSHIP);
 }
 
 void ChatHandler::CommandHostilCancel(const char * msg)
@@ -611,12 +617,12 @@ void ChatHandler::CommandHostilCancel(const char * msg)
 	if ( !sGameServer->IsHostilCancelCommand() )
 		return;
 
-	Guild* pGuild = this->GetPlayer()->GuildGet();
+	Guild* pGuild = this->m_Player->GuildGet();
 
 	if ( !pGuild )
 		return;
 
-	if ( this->GetPlayer()->GuildGetRanking() != GUILD_RANK_MASTER )
+	if ( this->m_Player->GuildGetRanking() != GUILD_RANK_MASTER )
 		return;
 
 	if ( !pGuild->GetHostil() )
@@ -634,13 +640,13 @@ void ChatHandler::CommandRequest(const char * msg)
 
 	if ( status == "on" )
 	{
-		this->GetPlayer()->AddFlag(CHARACTER_FLAG_REQUEST);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Request ON");
+		this->m_Player->AddFlag(CHARACTER_FLAG_REQUEST);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Request ON");
 	}
 	else if ( status == "off" )
 	{
-		this->GetPlayer()->RemoveFlag(CHARACTER_FLAG_REQUEST);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Request OFF");
+		this->m_Player->RemoveFlag(CHARACTER_FLAG_REQUEST);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Request OFF");
 	}
 }
 
@@ -652,36 +658,36 @@ void ChatHandler::CommandPostRequest(const char * msg)
 	
 	if ( status == 1 )
 	{
-		this->GetPlayer()->AddFlag(CHARACTER_FLAG_POST);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Post ON");
+		this->m_Player->AddFlag(CHARACTER_FLAG_POST);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Post ON");
 	}
 	else if ( status == 0 )
 	{
-		this->GetPlayer()->RemoveFlag(CHARACTER_FLAG_POST);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Post OFF");
+		this->m_Player->RemoveFlag(CHARACTER_FLAG_POST);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Post OFF");
 	}
 }
 
 void ChatHandler::CommandRefresh(const char * msg)
 {
-	if ( this->GetPlayer()->IsBusy() )
+	if ( this->m_Player->IsBusy() )
 		return;
 
 	if ( !sGameServer->IsRefreshEnabled() )
 		return;
 
-	if ( !this->GetPlayer()->GetTimer(PLAYER_TIMER_REFRESH)->Elapsed(sGameServer->GetRefreshTime()) )
+	if ( !this->m_Player->GetTimer(PLAYER_TIMER_REFRESH)->Elapsed(sGameServer->GetRefreshTime()) )
 	{
 		return;
 	}
 
-	this->GetPlayer()->TeleportToLocation(this->GetPlayer()->GetWorldId(), this->GetPlayer()->GetX(), this->GetPlayer()->GetY(), this->GetPlayer()->GetDirection(), this->GetPlayer()->GetInstance());
+	this->m_Player->TeleportToLocation(this->m_Player->GetWorldId(), this->m_Player->GetX(), this->m_Player->GetY(), this->m_Player->GetDirection(), this->m_Player->GetInstance());
 }
 
 bool ChatHandler::CommandFriendKickVerify(const char * name)
 {
 	PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CHARACTER_KICK_VERIFY);
-	stmt->setUInt32(0, this->GetPlayer()->GetGUID());
+	stmt->setUInt32(0, this->m_Player->GetGUID());
 	stmt->setString(1, name);
 
 	PreparedQueryResult result = MuDatabase.Query(stmt);
@@ -696,12 +702,12 @@ void ChatHandler::CommandFriendAddKick(const char * msg)
 {
 	if ( !sGameServer->IsKickEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Kick system is disabled.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Kick system is disabled.");
 		return;
 	}
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -715,7 +721,7 @@ void ChatHandler::CommandFriendAddKick(const char * msg)
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), name_safe.c_str(), name_safe.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH: name_safe.size());
 
 	std::string lower_name = name;
-	std::string lower_my_name = this->GetPlayer()->GetName();
+	std::string lower_my_name = this->m_Player->GetName();
 
 	strToLower(lower_name);
 	strToLower(lower_my_name);
@@ -725,32 +731,32 @@ void ChatHandler::CommandFriendAddKick(const char * msg)
 
 	if ( this->CommandFriendKickVerify(name) )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Character %s is already in kick list.", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Character %s is already in kick list.", name);
 		return;
 	}
 
 	SQLTransaction trans = MuDatabase.BeginTransaction();
 
 	PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CHARACTER_KICK_ADD);
-	stmt->setUInt32(0, this->GetPlayer()->GetGUID());
+	stmt->setUInt32(0, this->m_Player->GetGUID());
 	stmt->setString(1, name);
 	trans->Append(stmt);
 	
 	MuDatabase.CommitTransaction(trans);
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Character %s added to kick list.", name);
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Character %s added to kick list.", name);
 }
 	
 void ChatHandler::CommandFriendRemoveKick(const char * msg)
 {
 	if ( !sGameServer->IsKickEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Kick system is disabled.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Kick system is disabled.");
 		return;
 	}
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -764,7 +770,7 @@ void ChatHandler::CommandFriendRemoveKick(const char * msg)
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), name_safe.c_str(), name_safe.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH: name_safe.size());
 
 	std::string lower_name = name;
-	std::string lower_my_name = this->GetPlayer()->GetName();
+	std::string lower_my_name = this->m_Player->GetName();
 
 	strToLower(lower_name);
 	strToLower(lower_my_name);
@@ -774,32 +780,32 @@ void ChatHandler::CommandFriendRemoveKick(const char * msg)
 
 	if ( !this->CommandFriendKickVerify(name) )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Character %s is not in kick list.", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Character %s is not in kick list.", name);
 		return;
 	}
 
 	SQLTransaction trans = MuDatabase.BeginTransaction();
 
 	PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CHARACTER_KICK_REMOVE);
-	stmt->setUInt32(0, this->GetPlayer()->GetGUID());
+	stmt->setUInt32(0, this->m_Player->GetGUID());
 	stmt->setString(1, name);
 	trans->Append(stmt);
 	
 	MuDatabase.CommitTransaction(trans);
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Character %s removed from kick list.", name);
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Character %s removed from kick list.", name);
 }
 
 void ChatHandler::CommandFriendKick(const char * msg)
 {
 	if ( !sGameServer->IsKickEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Kick system is disabled.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Kick system is disabled.");
 		return;
 	}
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -810,7 +816,7 @@ void ChatHandler::CommandFriendKick(const char * msg)
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), name_safe.c_str(), name_safe.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH: name_safe.size());
 
 	std::string lower_name = name;
-	std::string lower_my_name = this->GetPlayer()->GetName();
+	std::string lower_my_name = this->m_Player->GetName();
 
 	strToLower(lower_name);
 	strToLower(lower_my_name);
@@ -824,13 +830,13 @@ void ChatHandler::CommandFriendKick(const char * msg)
 	{
 		PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CHARACTER_KICK_SELECT);
 		stmt->setString(0, name);
-		stmt->setString(1, this->GetPlayer()->GetName());
+		stmt->setString(1, this->m_Player->GetName());
 
 		PreparedQueryResult result = MuDatabase.Query(stmt);
 
 		if ( !result )
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not in %s kick list.", name);
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not in %s kick list.", name);
 			return;
 		}
 
@@ -838,12 +844,12 @@ void ChatHandler::CommandFriendKick(const char * msg)
 
 		if ( !pPlayer )
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is offline.", name);
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is offline.", name);
 			return;
 		}
 
 		KICK_PLAYER(pPlayer, "Friend Kick DB");
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s kicked.", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s kicked.", name);
 	}
 }
 
@@ -855,7 +861,7 @@ void ChatHandler::CommandGuildWar(const char * msg)
 	
 	STRING_SAFE_COPY(guild, (MAX_GUILD_NAME_LENGTH + 1), guild_name.c_str(), guild_name.size() > MAX_GUILD_NAME_LENGTH ? MAX_GUILD_NAME_LENGTH: guild_name.size());
 
-	sGuildWarMgr->StartWarRequest(this->GetPlayer(), guild);
+	sGuildWarMgr->StartWarRequest(this->m_Player, guild);
 }
 	
 void ChatHandler::CommandBattleSoccer(const char * msg)
@@ -866,13 +872,13 @@ void ChatHandler::CommandBattleSoccer(const char * msg)
 
 	STRING_SAFE_COPY(guild, (MAX_GUILD_NAME_LENGTH + 1), guild_name.c_str(), guild_name.size() > MAX_GUILD_NAME_LENGTH ? MAX_GUILD_NAME_LENGTH: guild_name.size());
 
-	sBattleSoccerMgr->ProcessRequest(this->GetPlayer(), guild);
+	sBattleSoccerMgr->ProcessRequest(this->m_Player, guild);
 }
 
 void ChatHandler::CommandNormalPost(const char * msg)
 {
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -882,7 +888,7 @@ void ChatHandler::CommandNormalPost(const char * msg)
 
 	sprintf_s(new_message, ";%s", converted_string.c_str());
 	
-	this->GetPlayer()->ChatProcess(CHAT_POST, new_message, this->GetWhisperName(), false);
+	this->m_Player->ChatProcess(CHAT_POST, new_message, this->m_WhisperName, false);
 }
 
 void ChatHandler::CommandOffTrade(const char * msg)
@@ -894,44 +900,44 @@ void ChatHandler::CommandOffTrade(const char * msg)
 
 	if ( !sGameServer->IsPersonalStoreOff() )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Personal Store", "Off option is disabled.");
+		this->m_Player->SendMessageBox(1, "Personal Store", "Off option is disabled.");
 		return;
 	}
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
-	if ( !this->GetPlayer()->IsInSafeZone() )
+	if ( !this->m_Player->IsInSafeZone() )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Personal Store", "Off option can be used only in safe zone.");
+		this->m_Player->SendMessageBox(1, "Personal Store", "Off option can be used only in safe zone.");
 		return;
 	}
 
-	if ( !this->GetPlayer()->IsWorldFlag(WORLD_FLAG_ALLOW_OFFLINE_TRADE) )
+	if ( !this->m_Player->IsWorldFlag(WORLD_FLAG_ALLOW_OFFLINE_TRADE) )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Personal Store", "Off option can't be used on this map.");
+		this->m_Player->SendMessageBox(1, "Personal Store", "Off option can't be used on this map.");
 		return;
 	}
 
-	World* pWorld = this->GetPlayer()->GetWorld();
+	World* pWorld = this->m_Player->GetWorld();
 
 	if ( !pWorld )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Personal Store", "ERROR. Contact Administrators");
+		this->m_Player->SendMessageBox(1, "Personal Store", "ERROR. Contact Administrators");
 		return;
 	}
 
-	if ( pWorld->IsAreaRestriction(this->GetPlayer()->GetX(), this->GetPlayer()->GetY(), WORLD_AREA_FLAG_OFF_STORE) )
+	if ( pWorld->IsAreaRestriction(this->m_Player->GetX(), this->m_Player->GetY(), WORLD_AREA_FLAG_OFF_STORE) )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Personal Store", "You can't use off store on this map location.");
+		this->m_Player->SendMessageBox(1, "Personal Store", "You can't use off store on this map location.");
 		return;
 	}
 
-	if ( !this->GetPlayer()->GetPersonalStore()->IsOpen() )
+	if ( !this->m_Player->GetPersonalStore()->IsOpen() )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Personal Store", "Need to open Personal Store.");
+		this->m_Player->SendMessageBox(1, "Personal Store", "Need to open Personal Store.");
 		return;
 	}
 
@@ -958,8 +964,8 @@ void ChatHandler::CommandOffTrade(const char * msg)
 				continue;
 			}
 
-			if ( !memcmp(pPlayer->GetAccountData()->GetMac(), this->GetPlayer()->GetAccountData()->GetMac(), MAX_ACCOUNT_MAC_LENGTH) &&
-				 pPlayer->GetAccountData()->GetDiskSerial() == this->GetPlayer()->GetAccountData()->GetDiskSerial() )
+			if ( !memcmp(pPlayer->GetAccountData()->GetMac(), this->m_Player->GetAccountData()->GetMac(), MAX_ACCOUNT_MAC_LENGTH) &&
+				 pPlayer->GetAccountData()->GetDiskSerial() == this->m_Player->GetAccountData()->GetDiskSerial() )
 			{
 				++count;
 			}
@@ -967,7 +973,7 @@ void ChatHandler::CommandOffTrade(const char * msg)
 
 		if ( count >= sGameServer->GetPersonalStoreOffCount() )
 		{
-			this->GetPlayer()->SendMessageBox(1, "Personal Store", "You have exceeded the maximum offstore ammount.");
+			this->m_Player->SendMessageBox(1, "Personal Store", "You have exceeded the maximum offstore ammount.");
 			return;
 		}
 	}
@@ -1000,29 +1006,29 @@ void ChatHandler::CommandOffTrade(const char * msg)
 
 		if ( count >= sGameServer->GetPersonalStoreOffTotalCount() )
 		{
-			this->GetPlayer()->SendMessageBox(1, "Personal Store", "Can't open more offstores on this server.");
+			this->m_Player->SendMessageBox(1, "Personal Store", "Can't open more offstores on this server.");
 			return;
 		}
 	}
 
-	this->GetPlayer()->GetPersonalStore()->SetOff(true);
-	this->GetPlayer()->GetPersonalStore()->SetOffTime(MyGetTickCount());
-	//this->GetPlayer()->GetAccountData()->SetMoveToSelectChar(true);
-	this->GetPlayer()->UpdateAccountStatusType(1);
-	this->GetPlayer()->SaveCharacter();
-	this->GetPlayer()->Close(1, CLOSE_FLAG_EXIT_GAME);
+	this->m_Player->GetPersonalStore()->SetOff(true);
+	this->m_Player->GetPersonalStore()->SetOffTime(MyGetTickCount());
+	//this->m_Player->GetAccountData()->SetMoveToSelectChar(true);
+	this->m_Player->UpdateAccountStatusType(1);
+	this->m_Player->SaveCharacter();
+	this->m_Player->Close(1, CLOSE_FLAG_EXIT_GAME);
 
-	this->GetPlayer()->SetAutoLoginInfo(credits);
+	this->m_Player->SetAutoLoginInfo(credits);
 }
 
 void ChatHandler::CommandAuthorize(const char * msg)
 {
-	if ( this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( this->m_Player->IsAuthorizationEnabled() )
 	{
 		return;
 	}
 
-	/*if ( !this->GetPlayer()->IsAdministrator() )
+	/*if ( !this->m_Player->IsAdministrator() )
 	{
 		return;
 	}*/
@@ -1039,21 +1045,21 @@ void ChatHandler::CommandAuthorize(const char * msg)
 
 	STRING_SAFE_COPY(code, (MAX_SECURE_CODE_LENGTH + 1), security_code.c_str(), security_code.size());
 
-	if ( !memcmp(code, this->GetPlayer()->GetAccountData()->secure_code, MAX_SECURE_CODE_LENGTH) || strcmp(this->GetPlayer()->GetAccountData()->secure_code, code) == 0)
+	if ( !memcmp(code, this->m_Player->GetAccountData()->secure_code, MAX_SECURE_CODE_LENGTH) || strcmp(this->m_Player->GetAccountData()->secure_code, code) == 0)
 	{
-		this->GetPlayer()->SetAuthorizationEnabled(true);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Account Authorized.");
+		this->m_Player->SetAuthorizationEnabled(true);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Account Authorized.");
 
-		if ( !this->GetPlayer()->IsAdministrator() )
+		if ( !this->m_Player->IsAdministrator() )
 		{
-			sAuthServer->AccountAuthorization(this->GetPlayer()->GetAccountData()->GetGUID(), false);
+			sAuthServer->AccountAuthorization(this->m_Player->GetAccountData()->GetGUID(), false);
 		}
 	}
 	else
 	{
-		this->GetPlayer()->SendMessageBox(1, "AUTH", "Wrong Authorization Code.");
+		this->m_Player->SendMessageBox(1, "AUTH", "Wrong Authorization Code.");
 
-		sAuthServer->AccountAuthorization(this->GetPlayer()->GetAccountData()->GetGUID(), true);
+		sAuthServer->AccountAuthorization(this->m_Player->GetAccountData()->GetGUID(), true);
 	}
 }
 
@@ -1064,31 +1070,31 @@ void ChatHandler::CommandOffAttack(const char * msg)
 		return;
 	}
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
-	if ( sGameServer->GetOfflineAttackMinLevel() > 0 && this->GetPlayer()->GetTotalLevel() < sGameServer->GetOfflineAttackMinLevel() )
+	if ( sGameServer->GetOfflineAttackMinLevel() > 0 && this->m_Player->GetTotalLevel() < sGameServer->GetOfflineAttackMinLevel() )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Offline Attack", "Min level required %d.", sGameServer->GetOfflineAttackMinLevel());
+		this->m_Player->SendMessageBox(1, "Offline Attack", "Min level required %d.", sGameServer->GetOfflineAttackMinLevel());
 		return;
 	}
 
-	if ( sGameServer->GetOfflineAttackMaxLevel() > 0 && this->GetPlayer()->GetTotalLevel() > sGameServer->GetOfflineAttackMaxLevel() )
+	if ( sGameServer->GetOfflineAttackMaxLevel() > 0 && this->m_Player->GetTotalLevel() > sGameServer->GetOfflineAttackMaxLevel() )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Offline Attack", "Max level allowed %d.", sGameServer->GetOfflineAttackMaxLevel());
+		this->m_Player->SendMessageBox(1, "Offline Attack", "Max level allowed %d.", sGameServer->GetOfflineAttackMaxLevel());
 		return;
 	}
 
-	if ( !sGameServer->IsOfflineAttackWorld(this->GetPlayer(), this->GetPlayer()->GetWorldId()) )
+	if ( !sGameServer->IsOfflineAttackWorld(this->m_Player, this->m_Player->GetWorldId()) )
 	{
 		return;
 	}
 
-	if (!sGameServer->IsOfflineAttackZone(this->GetPlayer(), this->GetPlayer()->GetWorldId(), this->GetPlayer()->GetX(), this->GetPlayer()->GetY()))
+	if (!sGameServer->IsOfflineAttackZone(this->m_Player, this->m_Player->GetWorldId(), this->m_Player->GetX(), this->m_Player->GetY()))
 	{
-		this->GetPlayer()->SendMessageBox(1, "Offline Attack", "You are not allowed to use on this zone.");
+		this->m_Player->SendMessageBox(1, "Offline Attack", "You are not allowed to use on this zone.");
 		return;
 	}
 
@@ -1112,22 +1118,22 @@ void ChatHandler::CommandOffAttack(const char * msg)
 
 			if (sGameServer->GetOfflineAttackFlag() == 1)
 			{
-				if (!memcmp(pPlayer->GetAccountData()->GetMac(), this->GetPlayer()->GetAccountData()->GetMac(), MAX_ACCOUNT_MAC_LENGTH))
+				if (!memcmp(pPlayer->GetAccountData()->GetMac(), this->m_Player->GetAccountData()->GetMac(), MAX_ACCOUNT_MAC_LENGTH))
 				{
 					++count;
 				}
 			}
 			else if (sGameServer->GetOfflineAttackFlag() == 2)
 			{
-				if (pPlayer->GetAccountData()->GetDiskSerial() == this->GetPlayer()->GetAccountData()->GetDiskSerial())
+				if (pPlayer->GetAccountData()->GetDiskSerial() == this->m_Player->GetAccountData()->GetDiskSerial())
 				{
 					++count;
 				}
 			}
 			else
 			{
-				if (!memcmp(pPlayer->GetAccountData()->GetMac(), this->GetPlayer()->GetAccountData()->GetMac(), MAX_ACCOUNT_MAC_LENGTH) &&
-					pPlayer->GetAccountData()->GetDiskSerial() == this->GetPlayer()->GetAccountData()->GetDiskSerial())
+				if (!memcmp(pPlayer->GetAccountData()->GetMac(), this->m_Player->GetAccountData()->GetMac(), MAX_ACCOUNT_MAC_LENGTH) &&
+					pPlayer->GetAccountData()->GetDiskSerial() == this->m_Player->GetAccountData()->GetDiskSerial())
 				{
 					++count;
 				}
@@ -1136,7 +1142,7 @@ void ChatHandler::CommandOffAttack(const char * msg)
 
 		if ( count >= sGameServer->GetOfflineAttackCount() )
 		{
-			this->GetPlayer()->SendMessageBox(1, "Offline Attack", "You have exceeded the maximum count.");
+			this->m_Player->SendMessageBox(1, "Offline Attack", "You have exceeded the maximum count.");
 			return;
 		}
 	}
@@ -1159,7 +1165,7 @@ void ChatHandler::CommandOffAttack(const char * msg)
 				continue;
 			}
 
-			if (!memcmp(pPlayer->GetAccountData()->GetIP(), this->GetPlayer()->GetAccountData()->GetIP(), MAX_ACCOUNT_IP_LENGTH))
+			if (!memcmp(pPlayer->GetAccountData()->GetIP(), this->m_Player->GetAccountData()->GetIP(), MAX_ACCOUNT_IP_LENGTH))
 			{
 				++count;
 			}
@@ -1167,57 +1173,57 @@ void ChatHandler::CommandOffAttack(const char * msg)
 
 		if (count >= sGameServer->GetOfflineAttackIPCount())
 		{
-			this->GetPlayer()->SendMessageBox(1, "Offline Attack", "You have exceeded the maximum count.");
+			this->m_Player->SendMessageBox(1, "Offline Attack", "You have exceeded the maximum count.");
 			return;
 		}
 	}
 
-	if ( !this->GetPlayer()->GetHelper()->IsStarted() )
+	if ( !this->m_Player->GetHelper()->IsStarted() )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Offline Attack", "Helper must be active.");
+		this->m_Player->SendMessageBox(1, "Offline Attack", "Helper must be active.");
 		return;
 	}
 
-	if ( this->GetPlayer()->GetPersonalStore()->IsBusy() )
+	if ( this->m_Player->GetPersonalStore()->IsBusy() )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Offline Attack", "Close Personal Store before start.");
+		this->m_Player->SendMessageBox(1, "Offline Attack", "Close Personal Store before start.");
 		return;
 	}
 
-	if (this->GetPlayer()->IsBusy() || this->GetPlayer()->GetTransaction() == TRANSACTION_TYPE_BEGIN)
+	if (this->m_Player->IsBusy() || this->m_Player->GetTransaction() == TRANSACTION_TYPE_BEGIN)
 	{
-		this->GetPlayer()->SendMessageBox(1, "Offline Attack", "Close Interface before start.");
+		this->m_Player->SendMessageBox(1, "Offline Attack", "Close Interface before start.");
 		return;
 	}
 
-	if ( !this->GetPlayer()->IsWorldFlag(WORLD_FLAG_ALLOW_OFFLINE_ATTACK) )
+	if ( !this->m_Player->IsWorldFlag(WORLD_FLAG_ALLOW_OFFLINE_ATTACK) )
 	{
-		this->GetPlayer()->SendMessageBox(1, "Offline Attack", "Not allowed to use on this map.");
+		this->m_Player->SendMessageBox(1, "Offline Attack", "Not allowed to use on this map.");
 		return;
 	}
 
-	this->GetPlayer()->UpdateAccountStatusType(2);
+	this->m_Player->UpdateAccountStatusType(2);
 
-	this->GetPlayer()->RemoveFlag(CHARACTER_FLAG_REQUEST);	
-	this->GetPlayer()->GetHelper()->SetStartedTime(MyGetTickCount());
-	this->GetPlayer()->GetHelper()->SetOffline(true);
-	this->GetPlayer()->SaveCharacter();
-	this->GetPlayer()->Close(1, CLOSE_FLAG_EXIT_GAME);
+	this->m_Player->RemoveFlag(CHARACTER_FLAG_REQUEST);	
+	this->m_Player->GetHelper()->SetStartedTime(MyGetTickCount());
+	this->m_Player->GetHelper()->SetOffline(true);
+	this->m_Player->SaveCharacter();
+	this->m_Player->Close(1, CLOSE_FLAG_EXIT_GAME);
 
-	//uint8 guidacc = this->GetPlayer()->GetAccountData()->GetGUID();
+	//uint8 guidacc = this->m_Player->GetAccountData()->GetGUID();
 	//QueryResult result = LoginDatabase.PQuery("UPDATE accounts_status SET online = 0 where account_id=%d",guidacc);
 
-	this->GetPlayer()->SetAutoLoginInfo(3);
+	this->m_Player->SetAutoLoginInfo(3);
 }
 
 void ChatHandler::CommandPKPoints(const char * msg)
 {
-	if ( this->GetPlayer()->GetPKLevel() <= PK_STATUS_COMMONER )
+	if ( this->m_Player->GetPKLevel() <= PK_STATUS_COMMONER )
 	{
 		return;
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "You have to earn %d points to get out of Outlaw status..", this->GetPlayer()->GetPKPoints());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "You have to earn %d points to get out of Outlaw status..", this->m_Player->GetPKPoints());
 }
 
 void ChatHandler::CommandGold(const char * msg)
@@ -1228,7 +1234,7 @@ void ChatHandler::CommandGold(const char * msg)
 	}
 
 	PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_GOLDEN_CHANNEL_SELECT);
-	stmt->setUInt32(0, this->GetPlayer()->GetAccountData()->GetGUID());
+	stmt->setUInt32(0, this->m_Player->GetAccountData()->GetGUID());
 
 	PreparedQueryResult result = LoginDatabase.Query(stmt);
 
@@ -1259,19 +1265,19 @@ void ChatHandler::CommandGold(const char * msg)
 
 	if ( days == 0 )
 	{
-		this->GetPlayer()->SendMessageBox(0, "Golden Channel", "You need to set how many days you are going to purchase. \n "
+		this->m_Player->SendMessageBox(0, "Golden Channel", "You need to set how many days you are going to purchase. \n "
 			"Each day costs %d wcoin. \n "
 			"Example: /gold 10. That means 10 days.", sGameServer->GetCommandGoldPrice());
 	}
 	else
 	{
-		if ( this->GetPlayer()->GetCredits() < price )
+		if ( this->m_Player->GetCredits() < price )
 		{
-			this->GetPlayer()->SendMessageBox(0, "Golden Channel", "You need %d wcoin to buy %d days.", price, days);
+			this->m_Player->SendMessageBox(0, "Golden Channel", "You need %d wcoin to buy %d days.", price, days);
 			return;
 		}
 
-		this->GetPlayer()->ReduceCredits(price);
+		this->m_Player->ReduceCredits(price);
 
 		time_t purchase_days = days * DAY;
 		time_t current_time = time(nullptr);
@@ -1283,24 +1289,24 @@ void ChatHandler::CommandGold(const char * msg)
 
 		golden_channel += purchase_days;
 
-		this->GetPlayer()->GetAccountData()->SetGoldenChannel(golden_channel);
+		this->m_Player->GetAccountData()->SetGoldenChannel(golden_channel);
 
 		SQLTransaction trans = LoginDatabase.BeginTransaction();
 
 		stmt = LoginDatabase.GetPreparedStatement(QUERY_LOGIN_GOLDEN_CHANNEL_UPDATE);
 		stmt->setInt64(0, golden_channel);
-		stmt->setUInt32(1, this->GetPlayer()->GetAccountData()->GetGUID());
+		stmt->setUInt32(1, this->m_Player->GetAccountData()->GetGUID());
 		trans->Append(stmt);
 
 		LoginDatabase.CommitTransaction(trans);
 
 		SQLTransaction strans = MuDatabase.BeginTransaction();
 
-		this->GetPlayer()->SaveDBAccount(strans);
+		this->m_Player->SaveDBAccount(strans);
 
 		MuDatabase.CommitTransaction(strans);
 
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "You have been subscribed to gold server for %d days.", (golden_channel - current_time) / DAY);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "You have been subscribed to gold server for %d days.", (golden_channel - current_time) / DAY);
 	}
 }
 
@@ -1308,33 +1314,33 @@ void ChatHandler::CommanResetCharacter(const char* msg)
 {
 	if (!sGameServer->IsResetSystemEnbale())
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset System Disable");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset System Disable");
 		return;
 	}
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
-	Player* pPlayer = sObjectMgr->FindPlayerByName(this->GetPlayer()->GetName());
+	Player* pPlayer = sObjectMgr->FindPlayerByName(this->m_Player->GetName());
 
 	if (sResetSystemMgr->PlayerReset(pPlayer)) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Reset Succes!");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Reset Succes!");
 	}
 	else {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset Failed!");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset Failed!");
 	}
 }
 
 void ChatHandler::CommanAutoResetCharacter(const char* msg) {
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
-	Player* pPlayer = sObjectMgr->FindPlayerByName(this->GetPlayer()->GetName());
+	Player* pPlayer = sObjectMgr->FindPlayerByName(this->m_Player->GetName());
 	std::stringstream conversor(msg);
 	int32 type = 0;
 
@@ -1342,20 +1348,20 @@ void ChatHandler::CommanAutoResetCharacter(const char* msg) {
 
 	if (type == 1) {
 		pPlayer->GetResetSystem(RESET_AUTO)->SetReset(1);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset Auto Enanle");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset Auto Enanle");
 	}
 	else if (type == 0) {
 		pPlayer->GetResetSystem(RESET_AUTO)->SetReset(0);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset Auto Disable");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset Auto Disable");
 	}
 	else {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Command");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Command");
 	}
 }
 /*
 void ChatHandler::CommandDuelBetItem(const char* msg) {
 	if (!sGameServer->IsDuelBetItem()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Duel Bet System Is Disabled.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Duel Bet System Is Disabled.");
 		return;
 	}
 
@@ -1378,7 +1384,7 @@ void ChatHandler::CommandDuelBetItem(const char* msg) {
 
 	type = sDuelBetItem->GetTypeBet(type_name);
 
-	Player* pPlayer = this->GetPlayer();
+	Player* pPlayer = this->m_Player;
 	Player* pPlayerTarget = sObjectMgr->FindPlayerByNameNoSensitive(name);
 
 	if (type > 7) {
@@ -1395,7 +1401,7 @@ void ChatHandler::CommandDuelBetItem(const char* msg) {
 */
 
 void ChatHandler::CommandDanhLo(const char* msg) {
-	Player* pPlayer = this->GetPlayer();
+	Player* pPlayer = this->m_Player;
 
 	if (!sGameServer->IsLoDeEnabled()) {
 		pPlayer->SendNotice(CUSTOM_MESSAGE_ID_RED, "Chuc nang lo de hien khong hoat dong");
@@ -1418,7 +1424,7 @@ void ChatHandler::CommandDanhLo(const char* msg) {
 	conversor >> bet_number >> bet_type_string >> bet_value;
 
 	if (bet_number >= 100) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "So ghi khong hop le");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "So ghi khong hop le");
 		return;
 	}
 
@@ -1526,7 +1532,7 @@ void ChatHandler::CommandDanhLo(const char* msg) {
 }
 
 void ChatHandler::CommandDanhDe(const char* msg) {
-	Player* pPlayer = this->GetPlayer();
+	Player* pPlayer = this->m_Player;
 
 	if (!sGameServer->IsLoDeEnabled()) {
 		pPlayer->SendNotice(CUSTOM_MESSAGE_ID_RED, "Chuc nang lo de hien khong hoat dong");
@@ -1549,7 +1555,7 @@ void ChatHandler::CommandDanhDe(const char* msg) {
 	conversor >> bet_number >> bet_type_string >> bet_value;
 
 	if (bet_number >= 100) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "So ghi khong hop le");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "So ghi khong hop le");
 		return;
 	}
 
@@ -1658,7 +1664,7 @@ void ChatHandler::CommandDanhDe(const char* msg) {
 }
 
 void ChatHandler::CommandNhanThuongLoDe(const char* msg) {
-	Player* pPlayer = this->GetPlayer();
+	Player* pPlayer = this->m_Player;
 
 	if (!pPlayer)
 		return;
@@ -1814,14 +1820,14 @@ void ChatHandler::CommandNhanThuongLoDe(const char* msg) {
 }
 
 void ChatHandler::CommandCmdList(const char* msg) {
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "==========================================");
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Command Info List");
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Add Stats Command:");
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "/str /agi /vit /ene /cmd");
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset Command: /reset");
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "/resetauto 0/1(disable/enable)");
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Offline Attack: /offattack");
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "==========================================");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "==========================================");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Command Info List");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Add Stats Command:");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "/str /agi /vit /ene /cmd");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Reset Command: /reset");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "/resetauto 0/1(disable/enable)");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Offline Attack: /offattack");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "==========================================");
 }
 
 void ChatHandler::CommandErrtel(const char * msg)
@@ -1875,19 +1881,19 @@ void ChatHandler::CommandErrtel(const char * msg)
 
 	if (errtel_item <= 0)
 	{
-		this->GetPlayer()->SendMessageBox(0, "Errtel Create", "Wrong errtel id");
+		this->m_Player->SendMessageBox(0, "Errtel Create", "Wrong errtel id");
 		return;
 	}
 
 	if (element <= 0 || element >= ELEMENTAL_ATTRIBUTE_MAX)
 	{
-		this->GetPlayer()->SendMessageBox(0, "Errtel Create", "Wrong errtel element");
+		this->m_Player->SendMessageBox(0, "Errtel Create", "Wrong errtel element");
 		return;
 	}
 
-	if (!this->GetPlayer()->GetInventory()->IsEmptySpace(errtel_item))
+	if (!this->m_Player->GetInventory()->IsEmptySpace(errtel_item))
 	{
-		this->GetPlayer()->SendMessageBox(0, "Errtel Create", "Not enough space in inventory.");
+		this->m_Player->SendMessageBox(0, "Errtel Create", "Not enough space in inventory.");
 		return;
 	}
 
@@ -1950,23 +1956,23 @@ void ChatHandler::CommandErrtel(const char * msg)
 
 	if (rank_level <= 0)
 	{
-		this->GetPlayer()->SendMessageBox(0, "Errtel Create", "Wrong errtel options");
+		this->m_Player->SendMessageBox(0, "Errtel Create", "Wrong errtel options");
 		return;
 	}
 
 	item.SetSocketBonus(element | rank_level * 16);
 	
-	sItemMgr->ItemSerialCreateItem(this->GetPlayer(), serial_create_inventory, item);
+	sItemMgr->ItemSerialCreateItem(this->m_Player, serial_create_inventory, item);
 }
 
 void ChatHandler::CommandSiegeRefresh(const char * msg)
 {
-	this->GetPlayer()->ViewportCreate(VIEWPORT_CREATE_FLAG_SIEGE);
+	this->m_Player->ViewportCreate(VIEWPORT_CREATE_FLAG_SIEGE);
 }
 
 void ChatHandler::CommandTestPacket(const char * msg)
 {
-	if ( !this->GetPlayer()->IsAdministrator() )
+	if ( !this->m_Player->IsAdministrator() )
 		return;
 
 	std::stringstream conversor(msg);
@@ -1999,13 +2005,13 @@ void ChatHandler::CommandTestPacket(const char * msg)
 		result = 255;
 	}
 
-	this->GetPlayer()->SetPacketResult(result);
-	this->GetPlayer()->SetPacketData1(data1);
-	this->GetPlayer()->SetPacketData2(data2);
-	this->GetPlayer()->SetPacketData3(data3);
-	this->GetPlayer()->SendNotice(NOTICE_NORMAL_BLUE, "Packet Result: %02X", uint8(result));
+	this->m_Player->SetPacketResult(result);
+	this->m_Player->SetPacketData1(data1);
+	this->m_Player->SetPacketData2(data2);
+	this->m_Player->SetPacketData3(data3);
+	this->m_Player->SendNotice(NOTICE_NORMAL_BLUE, "Packet Result: %02X", uint8(result));
 
-	//this->GetPlayer()->SetSendBuff(result != 0);
+	//this->m_Player->SetSendBuff(result != 0);
 
 	switch (result)
 	{
@@ -2017,29 +2023,29 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			  pMsg.data2 = data3;
 			  pMsg.data3 = data4;
 
-			  this->GetPlayer()->SendPacket(&pMsg);*/
+			  this->m_Player->SendPacket(&pMsg);*/
 
-			  this->GetPlayer()->StateInfoSend(data1, data2);
+			  this->m_Player->StateInfoSend(data1, data2);
 
-			  /*this->GetPlayer()->SetIntData(UNIT_INT_ATTACK_SPEED, data1);
-			  this->GetPlayer()->SetIntData(UNIT_INT_MAGIC_SPEED, data1);
+			  /*this->m_Player->SetIntData(UNIT_INT_ATTACK_SPEED, data1);
+			  this->m_Player->SetIntData(UNIT_INT_MAGIC_SPEED, data1);
 
-			  CHARACTER_ATTACK_SPEED_SEND pMsg(this->GetPlayer()->GetIntData(UNIT_INT_ATTACK_SPEED), this->GetPlayer()->GetIntData(UNIT_INT_MAGIC_SPEED));
-			  this->GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+			  CHARACTER_ATTACK_SPEED_SEND pMsg(this->m_Player->GetIntData(UNIT_INT_ATTACK_SPEED), this->m_Player->GetIntData(UNIT_INT_MAGIC_SPEED));
+			  this->m_Player->sendPacket(MAKE_PCT(pMsg));
 
-			  this->GetPlayer()->AttackSpeedSend();*/
+			  this->m_Player->AttackSpeedSend();*/
 			  /*ITEM_ENHANCEMENT_RESULT pMsg;
 			  pMsg.result = data1;
 
-			  this->GetPlayer()->sendPacket(&pMsg);*/
+			  this->m_Player->sendPacket(&pMsg);*/
 
-			  //sPentagramSystem->DelAllPentagramJewelInfo(this->GetPlayer(), this->GetPlayer()->GetInventory()->GetItem(PENTAGRAM_SLOT), 0);
+			  //sPentagramSystem->DelAllPentagramJewelInfo(this->m_Player, this->m_Player->GetInventory()->GetItem(PENTAGRAM_SLOT), 0);
 
 			  /*TEST_PACKET_94 pMsg;
 			  pMsg.result = data1;
-			  pMsg.index = this->GetPlayer()->GetEntry();
+			  pMsg.index = this->m_Player->GetEntry();
 
-			  this->GetPlayer()->sendPacket(&pMsg);*/
+			  this->m_Player->sendPacket(&pMsg);*/
 		} break;
 
 	case 1:
@@ -2050,16 +2056,16 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			  pMsg.data2 = data3;
 			  pMsg.data3 = data4;
 
-			  this->GetPlayer()->SendPacket(&pMsg);*/
+			  this->m_Player->SendPacket(&pMsg);*/
 
 
-			  //this->GetPlayer()->StateInfoSend(data1, data2);
+			  //this->m_Player->StateInfoSend(data1, data2);
 
 			  /*TEST_PACKET_95 pMsg;
 			  pMsg.result = data1;
-			  pMsg.index = this->GetPlayer()->GetEntry();
+			  pMsg.index = this->m_Player->GetEntry();
 
-			  this->GetPlayer()->sendPacket(&pMsg);*/
+			  this->m_Player->sendPacket(&pMsg);*/
 			  /*uint8 buffer[8192];
 			  int32 write_size = 0;
 
@@ -2095,7 +2101,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 
 			  head->set(HEACODE_EVENT_INVENTORY, 0x41, write_size);
 
-			  this->GetPlayer()->sendPacket(buffer);*/
+			  this->m_Player->sendPacket(buffer);*/
 		} break;
 
 	case 2:
@@ -2103,7 +2109,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			  MU_HELPER_PLUS_83 pMsg;
 			  pMsg.result = data1;
 
-			  this->GetPlayer()->SendPacket(&pMsg);
+			  this->m_Player->SendPacket(&pMsg);
 		} break;
 
 	case 3:
@@ -2111,14 +2117,14 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			  MU_HELPER_PLUS_RUN_SEND pMsg;
 			  pMsg.result = data1;
 
-			  this->GetPlayer()->SendPacket(&pMsg);
+			  this->m_Player->SendPacket(&pMsg);
 		} break;
 
 	case 4:
 		{
 			  MU_HELPER_PLUS_86 pMsg;
 
-			  this->GetPlayer()->SendPacket(&pMsg);
+			  this->m_Player->SendPacket(&pMsg);
 		} break;
 
 	case 5:
@@ -2126,7 +2132,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			  MU_HELPER_PLUS_88 pMsg;
 			  pMsg.result = data1;
 
-			  this->GetPlayer()->SendPacket(&pMsg);
+			  this->m_Player->SendPacket(&pMsg);
 		} break;
 
 	case 6:
@@ -2134,7 +2140,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			  MU_HELPER_PLUS_90 pMsg;
 			  pMsg.result = data1;
 
-			  this->GetPlayer()->SendPacket(&pMsg);
+			  this->m_Player->SendPacket(&pMsg);
 		} break;
 
 	case 7:
@@ -2143,12 +2149,12 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			  {
 				  full_inventory_loop(i)
 				  {
-					  this->GetPlayer()->PrintItemData(this->GetPlayer()->GetInventory()->GetItem(i));
+					  this->m_Player->PrintItemData(this->m_Player->GetInventory()->GetItem(i));
 				  }
 			  }
 			  else
 			  {
-				  this->GetPlayer()->PrintItemData(this->GetPlayer()->GetInventory()->GetItem(data1));
+				  this->m_Player->PrintItemData(this->m_Player->GetInventory()->GetItem(data1));
 			  }
 		} break;
 
@@ -2160,7 +2166,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 				  socket[i] = sItemMgr->GenerateWingGradedOption(socket);
 			  }
 
-			  sItemMgr->ItemSerialCreateItem(this->GetPlayer(), serial_create_inventory, Item(ITEMGET(data1, data2), 0, 0, 0, 0, 0, 0, 0, socket));
+			  sItemMgr->ItemSerialCreateItem(this->m_Player, serial_create_inventory, Item(ITEMGET(data1, data2), 0, 0, 0, 0, 0, 0, 0, socket));
 		} break;
 
 	case 9:
@@ -2173,7 +2179,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			/*PACKET_0xEC_0x60 pMsg;
 			pMsg.data = data1;
 
-			this->GetPlayer()->SEND_PCT(pMsg);*/
+			this->m_Player->SEND_PCT(pMsg);*/
 		} break;
 
 	case 11:
@@ -2199,7 +2205,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			
 			head->Set(0xEC, 0x57, sizeof(PACKET_CHANNEL_HEAD) + (head->count * sizeof(PACKET_CHANNEL_BODY)));
 
-			this->GetPlayer()->sendPacket(buffer, head->GetSize());*/
+			this->m_Player->sendPacket(buffer, head->GetSize());*/
 		} break;
 
 	case 12:
@@ -2207,7 +2213,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			/*PACKET_0x59_0x03 pMsg;
 			pMsg.data = data1;
 
-			this->GetPlayer()->SEND_PCT(pMsg);*/
+			this->m_Player->SEND_PCT(pMsg);*/
 		} break;
 
 	case 13:
@@ -2219,7 +2225,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			pMsg.top_position = data4;
 			pMsg.remain_time = data5;
 			
-			this->GetPlayer()->SEND_PCT(pMsg);*/
+			this->m_Player->SEND_PCT(pMsg);*/
 		} break;
 
 	case 14:
@@ -2242,12 +2248,12 @@ void ChatHandler::CommandTestPacket(const char * msg)
 	{
 	case 0:
 		{
-			this->GetPlayer()->GetTimer(PLAYER_TIMER_CASTLE_SIEGE_TIME)->Start();
+			this->m_Player->GetTimer(PLAYER_TIMER_CASTLE_SIEGE_TIME)->Start();
 		} break;
 
 	case 1:
 		{
-			sEventMgr->CastleSiegeTime(this->GetPlayer(), data1);
+			sEventMgr->CastleSiegeTime(this->m_Player, data1);
 		} break;
 	}*/
 
@@ -2257,32 +2263,32 @@ void ChatHandler::CommandTestPacket(const char * msg)
 		{
 		case 0:
 			{
-				sItemBagMgr->RunItemBag(this->GetPlayer(), sGameServer->GetLastManStandingReward(), Item());
+				sItemBagMgr->RunItemBag(this->m_Player, sGameServer->GetLastManStandingReward(), Item());
 			} break;
 
 		case 1:
 			{
-				sItemBagMgr->RunItemBag(this->GetPlayer(), sGameServer->GetScrambleReward(), Item());
+				sItemBagMgr->RunItemBag(this->m_Player, sGameServer->GetScrambleReward(), Item());
 			} break;
 
 		case 2:
 			{
-				sItemBagMgr->RunItemBag(this->GetPlayer(), sGameServer->GetDungeonRaceReward(), Item());
+				sItemBagMgr->RunItemBag(this->m_Player, sGameServer->GetDungeonRaceReward(), Item());
 			} break;
 
 		case 3:
 			{
-				sItemBagMgr->RunItemBag(this->GetPlayer(), sGameServer->GetLosttowerRaceReward(), Item());
+				sItemBagMgr->RunItemBag(this->m_Player, sGameServer->GetLosttowerRaceReward(), Item());
 			} break;
 
 		case 4:
 			{
-				sItemBagMgr->RunItemBag(this->GetPlayer(), "Muun Egg", Item());
+				sItemBagMgr->RunItemBag(this->m_Player, "Muun Egg", Item());
 			} break;
 
 		case 5:
 			{
-				sItemBagMgr->RunItemBag(this->GetPlayer(), "Seed Capsule(Fire)", Item());
+				sItemBagMgr->RunItemBag(this->m_Player, "Seed Capsule(Fire)", Item());
 			} break;
 		}
 	}*/
@@ -2290,9 +2296,9 @@ void ChatHandler::CommandTestPacket(const char * msg)
 	/*int32 damage_min = 0;
 	int32 damage_max = 0;
 
-	this->GetPlayer()->ApplyWeaponDamage(damage_min, damage_max);
+	this->m_Player->ApplyWeaponDamage(damage_min, damage_max);
 
-	this->GetPlayer()->SendNotice(NOTICE_NORMAL_BLUE, "damage_min: %d / damage_max: %d", damage_min, damage_max);*/
+	this->m_Player->SendNotice(NOTICE_NORMAL_BLUE, "damage_min: %d / damage_max: %d", damage_min, damage_max);*/
 
 	/*int32 monster = 247;
 	int32 move_distance = 30;
@@ -2324,7 +2330,7 @@ void ChatHandler::CommandTestPacket(const char * msg)
 			mMonster->SetRespawnLocation(MONSTER_RESPAWN_ZONE);
 			mMonster->SetDespawnType(MONSTER_DESPAWN_TIME);
 			mMonster->SetMoveDistance(move_distance);
-			mMonster->SetSummoner(this->GetPlayer());
+			mMonster->SetSummoner(this->m_Player);
 			mMonster->SetScriptName("monster_kill_bot_ai");
 			mMonster->SetElementalAttribute(ELEMENTAL_ATTRIBUTE_MAX);
 			mMonster->SetScriptElementalAttribute(ELEMENTAL_ATTRIBUTE_MAX);
@@ -2367,7 +2373,7 @@ void ChatHandler::CommandKick(const char * msg)
 
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), name_safe.c_str(), name_safe.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH : name_safe.size());
 
-	sDataServer->AdminCommandRequest(this->GetPlayer(), 0, 0, name, nullptr, time);
+	sDataServer->AdminCommandRequest(this->m_Player, 0, 0, name, nullptr, time);
 }
 
 void ChatHandler::CommandEvents(const char * msg)
@@ -2717,7 +2723,7 @@ void ChatHandler::CommandMute(const char * msg)
 
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), safe_name.c_str(), safe_name.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH: safe_name.size());
 
-	sDataServer->AdminCommandRequest(this->GetPlayer(), 2, 0, name, nullptr, mute_time);
+	sDataServer->AdminCommandRequest(this->m_Player, 2, 0, name, nullptr, mute_time);
 }
 
 void ChatHandler::CommandItemNormal(const char * msg)
@@ -2743,7 +2749,7 @@ void ChatHandler::CommandItemNormal(const char * msg)
 
 	if ( !item )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
 		return;
 	}
 
@@ -2753,8 +2759,8 @@ void ChatHandler::CommandItemNormal(const char * msg)
 		item_new.SetHarmony(harmony);
 		item_new.Set380(opt380);
 
-		sItemMgr->ItemSerialCreate(this->GetPlayer(),
-			this->GetPlayer()->GetWorldId(), this->GetPlayer()->GetX(), this->GetPlayer()->GetY(), item_new, false);
+		sItemMgr->ItemSerialCreate(this->m_Player,
+			this->m_Player->GetWorldId(), this->m_Player->GetX(), this->m_Player->GetY(), item_new, false);
 	}
 }
 	
@@ -2777,17 +2783,17 @@ void ChatHandler::CommandItemAdd(const char * msg)
 
 	conversor >> count >> type >> index >> level >> durability >> skill >> luck >> option >> exe >> ancient >> harmony >> opt380 >> duration;
 
-	Player* pOwner = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* pOwner = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if ( !pOwner )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
 	if ( pOwner->GetInterfaceState()->GetID() != InterfaceData::None || pOwner->GetPersonalStore()->IsBusy() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is busy", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is busy", this->m_WhisperName);
 		return;
 	}
 	
@@ -2795,7 +2801,7 @@ void ChatHandler::CommandItemAdd(const char * msg)
 
 	if ( !item )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
 		return;
 	}
 
@@ -2803,12 +2809,12 @@ void ChatHandler::CommandItemAdd(const char * msg)
 	{
 		if ( !pOwner->GetInventory()->IsEmptySpace(item->GetX(), item->GetY()) )
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
 			return;
 		}
 
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
-		pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->GetPlayer()->GetName(), item->GetName(level));
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
+		pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->m_Player->GetName(), item->GetName(level));
 
 		Item item_new(ITEMGET(type,index), level, durability, skill, luck, option, exe, ancient);
 		item_new.SetHarmony(harmony);
@@ -2847,7 +2853,7 @@ void ChatHandler::CommandItemAddPlayer(const char* msg)
 
 	if (!pOwner)
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player");
 		return;
 	}
 
@@ -2855,7 +2861,7 @@ void ChatHandler::CommandItemAddPlayer(const char* msg)
 
 	if (!item)
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
 		return;
 	}
 
@@ -2863,12 +2869,12 @@ void ChatHandler::CommandItemAddPlayer(const char* msg)
 	{
 		if (!pOwner->GetInventory()->IsEmptySpace(item->GetX(), item->GetY()))
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
 			return;
 		}
 
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
-		pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->GetPlayer()->GetName(), item->GetName(level));
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
+		pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->m_Player->GetName(), item->GetName(level));
 
 		Item item_new(ITEMGET(type, index), level, durability, skill, luck, option, exe, ancient);
 		item_new.SetHarmony(harmony);
@@ -2895,7 +2901,7 @@ void ChatHandler::CommandItemAddPlayer(const char* msg)
 	
 void ChatHandler::CommandItemShow(const char * msg)
 {
-	sWorldMgr->MakeItemVisible(this->GetPlayer());
+	sWorldMgr->MakeItemVisible(this->m_Player);
 }
 	
 void ChatHandler::CommandItemHide(const char * msg)
@@ -2918,7 +2924,7 @@ void ChatHandler::CommandItemHide(const char * msg)
 
 	if ( !item )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
 		return;
 	}
 
@@ -2928,8 +2934,8 @@ void ChatHandler::CommandItemHide(const char * msg)
 	
 	for ( int32 i = 0; i < count; i++ )
 	{
-		sItemMgr->ItemSerialCreate(this->GetPlayer(),
-			this->GetPlayer()->GetWorldId(), this->GetPlayer()->GetX(), this->GetPlayer()->GetY(), 
+		sItemMgr->ItemSerialCreate(this->m_Player,
+			this->m_Player->GetWorldId(), this->m_Player->GetX(), this->m_Player->GetY(), 
 			add_item, false, false);
 	}
 }
@@ -2981,17 +2987,17 @@ void ChatHandler::CommandAdminItemPentagram(const char * msg)
 
 	SocketDataType socket[MAX_SOCKET_SLOT] = { (SocketDataType)socket_1, (SocketDataType)socket_2, (SocketDataType)socket_3, (SocketDataType)socket_4, (SocketDataType)socket_5 };
 	
-	Player* pOwner = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* pOwner = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if ( !pOwner )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
 	if ( pOwner->GetInterfaceState()->GetID() != InterfaceData::None || pOwner->GetPersonalStore()->IsBusy() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is busy", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is busy", this->m_WhisperName);
 		return;
 	}
 	
@@ -2999,18 +3005,18 @@ void ChatHandler::CommandAdminItemPentagram(const char * msg)
 
 	if ( !item )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
 		return;
 	}
 
 	if ( !pOwner->GetInventory()->IsEmptySpace(item->GetX(), item->GetY()) )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
 		return;
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
-	pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->GetPlayer()->GetName(), item->GetName(level));
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
+	pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->m_Player->GetName(), item->GetName(level));
 
 	Item item_new(ITEMGET(type, index), level, 5, 0, 0, 0, 0, 0, socket, socket_bonus);
 
@@ -3034,17 +3040,17 @@ void ChatHandler::CommandItemGremory(const char * msg)
 
 	conversor >> inventory >> type >> index >> level >> durability >> skill >> luck >> option >> exe >> ancient >> duration;
 
-	Player* pOwner = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* pOwner = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if ( !pOwner )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
 	if ( pOwner->GetInterfaceState()->GetID() != InterfaceData::None || pOwner->GetPersonalStore()->IsBusy() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is busy", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is busy", this->m_WhisperName);
 		return;
 	}
 	
@@ -3052,7 +3058,7 @@ void ChatHandler::CommandItemGremory(const char * msg)
 
 	if ( !item )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
 		return;
 	}
 
@@ -3068,12 +3074,12 @@ void ChatHandler::CommandItemGremory(const char * msg)
 
 	if ( !pOwner->GetInventory()->IsEmptySpace(item->GetX(), item->GetY()) )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
 		return;
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
-	pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->GetPlayer()->GetName(), item->GetName(level));
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
+	pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->m_Player->GetName(), item->GetName(level));
 
 	Item item_new(ITEMGET(type,index), level, durability, skill, luck, option, exe, ancient,0,255,86400);
 
@@ -3095,17 +3101,17 @@ void ChatHandler::CommandItemWing(const char * msg)
 
 	conversor >> index >> level >> socket_1 >> socket_2 >> socket_3 >> socket_4 >> socket_5 >> socket_bonus;
 
-	Player* pOwner = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* pOwner = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if (!pOwner)
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
 	if (pOwner->GetInterfaceState()->GetID() != InterfaceData::None || pOwner->GetPersonalStore()->IsBusy())
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is busy", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s is busy", this->m_WhisperName);
 		return;
 	}
 
@@ -3113,18 +3119,18 @@ void ChatHandler::CommandItemWing(const char * msg)
 
 	if (!item)
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Item");
 		return;
 	}
 
 	if (!pOwner->GetInventory()->IsEmptySpace(item->GetX(), item->GetY()))
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s has full inventory", pOwner->GetName());
 		return;
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
-	pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->GetPlayer()->GetName(), item->GetName(level));
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Created item %s on %s", item->GetName(level), pOwner->GetName());
+	pOwner->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s created item %s", this->m_Player->GetName(), item->GetName(level));
 
 	Item item_new(ITEMGET(type, index), level);
 	item_new.SetSocket(0, socket_1);
@@ -3145,7 +3151,7 @@ void ChatHandler::CommandBanChar(const char * msg)
 
 	STRING_SAFE_COPY(name, (MAX_CHARACTER_LENGTH + 1), name_safe.c_str(), name_safe.size() > MAX_CHARACTER_LENGTH ? MAX_CHARACTER_LENGTH: name_safe.size());
 
-	sDataServer->AdminCommandRequest(this->GetPlayer(), 3, 0, name, nullptr, 0);
+	sDataServer->AdminCommandRequest(this->m_Player, 3, 0, name, nullptr, 0);
 }
 
 void ChatHandler::CommandBanAcc(const char * msg)
@@ -3162,11 +3168,11 @@ void ChatHandler::CommandZenAdd(const char * msg)
 
 	limitmax(zen, sGameServer->GetMaxCharacterZen());
 	
-	Player* mTarget = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* mTarget = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if ( !mTarget )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
@@ -3192,11 +3198,11 @@ void ChatHandler::CommandZenSet(const char * msg)
 
 	limitmax(zen, sGameServer->GetMaxCharacterZen());
 
-	Player* mTarget = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* mTarget = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if ( !mTarget )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
@@ -3227,12 +3233,12 @@ void ChatHandler::CommandGuildTalk(const char * msg)
 
 	if ( !pGuild )
 	{
-		this->GetPlayer()->TalkingGuild.set(0);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist",guild);
+		this->m_Player->TalkingGuild.set(0);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist",guild);
 		return;
 	}
 
-	this->GetPlayer()->TalkingGuild.set(pGuild->GetID());
+	this->m_Player->TalkingGuild.set(pGuild->GetID());
 }
 	
 void ChatHandler::CommandAllianceTalk(const char * msg)
@@ -3249,17 +3255,17 @@ void ChatHandler::CommandAllianceTalk(const char * msg)
 
 	if ( !pGuild )
 	{
-		this->GetPlayer()->TalkingAlliance.set(0);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist",guild);
+		this->m_Player->TalkingAlliance.set(0);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist",guild);
 		return;
 	}
 
-	this->GetPlayer()->TalkingAlliance.set(pGuild->GetID());
+	this->m_Player->TalkingAlliance.set(pGuild->GetID());
 }
 
 void ChatHandler::CommandFirework(const char * msg)
 {
-	this->GetPlayer()->FireworksSend();
+	this->m_Player->FireworksSend();
 }
 
 void ChatHandler::CommandMonsterAddTemp(const char * msg)
@@ -3279,15 +3285,15 @@ void ChatHandler::CommandMonsterAddTemp(const char * msg)
 
 	for ( int32 i = 0; i < count; ++i )
 	{
-		Monster * mMonster = sObjectMgr->MonsterTryAdd(monster, this->GetPlayer()->GetWorldId());
+		Monster * mMonster = sObjectMgr->MonsterTryAdd(monster, this->m_Player->GetWorldId());
 
 		if ( !mMonster )
 			continue;
 	
-		mMonster->SetWorldId(this->GetPlayer()->GetWorldId());
-		mMonster->SetInstance(this->GetPlayer()->GetInstance());
-		mMonster->SetBasicLocation(this->GetPlayer()->GetX(),this->GetPlayer()->GetY(),this->GetPlayer()->GetX(),this->GetPlayer()->GetY());
-		mMonster->SetDirection(this->GetPlayer()->GetDirection());
+		mMonster->SetWorldId(this->m_Player->GetWorldId());
+		mMonster->SetInstance(this->m_Player->GetInstance());
+		mMonster->SetBasicLocation(this->m_Player->GetX(),this->m_Player->GetY(),this->m_Player->GetX(),this->m_Player->GetY());
+		mMonster->SetDirection(this->m_Player->GetDirection());
 		mMonster->SetDespawnTime(despawn_time * IN_MILLISECONDS);
 		mMonster->SetDespawnTick(MyGetTickCount());
 		mMonster->SetRespawnType(GAME_OBJECT_RESPAWN_DELETE);
@@ -3336,7 +3342,7 @@ void ChatHandler::CommandGMBuff(const char * msg)
 
 	Object* pUnit = nullptr;
 
-	VIEWPORT_LOOP_OBJECT(this->GetPlayer(), pUnit)
+	VIEWPORT_LOOP_OBJECT(this->m_Player, pUnit)
 
 		if ( !pUnit->IsPlayer() || !pUnit->IsPlaying() || !pUnit->ToUnit()->IsLive() )
 			continue;
@@ -3388,17 +3394,17 @@ void ChatHandler::CommandGMBuffTo(const char * msg)
 	if (id >= COMMAND_GM_BUFF_GROUP_MAX)
 		return;
 
-	Player* pPlayer = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* pPlayer = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if (!pPlayer)
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
 	if (!pPlayer->IsPlaying() || !pPlayer->IsLive())
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s can't receive buff.", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Player %s can't receive buff.", this->m_WhisperName);
 		return;
 	}
 
@@ -3414,17 +3420,17 @@ void ChatHandler::CommandGMBuffApply(Unit* pUnit, int32 id, int32 duration, int3
 			pUnit->AddBuff(BUFF_GM_BUFF_STAT, 
 				BuffEffect(BUFF_OPTION_INCREASE_MAXIMUM_LIFE, 300),
 				BuffEffect(BUFF_OPTION_INCREASE_MAXIMUM_MANA, 300),
-				duration, BUFF_FLAG_COMBAT | BUFF_FLAG_DB_STORE, this->GetPlayer(), false);
+				duration, BUFF_FLAG_COMBAT | BUFF_FLAG_DB_STORE, this->m_Player, false);
 
 			pUnit->AddBuff(BUFF_GM_BUFF_DEFENSE_ATTACK, 
 				BuffEffect(BUFF_OPTION_INCREASE_ATTACK_DAMAGE, 50),
 				BuffEffect(BUFF_OPTION_INCREASE_DEFENSE, 50),
 				BuffEffect(BUFF_OPTION_INCREASE_DEFENSE_SUCCESS_RATE, 100),
-				duration, BUFF_FLAG_COMBAT | BUFF_FLAG_DB_STORE, this->GetPlayer(), false);
+				duration, BUFF_FLAG_COMBAT | BUFF_FLAG_DB_STORE, this->m_Player, false);
 
 			pUnit->AddBuff(BUFF_GM_BUFF_EXPERIENCE,
 				BuffEffect(BUFF_OPTION_INCREASE_EXPERIENCE, 5),
-				duration, BUFF_FLAG_COMBAT | BUFF_FLAG_DB_STORE, this->GetPlayer(), false);
+				duration, BUFF_FLAG_COMBAT | BUFF_FLAG_DB_STORE, this->m_Player, false);
 		} break;
 
 	case COMMAND_GM_BUFF_GROUP_JACK:
@@ -3445,13 +3451,13 @@ void ChatHandler::CommandGMBuffApply(Unit* pUnit, int32 id, int32 duration, int3
 
 	case COMMAND_GM_BUFF_GROUP_SANTA:
 		{
-			pUnit->AddBuff(BUFF_SANTA_BLESSING_CHRISTMAS, BuffEffect(BUFF_OPTION_INCREASE_ATTACK_DAMAGE, 100), BuffEffect(BUFF_OPTION_INCREASE_DEFENSE, 100), duration, 0, GetPlayer(), false);
-			pUnit->AddBuff(BUFF_SANTA_HEALING, BuffEffect(BUFF_OPTION_INCREASE_MAXIMUM_LIFE, 500), duration, 0, GetPlayer(), false);
-			pUnit->AddBuff(BUFF_SANTA_PROTECTION, BuffEffect(BUFF_OPTION_INCREASE_MAXIMUM_MANA, 500), duration, 0, GetPlayer(), false);
-			pUnit->AddBuff(BUFF_SANTA_STRENGTHENER, BuffEffect(BUFF_OPTION_INCREASE_ATTACK_DAMAGE, 30), duration, 0, GetPlayer(), false);
-			pUnit->AddBuff(BUFF_SANTA_DEFENSE, BuffEffect(BUFF_OPTION_INCREASE_DEFENSE, 100), duration, 0, GetPlayer(), false);
-			pUnit->AddBuff(BUFF_SANTA_QUICKNESS, BuffEffect(BUFF_OPTION_INCREASE_ATTACK_SPEED, 15), duration, 0, GetPlayer(), false);
-			pUnit->AddBuff(BUFF_SANTA_FORTUNE, BuffEffect(BUFF_OPTION_INCREASE_AG_RECOVERY_ADD, 10), duration, 0, GetPlayer(), false);
+pUnit->AddBuff(BUFF_SANTA_BLESSING_CHRISTMAS, BuffEffect(BUFF_OPTION_INCREASE_ATTACK_DAMAGE, 100), BuffEffect(BUFF_OPTION_INCREASE_DEFENSE, 100), duration, 0, this->m_Player, false);
+pUnit->AddBuff(BUFF_SANTA_HEALING, BuffEffect(BUFF_OPTION_INCREASE_MAXIMUM_LIFE, 500), duration, 0, this->m_Player, false);
+pUnit->AddBuff(BUFF_SANTA_PROTECTION, BuffEffect(BUFF_OPTION_INCREASE_MAXIMUM_MANA, 500), duration, 0, this->m_Player, false);
+pUnit->AddBuff(BUFF_SANTA_STRENGTHENER, BuffEffect(BUFF_OPTION_INCREASE_ATTACK_DAMAGE, 30), duration, 0, this->m_Player, false);
+pUnit->AddBuff(BUFF_SANTA_DEFENSE, BuffEffect(BUFF_OPTION_INCREASE_DEFENSE, 100), duration, 0, this->m_Player, false);
+pUnit->AddBuff(BUFF_SANTA_QUICKNESS, BuffEffect(BUFF_OPTION_INCREASE_ATTACK_SPEED, 15), duration, 0, this->m_Player, false);
+pUnit->AddBuff(BUFF_SANTA_FORTUNE, BuffEffect(BUFF_OPTION_INCREASE_AG_RECOVERY_ADD, 10), duration, 0, this->m_Player, false);
 		} break;
 
 	case COMMAND_GM_BUFF_GROUP_SOLDIER:
@@ -3459,12 +3465,12 @@ void ChatHandler::CommandGMBuffApply(Unit* pUnit, int32 id, int32 duration, int3
 			pUnit->AddBuff(BUFF_ELF_SOLDIER, 
 				BuffEffect(BUFF_OPTION_INCREASE_ATTACK_DAMAGE, pUnit->ToPlayer()->GetLevelData(LEVEL_DATA_NORMAL)->GetLevel() / 3 + 45),
 				BuffEffect(BUFF_OPTION_INCREASE_DEFENSE, pUnit->ToPlayer()->GetLevelData(LEVEL_DATA_NORMAL)->GetLevel() / 5 + 50), 
-				60 * ((pUnit->ToPlayer()->GetLevelData(LEVEL_DATA_NORMAL)->GetLevel() / 6) + 30), 0, this->GetPlayer(), false);
+				60 * ((pUnit->ToPlayer()->GetLevelData(LEVEL_DATA_NORMAL)->GetLevel() / 6) + 30), 0, this->m_Player, false);
 		} break;
 
 	case COMMAND_GM_BUFF_GROUP_MISC:
 		{
-			pUnit->AddBuff(duration / MINUTE, value, 0, GetPlayer());
+pUnit->AddBuff(duration / MINUTE, value, 0, this->m_Player);
 		} break;
 	}
 }
@@ -3485,17 +3491,17 @@ void ChatHandler::CommandRestriction(const char * msg)
 
 	if ( restriction < 0 || restriction >= PlayerAction::PLAYER_ACTION_MAX )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Restriction ID.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Restriction ID.");
 		return;
 	}
 
 	if ( duration <= 0 )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Restriction Time.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong Restriction Time.");
 		return;
 	}
 	
-	sDataServer->AdminCommandRequest(this->GetPlayer(), 1, restriction, name, nullptr, duration);
+	sDataServer->AdminCommandRequest(this->m_Player, 1, restriction, name, nullptr, duration);
 }
 
 void ChatHandler::CommandOnline(const char * msg)
@@ -3526,7 +3532,7 @@ void ChatHandler::CommandOnline(const char * msg)
 
 		if ( strlen(name) <= 0 || !memcmp(name_tmp, name, strlen(name)) )
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Player %s is in %s at %d / %d",
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Player %s is in %s at %d / %d",
 				pPlayer->GetName(), pPlayer->GetWorldName(), pPlayer->GetX(), pPlayer->GetY());
 		}
 	}
@@ -3546,11 +3552,11 @@ void ChatHandler::CommandShutdown(const char * msg)
 
 	if ( !sGameServer->IsShutdown() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Server Shutdown aborted.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Server Shutdown aborted.");
 	}
 	else
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Server Shutdown started. Time : %d", time);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Server Shutdown started. Time : %d", time);
 	}
 }
 
@@ -3566,7 +3572,7 @@ void ChatHandler::CommandAction(const char * msg)
 
 	Object* pUnit = nullptr;
 
-	VIEWPORT_LOOP_OBJECT(this->GetPlayer(), pUnit)
+	VIEWPORT_LOOP_OBJECT(this->m_Player, pUnit)
 
 		if ( !pUnit->IsUnit() || !pUnit->IsPlaying() )
 			continue;
@@ -3593,9 +3599,9 @@ void ChatHandler::CommandMonsterAlter(const char * msg)
 	int32 data = 0;
 	conversor >> id >> data;
 
-	if ( id != 0 && !this->GetPlayer()->GetCurrentTarget() )
+	if ( id != 0 && !this->m_Player->GetCurrentTarget() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You don't have a target.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You don't have a target.");
 		return;
 	}
 
@@ -3607,34 +3613,34 @@ void ChatHandler::CommandMonsterAlter(const char * msg)
 
 			if ( !pUnit )
 			{
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Invalid Monster ID.");
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Invalid Monster ID.");
 			}
 			else
 			{
-				this->GetPlayer()->SetCurrentTarget(pUnit->ToCreature());
+				this->m_Player->SetCurrentTarget(pUnit->ToCreature());
 			}
 		} break;
 
 	case 1:
 		{
-			this->GetPlayer()->GetCurrentTarget()->SetLastUpdate(0);
+			this->m_Player->GetCurrentTarget()->SetLastUpdate(0);
 		} break;
 
 	case 2:
 		{
-			this->GetPlayer()->GetCurrentTarget()->SetLastUpdate(0);
-			this->GetPlayer()->GetCurrentTarget()->Kill();
+			this->m_Player->GetCurrentTarget()->SetLastUpdate(0);
+			this->m_Player->GetCurrentTarget()->Kill();
 		} break;
 
 	case 3:
 		{
-			if ( !this->GetPlayer()->GetCurrentTarget()->SetTemplateInfo() )
+			if ( !this->m_Player->GetCurrentTarget()->SetTemplateInfo() )
 			{
-				this->GetPlayer()->GetCurrentTarget()->Remove();
+				this->m_Player->GetCurrentTarget()->Remove();
 			}
 			else
 			{
-				this->GetPlayer()->GetCurrentTarget()->SetDBData();
+				this->m_Player->GetCurrentTarget()->SetDBData();
 			}
 		} break;
 	}
@@ -3657,13 +3663,13 @@ void ChatHandler::CommandMiscSiege(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s.", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s.", name);
 		return;
 	}
 
 	if ( count < 0 || count > 255 )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Invalid Count.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Invalid Count.");
 		return;
 	}
 
@@ -3687,12 +3693,12 @@ void ChatHandler::CommandMiscKill(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s.", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s.", name);
 		return;
 	}
 
 	pPlayer->Kill();
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s killed.", name);
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "%s killed.", name);
 }
 
 void ChatHandler::CommandChangeGuild(const char * msg)
@@ -3744,11 +3750,11 @@ void ChatHandler::CommandSkillAdd(const char * msg)
 
 	conversor >> skill_id;
 
-	Player* pPlayer = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* pPlayer = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
@@ -3768,11 +3774,11 @@ void ChatHandler::CommandSkillRemove(const char * msg)
 
 	conversor >> skill_id;
 
-	Player* pPlayer = sObjectMgr->FindPlayerByNameNoSensitive(this->GetWhisperName());
+	Player* pPlayer = sObjectMgr->FindPlayerByNameNoSensitive(this->m_WhisperName);
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->GetWhisperName());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", this->m_WhisperName);
 		return;
 	}
 
@@ -3799,19 +3805,19 @@ void ChatHandler::CommandCastleSiegeRegister(const char * msg)
 
 	if ( !pGuild )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
 		return;
 	}
 
 	if ( !pGuild->IsAllianceMaster() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is not in alliance or is not alliance master.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is not in alliance or is not alliance master.", guild_name.c_str());
 		return;
 	}
 
 	if ( pGuild->IsRegisteredInCaslteSiege() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is already registered in siege.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is already registered in siege.", guild_name.c_str());
 		return;
 	}
 
@@ -3821,7 +3827,7 @@ void ChatHandler::CommandCastleSiegeRegister(const char * msg)
 	
 	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), true, 0);
 	pGuild->SetRegisteredInCaslteSiege(true);
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered successfully.", guild_name.c_str());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered successfully.", guild_name.c_str());
 }
 	
 void ChatHandler::CommandCastleSiegeUnRegister(const char * msg)
@@ -3838,13 +3844,13 @@ void ChatHandler::CommandCastleSiegeUnRegister(const char * msg)
 
 	if ( !pGuild )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
 		return;
 	}
 
 	if ( !pGuild->IsRegisteredInCaslteSiege() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is not registered in siege.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is not registered in siege.", guild_name.c_str());
 		return;
 	}
 
@@ -3854,7 +3860,7 @@ void ChatHandler::CommandCastleSiegeUnRegister(const char * msg)
 
 	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), false, 0);
 	pGuild->SetRegisteredInCaslteSiege(false);
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s unregistered successfully.", guild_name.c_str());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s unregistered successfully.", guild_name.c_str());
 }
 	
 void ChatHandler::CommandCastleSiegeIncreaseMarks(const char * msg)
@@ -3875,13 +3881,13 @@ void ChatHandler::CommandCastleSiegeIncreaseMarks(const char * msg)
 
 	if ( !pGuild )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
 		return;
 	}
 
 	if ( !pGuild->IsRegisteredInCaslteSiege() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is not registered in siege.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is not registered in siege.", guild_name.c_str());
 		return;
 	}
 
@@ -3892,7 +3898,7 @@ void ChatHandler::CommandCastleSiegeIncreaseMarks(const char * msg)
 
 	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), true, pGuild->GetCastleSiegeMarks());
 	
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered mark successfully. Count %u.", guild_name.c_str(), pGuild->GetCastleSiegeMarks());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered mark successfully. Count %u.", guild_name.c_str(), pGuild->GetCastleSiegeMarks());
 }
 	
 void ChatHandler::CommandCastleSiegeReduceMarks(const char * msg)
@@ -3913,13 +3919,13 @@ void ChatHandler::CommandCastleSiegeReduceMarks(const char * msg)
 
 	if ( !pGuild )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
 		return;
 	}
 
 	if ( !pGuild->IsRegisteredInCaslteSiege() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is not registered in siege.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s is not registered in siege.", guild_name.c_str());
 		return;
 	}
 
@@ -3937,7 +3943,7 @@ void ChatHandler::CommandCastleSiegeReduceMarks(const char * msg)
 
 	sDataServer->CastleSiegeRegisterGuild(pGuild->GetID(), true, pGuild->GetCastleSiegeMarks());
 	
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s unregistered mark successfully. Count %u.", guild_name.c_str(), pGuild->GetCastleSiegeMarks());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s unregistered mark successfully. Count %u.", guild_name.c_str(), pGuild->GetCastleSiegeMarks());
 }
 
 void ChatHandler::CommandCastleSiegeNPCLoad(const char * msg)
@@ -3973,7 +3979,7 @@ void ChatHandler::CommandCastleSiegeFixGate(const char * msg)
 
 	pWorld->ApplyAttribute(data, 16, false);
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Gate %d unlocked", id);
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Gate %d unlocked", id);
 }
 
 void ChatHandler::CommandArcaWarRegisterMaster(const char * msg)
@@ -3990,7 +3996,7 @@ void ChatHandler::CommandArcaWarRegisterMaster(const char * msg)
 
 	if ( !pGuild )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
 		return;
 	}
 
@@ -4002,7 +4008,7 @@ void ChatHandler::CommandArcaWarRegisterMaster(const char * msg)
 
 	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered.", pGuild->GetName());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s registered.", pGuild->GetName());
 }
 	
 void ChatHandler::CommandArcaWarRegisterMember(const char * msg)
@@ -4021,7 +4027,7 @@ void ChatHandler::CommandArcaWarRegisterMember(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -4032,7 +4038,7 @@ void ChatHandler::CommandArcaWarRegisterMember(const char * msg)
 
 	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Player %s registered.", pPlayer->GetName());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Player %s registered.", pPlayer->GetName());
 }
 
 void ChatHandler::CommandArcaWarIncreaseMarks(const char * msg)
@@ -4049,18 +4055,18 @@ void ChatHandler::CommandArcaWarIncreaseMarks(const char * msg)
 
 	if ( !pGuild )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild %s doesn't exist.", guild_name.c_str());
 		return;
 	}
 
 	DS_ARKA_WAR_SIGN_REGISTER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
-	this->GetPlayer()->BuildCustomPacketData(pMsg.player);
+	this->m_Player->BuildCustomPacketData(pMsg.player);
 	pMsg.guild = pGuild->GetID();
 
 	sDataServer->SendPacket(MAKE_PCT(pMsg));
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s sign registered.", pGuild->GetName());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Guild %s sign registered.", pGuild->GetName());
 }
 
 void ChatHandler::CommandArcaWarReload(const char * msg)
@@ -4098,7 +4104,7 @@ void ChatHandler::CommandAdminStatAdd(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -4123,7 +4129,7 @@ void ChatHandler::CommandAdminStatSet(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -4148,7 +4154,7 @@ void ChatHandler::CommandAdminStatRemove(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -4319,25 +4325,25 @@ void ChatHandler::CommandAdminChallenge(const char * msg)
 	if ( size <= 0 )
 		size = 1;
 
-	if ( this->GetPlayer()->IsInChallenge() )
+	if ( this->m_Player->IsInChallenge() )
 	{
-		this->GetPlayer()->SetSize(1.0f);
-		this->GetPlayer()->SendCustomObjectData();
-		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_ATTACK);
-		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
-		this->GetPlayer()->SetInChallenge(false);
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Challenge Mode Disabled.");
+		this->m_Player->SetSize(1.0f);
+		this->m_Player->SendCustomObjectData();
+		this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_ATTACK);
+		this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
+		this->m_Player->SetInChallenge(false);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Challenge Mode Disabled.");
 	}
 	else
 	{
-		if ( this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) )
+		if ( this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) )
 		{
-			this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_ATTACK);
-			this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
-			this->GetPlayer()->SetSize(size);
-			this->GetPlayer()->SendCustomObjectData();
-			this->GetPlayer()->SetInChallenge(true);
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Challenge Mode Enabled.");
+			this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_ATTACK);
+			this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
+			this->m_Player->SetSize(size);
+			this->m_Player->SendCustomObjectData();
+			this->m_Player->SetInChallenge(true);
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Challenge Mode Enabled.");
 		}
 	}*/
 }
@@ -4363,7 +4369,7 @@ void ChatHandler::CommandAdminSetPK(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -4446,22 +4452,22 @@ void ChatHandler::CommandAdminSummon(const char * msg)
 	int32 type = 0;
 	conversor >> monster >> move_distance >> despawn_time >> type;
 
-	Monster * mMonster = sObjectMgr->MonsterTryAdd(monster, this->GetPlayer()->GetWorldId());
+	Monster * mMonster = sObjectMgr->MonsterTryAdd(monster, this->m_Player->GetWorldId());
 
 	if ( !mMonster )
 		return;
 	
-	mMonster->SetWorldId(this->GetPlayer()->GetWorldId());
-	mMonster->SetInstance(this->GetPlayer()->GetInstance());
-	mMonster->SetBasicLocation(this->GetPlayer()->GetX(),this->GetPlayer()->GetY(),this->GetPlayer()->GetX(),this->GetPlayer()->GetY());
-	mMonster->SetDirection(this->GetPlayer()->GetDirection());
+	mMonster->SetWorldId(this->m_Player->GetWorldId());
+	mMonster->SetInstance(this->m_Player->GetInstance());
+	mMonster->SetBasicLocation(this->m_Player->GetX(),this->m_Player->GetY(),this->m_Player->GetX(),this->m_Player->GetY());
+	mMonster->SetDirection(this->m_Player->GetDirection());
 	mMonster->SetDespawnTime(despawn_time * IN_MILLISECONDS);
 	mMonster->SetDespawnTick(MyGetTickCount());
 	mMonster->SetRespawnType(GAME_OBJECT_RESPAWN_DELETE);
 	mMonster->SetRespawnLocation(MONSTER_RESPAWN_ZONE);
 	mMonster->SetDespawnType(MONSTER_DESPAWN_TIME);
 	mMonster->SetMoveDistance(move_distance);
-	mMonster->SetSummoner(this->GetPlayer());
+	mMonster->SetSummoner(this->m_Player);
 	mMonster->SetSummonType(type);
 
 	if ( !mMonster->GetWorld() )
@@ -4484,11 +4490,11 @@ void ChatHandler::CommandAdminSeason(const char * msg)
 
 	if ( !pEventSeasonData )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "No season data for id: %d.", season);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "No season data for id: %d.", season);
 		return;
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Season [%d][%s] is %s.", season, pEventSeasonData->GetName().c_str(), pEventSeasonData->IsStarted() ? "active": "not active");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Season [%d][%s] is %s.", season, pEventSeasonData->GetName().c_str(), pEventSeasonData->IsStarted() ? "active": "not active");
 }
 
 void ChatHandler::CommandAdminResetDuel(const char * msg)
@@ -4537,7 +4543,7 @@ void ChatHandler::CommandAdminTransfer(const char * msg)
 {
 	/*if ( !sGameServer->IsTransferEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Server transfer is disabled.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Server transfer is disabled.");
 		return;
 	}
 
@@ -4554,7 +4560,7 @@ void ChatHandler::CommandAdminTransfer(const char * msg)
 
 	if ( (server_id / MAX_SERVER_PER_GROUP) != sGameServer->GetServerGroup() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Server %d does not belong to same group.", server_id);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Server %d does not belong to same group.", server_id);
 		return;
 	}
 
@@ -4565,7 +4571,7 @@ void ChatHandler::CommandAdminTransfer(const char * msg)
 
 	if ( !result )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Server %d does not exist in database.", server_id);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Server %d does not exist in database.", server_id);
 		return;
 	}
 
@@ -4573,11 +4579,11 @@ void ChatHandler::CommandAdminTransfer(const char * msg)
 
 	if ( !fields[5].GetBool() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Server %d is offline.", server_id);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Server %d is offline.", server_id);
 		return;
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Starting Transfer.");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Starting Transfer.");
 	
 	int32 count = 0;
 
@@ -4595,7 +4601,7 @@ void ChatHandler::CommandAdminTransfer(const char * msg)
 		if ( pPlayer->GetInterfaceState()->GetID() != InterfaceData::None )
 			continue;
 
-		if ( this->GetPlayer() == pPlayer )
+		if ( this->m_Player == pPlayer )
 			continue;
 		
 		sAuthServer->PlayerServerMoveRequest(pPlayer, server_id, pPlayer->GetWorldId(), pPlayer->GetX(), pPlayer->GetY());
@@ -4603,7 +4609,7 @@ void ChatHandler::CommandAdminTransfer(const char * msg)
 		++count;
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Ending Transfer. Transfered %d players", count);*/
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Ending Transfer. Transfered %d players", count);*/
 }
 
 void ChatHandler::CommandAdminAccountKick(const char * msg)
@@ -4646,7 +4652,7 @@ void ChatHandler::CommandAdminPersonalStore(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -4657,13 +4663,13 @@ void ChatHandler::CommandAdminPersonalStore(const char * msg)
 	{
 		pPlayer->PersonalStoreClose(false);
 
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Closed %s personal store", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Closed %s personal store", name);
 	}
 	else ///- Esto cierra el personal store
 	{
 		pPlayer->GetPersonalStore()->Clear();
 
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Cleared %s personal store", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Cleared %s personal store", name);
 	}
 }
 
@@ -4692,11 +4698,11 @@ void ChatHandler::CommandAdminGlobalMute(const char * msg)
 
 	if ( sGameServer->IsGlobalMute() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Global Mute enabled.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Global Mute enabled.");
 	}
 	else
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Global Mute disabled.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Global Mute disabled.");
 	}
 }
 
@@ -4708,7 +4714,7 @@ void ChatHandler::CommandAdminMuteMAC(const char * msg)
 
 	conversor >> data >> operation;
 
-	sGameServer->MACMute(data, operation, this->GetPlayer());
+	sGameServer->MACMute(data, operation, this->m_Player);
 }
 
 void ChatHandler::CommandAdminMACRestrict(const char * msg)
@@ -4721,7 +4727,7 @@ void ChatHandler::CommandAdminMACRestrict(const char * msg)
 
 	conversor >> data >> operation >> restriction >> time;
 
-	sGameServer->ApplyMACRestriction(data, operation, restriction, time, this->GetPlayer());
+	sGameServer->ApplyMACRestriction(data, operation, restriction, time, this->m_Player);
 }
 
 void ChatHandler::CommandAdminItemInfo(const char * msg)
@@ -4743,25 +4749,25 @@ void ChatHandler::CommandAdminItemInfo(const char * msg)
 	{
 		if ( !inventory_range(data) )
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong slot %d.", data);
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong slot %d.", data);
 			return;
 		}
 
-		pItem = this->GetPlayer()->GetInventory()->GetItem(data);
+		pItem = this->m_Player->GetInventory()->GetItem(data);
 
 		if ( !pItem->IsItem() )
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "No item in slot %d.", data);
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "No item in slot %d.", data);
 			return;
 		}
 
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Item %s +%d +%d", 
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Item %s +%d +%d", 
 			pItem->GetName(), pItem->GetLevel(), pItem->GetOption());
 
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "DmgMin:%d / DmgMax:%d / Defense:%d", 
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "DmgMin:%d / DmgMax:%d / Defense:%d", 
 			pItem->GetMinDamage(), pItem->GetMaxDamage(), pItem->GetDefense());
 
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "MagicPwr:%d / CursePwr:%d / PetPwr:%d", 
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "MagicPwr:%d / CursePwr:%d / PetPwr:%d", 
 			pItem->GetMagicPower(), pItem->GetCursePower(), pItem->GetPetPower());
 
 	}
@@ -4789,11 +4795,11 @@ void ChatHandler::AdminCommandTrace(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
-	this->GetPlayer()->TeleportToLocation(pPlayer->GetWorldId(), pPlayer->GetX(), pPlayer->GetY(), pPlayer->GetDirection(), pPlayer->GetInstance());
+	this->m_Player->TeleportToLocation(pPlayer->GetWorldId(), pPlayer->GetX(), pPlayer->GetY(), pPlayer->GetDirection(), pPlayer->GetInstance());
 }
 	
 void ChatHandler::AdminCommandTrans(const char * msg)
@@ -4814,11 +4820,11 @@ void ChatHandler::AdminCommandTrans(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
-	pPlayer->TeleportToLocation(this->GetPlayer()->GetWorldId(), this->GetPlayer()->GetX(), this->GetPlayer()->GetY(), this->GetPlayer()->GetDirection(), this->GetPlayer()->GetInstance());
+	pPlayer->TeleportToLocation(this->m_Player->GetWorldId(), this->m_Player->GetX(), this->m_Player->GetY(), this->m_Player->GetDirection(), this->m_Player->GetInstance());
 }
 	
 void ChatHandler::AdminCommandGate(const char * msg)
@@ -4840,17 +4846,17 @@ void ChatHandler::AdminCommandGate(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
 	if ( pPlayer->MoveToGate(gate) )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Player %s moved to gate %d", pPlayer->GetName(), gate);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Player %s moved to gate %d", pPlayer->GetName(), gate);
 	}
 	else
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Failed to move Player %s to gate %d", pPlayer->GetName(), gate);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Failed to move Player %s to gate %d", pPlayer->GetName(), gate);
 	}
 }
 	
@@ -4875,7 +4881,7 @@ void ChatHandler::AdminCommandMove(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s.", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s.", name);
 		return;
 	}
 
@@ -4883,7 +4889,7 @@ void ChatHandler::AdminCommandMove(const char * msg)
 
 	if ( !pWorld )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong world id %d.", world);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong world id %d.", world);
 		return;
 	}
 
@@ -4891,7 +4897,7 @@ void ChatHandler::AdminCommandMove(const char * msg)
 
 	if ( grid.IsLocked_1() || grid.IsLocked_2() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong teleport location.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong teleport location.");
 		return;
 	}
 
@@ -4909,17 +4915,17 @@ void ChatHandler::AdminCommandFollow(const char * msg)
 
 	if ( !pMonster )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong monster id %d", target);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Wrong monster id %d", target);
 		return;
 	}
 
 	if ( !pMonster->IsPlaying() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Monster %d is not playing", target);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Monster %d is not playing", target);
 		return;
 	}
 
-	this->GetPlayer()->TeleportToLocation(pMonster->GetWorldId(), pMonster->GetX(), pMonster->GetY(), pMonster->GetDirection(), pMonster->GetInstance());
+	this->m_Player->TeleportToLocation(pMonster->GetWorldId(), pMonster->GetX(), pMonster->GetY(), pMonster->GetDirection(), pMonster->GetInstance());
 }
 	
 void ChatHandler::AdminCommandUpdateStat(const char * msg)
@@ -4940,7 +4946,7 @@ void ChatHandler::AdminCommandUpdateStat(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -4956,12 +4962,12 @@ void ChatHandler::CommandTestFunc(const char* msg) {
 
 	conversor >> score;
 
-	sEvomon->SendScore(this->GetPlayer(), 1, score);*/
+	sEvomon->SendScore(this->m_Player, 1, score);*/
 
 }
 
 void ChatHandler::CommandAdminNotify(const char* msg) {
-	if (!this->GetPlayer() || !this->GetPlayer()->IsAdministrator())
+	if (!this->m_Player || !this->m_Player->IsAdministrator())
 		return;
 
 	sDataServer->NoticeSend(NOTICE_GLOBAL, msg);
@@ -4975,7 +4981,7 @@ void ChatHandler::CommandKickAccount(const char* msg) {
 
 	sObjectMgr->KickCharactersByAccount(accID);
 
-	this->GetPlayer()->SendNotice(NOTICE_NORMAL_BLUE, "Kick Account ID: %d", accID);
+	this->m_Player->SendNotice(NOTICE_NORMAL_BLUE, "Kick Account ID: %d", accID);
 }
 
 void ChatHandler::CommandAdminDeleteItemServer(const char* msg) {
@@ -5038,7 +5044,7 @@ void ChatHandler::CommandAdminDeleteItemServer(const char* msg) {
 		pPlayer->SendInventory();
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Delete Item Count: %d", count);
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Delete Item Count: %d", count);
 }
 
 void ChatHandler::CommandAdminDeleteItemErrorPersonal(const char* msg) {
@@ -5077,7 +5083,7 @@ void ChatHandler::CommandAdminDeleteItemErrorPersonal(const char* msg) {
 		}
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Delete Item Count: %d", count);
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Delete Item Count: %d", count);
 }
 
 void ChatHandler::CommandAdminDeleteItemServerSerial(const char* msg) {
@@ -5140,61 +5146,61 @@ void ChatHandler::CommandAdminDeleteItemServerSerial(const char* msg) {
 		pPlayer->SendInventory();
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Delete Item Count: %d", count);
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Delete Item Count: %d", count);
 }
 
 void ChatHandler::CommandClearInventory(const char* msg) 
 {
-	if (!sGameServer->IsCommandClearInventory() && !this->GetPlayer()->IsAdministrator()) {
+	if (!sGameServer->IsCommandClearInventory() && !this->m_Player->IsAdministrator()) {
 		return;
 	}
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
 	use_inventory_loop(i) {
-		if (this->GetPlayer()->GetInventory()->GetItem(i)) {
-			this->GetPlayer()->GetInventory()->DeleteItem(i);
+		if (this->m_Player->GetInventory()->GetItem(i)) {
+			this->m_Player->GetInventory()->DeleteItem(i);
 		}
 	}
 
-	this->GetPlayer()->SendInventory();
+	this->m_Player->SendInventory();
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Clear Inventory Succes!");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Clear Inventory Succes!");
 }
 
 void ChatHandler::CommandAddExpandedInventoryWareHouse(const char* msg) {
 	if (!sGameServer->IsCommandAddExpanded())
 		return;
 
-	if (!this->GetPlayer())
+	if (!this->m_Player)
 		return;
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
-	if (this->GetPlayer()->GetWarehouse()->GetExpanded() == 0) {
-		this->GetPlayer()->GetWarehouse()->SetExpanded(1);
+	if (this->m_Player->GetWarehouse()->GetExpanded() == 0) {
+		this->m_Player->GetWarehouse()->SetExpanded(1);
 	}
 
-	if (this->GetPlayer()->GetInventory()->GetExpanded() >= sGameServer->GetMaxExpandedInventory()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Expanded inventory is max");
+	if (this->m_Player->GetInventory()->GetExpanded() >= sGameServer->GetMaxExpandedInventory()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Expanded inventory is max");
 		return;
 	}
 
 	for (int i = 0; i < 2; i++) {
-		if (this->GetPlayer()->GetInventory()->GetExpanded() < sGameServer->GetMaxExpandedInventory()) {
-			this->GetPlayer()->GetInventory()->IncreaseExpanded(1);
+		if (this->m_Player->GetInventory()->GetExpanded() < sGameServer->GetMaxExpandedInventory()) {
+			this->m_Player->GetInventory()->IncreaseExpanded(1);
 		}
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Add Expanded Succes");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Add Expanded Succes");
 
-	this->GetPlayer()->Close(6, CLOSE_FLAG_SELECT_CHAR);
+	this->m_Player->Close(6, CLOSE_FLAG_SELECT_CHAR);
 }
 
 void ChatHandler::CommandClearGremoryCase(const char* msg) 
@@ -5203,26 +5209,26 @@ void ChatHandler::CommandClearGremoryCase(const char* msg)
 		return;
 	}
 
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
 	for (int i = 0; i < 50; i++) {
-		sGremoryCase->ItemDel(this->GetPlayer(), GREMORY_CASE_TYPE_ACCOUNT, i);
-		this->GetPlayer()->GetGremoryCase(GREMORY_CASE_TYPE_ACCOUNT)->DeleteItem(i);
-		sGremoryCase->ItemDel(this->GetPlayer(), GREMORY_CASE_TYPE_CHARACTER, i);
-		this->GetPlayer()->GetGremoryCase(GREMORY_CASE_TYPE_CHARACTER)->DeleteItem(i);
-		sGremoryCase->ItemDel(this->GetPlayer(), GREMORY_CASE_TYPE_MOBILE, i);
-		this->GetPlayer()->GetGremoryCase(GREMORY_CASE_TYPE_MOBILE)->DeleteItem(i);
+		sGremoryCase->ItemDel(this->m_Player, GREMORY_CASE_TYPE_ACCOUNT, i);
+		this->m_Player->GetGremoryCase(GREMORY_CASE_TYPE_ACCOUNT)->DeleteItem(i);
+		sGremoryCase->ItemDel(this->m_Player, GREMORY_CASE_TYPE_CHARACTER, i);
+		this->m_Player->GetGremoryCase(GREMORY_CASE_TYPE_CHARACTER)->DeleteItem(i);
+		sGremoryCase->ItemDel(this->m_Player, GREMORY_CASE_TYPE_MOBILE, i);
+		this->m_Player->GetGremoryCase(GREMORY_CASE_TYPE_MOBILE)->DeleteItem(i);
 	}
 
 	for (int i = 0; i < 150; i++) {
-		sGremoryCase->ItemDel(this->GetPlayer(), GREMORY_CASE_TYPE_PERSONAL_STORE, i);
-		this->GetPlayer()->GetGremoryCase(GREMORY_CASE_TYPE_PERSONAL_STORE)->DeleteItem(i);
+		sGremoryCase->ItemDel(this->m_Player, GREMORY_CASE_TYPE_PERSONAL_STORE, i);
+		this->m_Player->GetGremoryCase(GREMORY_CASE_TYPE_PERSONAL_STORE)->DeleteItem(i);
 	}
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Clear Gremory Case Succes!");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Clear Gremory Case Succes!");
 }
 
 void ChatHandler::AdminCommandAcitve(const char * msg)
@@ -5240,15 +5246,15 @@ void ChatHandler::AdminCommandAcitve(const char * msg)
 		sGameServer->SetInactiveTick(MyGetTickCount());
 		sGameServer->SetInactiveNotificationTick(MyGetTickCount());
 
-		if ( this->GetPlayer() )
+		if ( this->m_Player )
 		{
 			if ( sGameServer->IsActiveStatus() )
 			{
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Server Activated.");
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Server Activated.");
 			}
 			else
 			{
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Server Deactivated.");
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Server Deactivated.");
 			}
 		}
 	}
@@ -5276,11 +5282,11 @@ void ChatHandler::CommandAdminArcaWar(const char * msg)
 
 		if ( !pGuild )
 		{
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find Guild %s", name);
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find Guild %s", name);
 			return;
 		}
 
-		sDataServer->ArkaWarMasterRegister(this->GetPlayer(), pGuild->GetID());
+		sDataServer->ArkaWarMasterRegister(this->m_Player, pGuild->GetID());
 	}
 	else if ( command == "regchar" )
 	{
@@ -5294,69 +5300,69 @@ void ChatHandler::CommandAdminArcaWar(const char * msg)
 
 void ChatHandler::CommandAdminInvi(const char * msg)
 {
-	if (!this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE))
+	if (!this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE))
 	{
-		this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE);
+		this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE);
 
-		if (!this->GetPlayer()->HasBuff(BUFF_INVISIBILITY))
+		if (!this->m_Player->HasBuff(BUFF_INVISIBILITY))
 		{
-			this->GetPlayer()->AddBuff(BUFF_INVISIBILITY, -10, BUFF_FLAG_CONSTANT, this->GetPlayer());
-			this->GetPlayer()->ViewportDeleteSend();
+			this->m_Player->AddBuff(BUFF_INVISIBILITY, -10, BUFF_FLAG_CONSTANT, this->m_Player);
+			this->m_Player->ViewportDeleteSend();
 		}
 	}
 	else
 	{
-		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE);
+		this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE);
 
-		if (this->GetPlayer()->HasBuff(BUFF_INVISIBILITY))
+		if (this->m_Player->HasBuff(BUFF_INVISIBILITY))
 		{
-			this->GetPlayer()->RemoveBuff(BUFF_INVISIBILITY);
-			this->GetPlayer()->ViewportCreate(VIEWPORT_CREATE_FLAG_ME | VIEWPORT_CREATE_FLAG_GEN | VIEWPORT_CREATE_FLAG_GUILD | VIEWPORT_CREATE_FLAG_SIEGE);
+			this->m_Player->RemoveBuff(BUFF_INVISIBILITY);
+			this->m_Player->ViewportCreate(VIEWPORT_CREATE_FLAG_ME | VIEWPORT_CREATE_FLAG_GEN | VIEWPORT_CREATE_FLAG_GUILD | VIEWPORT_CREATE_FLAG_SIEGE);
 		}
 	}
 
-	sDataServer->CharacterOnOff(this->GetPlayer(), 2);
+	sDataServer->CharacterOnOff(this->m_Player, 2);
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Invisibility Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) ? "ON" : "OFF");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Invisibility Status: %s", this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) ? "ON" : "OFF");
 
-	if (!this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_ATTACK))
+	if (!this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_ATTACK))
 	{
-		this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_ATTACK);
+		this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_ATTACK);
 	}
 	else
 	{
-		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_ATTACK);
+		this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_ATTACK);
 	}
 
-	sDataServer->CharacterOnOff(this->GetPlayer(), 2);
+	sDataServer->CharacterOnOff(this->m_Player, 2);
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Attack Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_ATTACK) ? "ON" : "OFF");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Attack Status: %s", this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_ATTACK) ? "ON" : "OFF");
 
-	if (!this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED))
+	if (!this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED))
 	{
-		this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
+		this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
 	}
 	else
 	{
-		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
+		this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
 	}
 
-	sDataServer->CharacterOnOff(this->GetPlayer(), 2);
+	sDataServer->CharacterOnOff(this->m_Player, 2);
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Been Attacked Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) ? "ON" : "OFF");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Been Attacked Status: %s", this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) ? "ON" : "OFF");
 
-	if (!this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_WHISPER))
+	if (!this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_WHISPER))
 	{
-		this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_WHISPER);
+		this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_WHISPER);
 	}
 	else
 	{
-		this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_WHISPER);
+		this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_WHISPER);
 	}
 
-	sDataServer->CharacterOnOff(this->GetPlayer(), 2);
+	sDataServer->CharacterOnOff(this->m_Player, 2);
 
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Whisper Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_WHISPER) ? "ON" : "OFF");
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Whisper Status: %s", this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_WHISPER) ? "ON" : "OFF");
 
 	/*std::stringstream conversor(msg);
 	int32 type = 0;
@@ -5367,78 +5373,78 @@ void ChatHandler::CommandAdminInvi(const char * msg)
 	{
 	case 0:
 		{
-			if ( !this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) )
+			if ( !this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) )
 			{
-				this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE);
+				this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE);
 
-				if ( !this->GetPlayer()->HasBuff(BUFF_INVISIBILITY) )
+				if ( !this->m_Player->HasBuff(BUFF_INVISIBILITY) )
 				{
-					this->GetPlayer()->AddBuff(BUFF_INVISIBILITY, -10, BUFF_FLAG_CONSTANT, this->GetPlayer());
-					this->GetPlayer()->ViewportDeleteSend();
+					this->m_Player->AddBuff(BUFF_INVISIBILITY, -10, BUFF_FLAG_CONSTANT, this->m_Player);
+					this->m_Player->ViewportDeleteSend();
 				}
 			}
 			else
 			{
-				this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE);
+				this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE);
 
-				if ( this->GetPlayer()->HasBuff(BUFF_INVISIBILITY) )
+				if ( this->m_Player->HasBuff(BUFF_INVISIBILITY) )
 				{
-					this->GetPlayer()->RemoveBuff(BUFF_INVISIBILITY);
-					this->GetPlayer()->ViewportCreate(VIEWPORT_CREATE_FLAG_ME | VIEWPORT_CREATE_FLAG_GEN | VIEWPORT_CREATE_FLAG_GUILD | VIEWPORT_CREATE_FLAG_SIEGE);
+					this->m_Player->RemoveBuff(BUFF_INVISIBILITY);
+					this->m_Player->ViewportCreate(VIEWPORT_CREATE_FLAG_ME | VIEWPORT_CREATE_FLAG_GEN | VIEWPORT_CREATE_FLAG_GUILD | VIEWPORT_CREATE_FLAG_SIEGE);
 				}
 			}
 
-			sDataServer->CharacterOnOff(this->GetPlayer(), 2);
+			sDataServer->CharacterOnOff(this->m_Player, 2);
 
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Invisibility Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) ? "ON" : "OFF");
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Invisibility Status: %s", this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_FLAG_VISIBLE) ? "ON" : "OFF");
 		} break;
 
 	case 1:
 		{
-			if ( !this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_ATTACK) )
+			if ( !this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_ATTACK) )
 			{
-				this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_ATTACK);
+				this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_ATTACK);
 			}
 			else
 			{
-				this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_ATTACK);
+				this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_ATTACK);
 			}
 
-			sDataServer->CharacterOnOff(this->GetPlayer(), 2);
+			sDataServer->CharacterOnOff(this->m_Player, 2);
 
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Attack Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_ATTACK) ? "ON" : "OFF");
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Attack Status: %s", this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_ATTACK) ? "ON" : "OFF");
 		} break;
 
 	case 2:
 		{
-			if ( !this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) )
+			if ( !this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) )
 			{
-				this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
+				this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
 			}
 			else
 			{
-				this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
+				this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED);
 			}
 
-			sDataServer->CharacterOnOff(this->GetPlayer(), 2);
+			sDataServer->CharacterOnOff(this->m_Player, 2);
 
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Been Attacked Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) ? "ON" : "OFF");
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Been Attacked Status: %s", this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_BEEN_ATTACKED) ? "ON" : "OFF");
 		} break;
 
 	case 3:
 		{
-			if ( !this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_WHISPER) )
+			if ( !this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_WHISPER) )
 			{
-				this->GetPlayer()->AddAdminPanelFlag(ADMIN_PANEL_WHISPER);
+				this->m_Player->AddAdminPanelFlag(ADMIN_PANEL_WHISPER);
 			}
 			else
 			{
-				this->GetPlayer()->RemoveAdminPanelFlag(ADMIN_PANEL_WHISPER);
+				this->m_Player->RemoveAdminPanelFlag(ADMIN_PANEL_WHISPER);
 			}
 
-			sDataServer->CharacterOnOff(this->GetPlayer(), 2);
+			sDataServer->CharacterOnOff(this->m_Player, 2);
 
-			this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Whisper Status: %s", this->GetPlayer()->IsAdminPanelFlag(ADMIN_PANEL_WHISPER) ? "ON" : "OFF");
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Whisper Status: %s", this->m_Player->IsAdminPanelFlag(ADMIN_PANEL_WHISPER) ? "ON" : "OFF");
 		} break;
 	}
 	*/
@@ -5462,7 +5468,7 @@ void ChatHandler::CommandAdminTrack(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -5489,7 +5495,7 @@ void ChatHandler::CommandAdminChangeQuestState(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -5527,7 +5533,7 @@ void ChatHandler::CommandAdminChangeQuestKillCount(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
@@ -5582,7 +5588,7 @@ void ChatHandler::CommandAdminSpotCreate(const char * msg)
 		}
 
 		sLog->outInfo("crash", "%u	GUID	%d	-1	NN	%u	%d	%d	%d	%d	-1	0	3	0	0	0	15	NN	NN	NN	0	0", sGameServer->GetServerCode(), id,
-			this->GetPlayer()->GetWorldId(), this->GetPlayer()->GetX(), this->GetPlayer()->GetY(), this->GetPlayer()->GetX(), this->GetPlayer()->GetY());
+			this->m_Player->GetWorldId(), this->m_Player->GetX(), this->m_Player->GetY(), this->m_Player->GetX(), this->m_Player->GetY());
 	}
 }
 
@@ -5605,7 +5611,7 @@ void ChatHandler::CommandAdminAttrChange(const char * msg)
 		return;
 	}
 
-	World* pWorld = sWorldMgr->GetWorld(this->GetPlayer()->GetWorldId());
+	World* pWorld = sWorldMgr->GetWorld(this->m_Player->GetWorldId());
 
 	if (!pWorld)
 	{
@@ -5622,7 +5628,7 @@ void ChatHandler::CommandAdminTrackCharacter(const char * msg)
 
 	conversor >> safe_name;
 
-	this->GetPlayer()->SetTrackingID(0);
+	this->m_Player->SetTrackingID(0);
 
 	if ( safe_name.size() > MAX_CHARACTER_LENGTH )
 	{
@@ -5640,13 +5646,13 @@ void ChatHandler::CommandAdminTrackCharacter(const char * msg)
 
 	if ( !pPlayer )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Can't find player %s", name);
 		return;
 	}
 
-	this->GetPlayer()->SetTrackingID(pPlayer->GetGUID());
+	this->m_Player->SetTrackingID(pPlayer->GetGUID());
 	
-	this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Tracking %s", pPlayer->GetName());
+	this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Tracking %s", pPlayer->GetName());
 }
 
 void ChatHandler::ReloadShop(const char * msg)
@@ -5656,8 +5662,8 @@ void ChatHandler::ReloadShop(const char * msg)
 	sItemMgr->LoadItemPriceRuud("../Data/Shops/RuudPrice.xml");
 	sMossMerchant->Load("../Data/Shops/MossMerchantSection.xml");
 
-	if ( this->GetPlayer() )
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Shops reloaded.");
+	if ( this->m_Player )
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Shops reloaded.");
 }
 
 void ChatHandler::ReloadQuest(const char * msg)
@@ -5670,8 +5676,8 @@ void ChatHandler::ReloadQuest(const char * msg)
 	sQuestMgr->LoadQuestGuided("../Data/Quest/GuideQuest.xml");
 	sQuestMgr->LoadQuestMU("../Data/Quest/MuQuest.xml");
 
-	if ( this->GetPlayer() )
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Quests reloaded.");
+	if ( this->m_Player )
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Quests reloaded.");
 }
 
 void ChatHandler::ReloadEvent(const char * msg)
@@ -5691,8 +5697,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sEventMgr->LoadEventLevel("../Data/Event/EventLevel.xml");
 			sEventMgr->LoadEventEnterCount("../Data/Event/EventEnterCount.xml");
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Event Manager reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Event Manager reloaded.");
 		} break;
 
 	case EVENT_BLOOD_CASTLE:
@@ -5700,8 +5706,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sBloodCastleMgr->LoadBloodCastIni();
 			sBloodCastleMgr->LoadBloodCastleSetting();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Blood Castle reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Blood Castle reloaded.");
 		} break;
 
 	case EVENT_DEVIL_SQUARE:
@@ -5710,8 +5716,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sDevilSquareMgr->LoadDevilSquareSetting();
 			sDevilSquareMgr->LoadDevilSquareRanking("../Data/Event/DevilSquare/DevilSquareRanking.xml");
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Devil Square reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Devil Square reloaded.");
 		} break;
 
 	case EVENT_CHAOS_CASTLE:
@@ -5719,16 +5725,16 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sChaosCastleMgr->LoadIni();
 			sChaosCastleMgr->LoadChaosCastleSetting();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Chaos Castle reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Chaos Castle reloaded.");
 		} break;
 
 	case EVENT_ILLUSION_TEMPLE:
 		{
 			sIllusionTempleMgr->LoadIllusionTempleSettings();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Illusion Temple reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Illusion Temple reloaded.");
 		} break;
 
 	case EVENT_CRYWOLF:
@@ -5736,8 +5742,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sCrywolf->LoadIni();
 			sCrywolf->LoadData();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Crywolf reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Crywolf reloaded.");
 		} break;
 
 	case EVENT_IMPERIAL_FORTRESS:
@@ -5747,8 +5753,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sImperialFortressMgr->LoadImperialFortressMonsterSettings("../Data/Event/ImperialFortress/EventImperialFortressMonsterSettings.xml");
 			sImperialFortressMgr->LoadImperialFortressTraps("../Data/Event/ImperialFortress/EventImperialFortressTrap.xml");
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Imperial Fortress reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Imperial Fortress reloaded.");
 		} break;
 
 	case EVENT_RAKLION:
@@ -5756,8 +5762,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sRaklion->LoadIni();
 			sRaklion->LoadData();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Raklion reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Raklion reloaded.");
 		} break;
 
 	case EVENT_KANTURU:
@@ -5765,8 +5771,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sKanturuMgr->LoadIni();
 			sKanturuMgr->Load();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Kanturu reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Kanturu reloaded.");
 		} break;
 
 	case EVENT_INVASION:
@@ -5774,8 +5780,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sInvasionMgr->LoadInvasionData("../Data/Event/EventInvasion.xml");
 			sInvasionMgr->LoadInvasionGroup("../Data/Event/EventInvasionGroup.xml");
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Invasion reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Invasion reloaded.");
 		} break;
 
 	case EVENT_CASTLE_SIEGE:
@@ -5783,8 +5789,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sCastleSiege->LoadIni();
 			sCastleSiege->LoadData();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Castle Siege reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Castle Siege reloaded.");
 		} break;
 
 	case EVENT_DOPPELGANGER:
@@ -5793,8 +5799,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sDoppelganger->LoadLevel("../Data/Event/Doppelganger/DoppelgangerLevel.xml");
 			sDoppelganger->LoadMonster("../Data/Event/Doppelganger/DoppelgangerMonsterSetting.xml");
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Doppelganger reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Doppelganger reloaded.");
 		} break;
 
 	case EVENT_SCRAMBLE:
@@ -5802,32 +5808,32 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sScramble->LoadIni();
 			sScramble->LoadWordList("../Data/Event/Scramble/ScrambleWord.xml");
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Scramble reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Scramble reloaded.");
 		} break;
 
 	case EVENT_DUNGEON_RACE:
 		{
 			sDungeonRace->LoadData();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Dungeon Race reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Dungeon Race reloaded.");
 		} break;
 
 	case EVENT_LOSTTOWER_RACE:
 		{
 			sLosttowerRace->LoadData();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Losttower Race reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Losttower Race reloaded.");
 		} break;
 
 	case EVENT_CHAOS_CASTLE_SURVIVAL:
 		{
 			sChaosCastleSurvivalMgr->LoadChaosCastleSetting();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Chaos Castle Survival reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Chaos Castle Survival reloaded.");
 		} break;
 
 	case EVENT_PROTECTOR_OF_ACHERON:
@@ -5835,8 +5841,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sProtectorOfAcheron->LoadIni();
 			sProtectorOfAcheron->Load();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Protector of Acheron reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Protector of Acheron reloaded.");
 		} break;
 
 	case EVENT_TORMENTED_SQUARE:
@@ -5845,8 +5851,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sTormentedSquare->Load("../Data/Event/TormentedSquare/EventTormentedSquareStage.xml");
 			sTormentedSquare->LoadRanking("../Data/Event/TormentedSquare/EventTormentedSquareRanking.xml");
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Tormented Square reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Tormented Square reloaded.");
 		} break;
 
 	case EVENT_ARKA_WAR:
@@ -5854,8 +5860,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sArkaWar->LoadIni();
 			sArkaWar->Load();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Arca War reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Arca War reloaded.");
 		} break;
 
 	case EVENT_LAST_MAN_STANDING:
@@ -5879,16 +5885,16 @@ void ChatHandler::ReloadEvent(const char * msg)
 				sLabyrinthDimensions->LoadSchedule();
 			}
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Labyrinth of dimensions reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Labyrinth of dimensions reloaded.");
 		} break;
 
 	case EVENT_TORMENTED_SQUARE_SURVIVAL:
 		{
 			sTormentedSquareSurvival->Load();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Tormented Square survival reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Tormented Square survival reloaded.");
 		} break;
 
 	case EVENT_CASTLE_DEEP:
@@ -5896,8 +5902,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 			sCastleDeep->LoadIni();
 			sCastleDeep->Load();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Castle Deep reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Castle Deep reloaded.");
 		} break;
 
 	case EVENT_INSTANCED_DUNGEON:
@@ -5911,8 +5917,8 @@ void ChatHandler::ReloadEvent(const char * msg)
 				sDungeon->LoadSavedInstance();
 			}
 
-			if (this->GetPlayer())
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Instanced Dungeon reloaded.");
+			if (this->m_Player)
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Instanced Dungeon reloaded.");
 		} break;
 	}
 }
@@ -5936,8 +5942,8 @@ void ChatHandler::ReloadMonster(const char * msg)
 	sMonsterManager->LoadMonsterEquipment("../Data/Monster/MonsterEquipment.xml");
 	sMonsterManager->SetLastUpdate(time(nullptr));
 
-	if (this->GetPlayer())
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters data reloaded.");
+	if (this->m_Player)
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters data reloaded.");
 
 	HASH_MONSTER(i)
 	{
@@ -5956,8 +5962,8 @@ void ChatHandler::ReloadMonster(const char * msg)
 	sObjectMgr->SetRespawnMonsterTime(MyGetTickCount() + (5 * IN_MILLISECONDS));
 	sObjectMgr->SetRespawnMonster(true);
 
-	if (this->GetPlayer())
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters reloaded.");
+	if (this->m_Player)
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters reloaded.");
 
 	HASH_MONSTER(i)
 	{
@@ -5984,13 +5990,13 @@ void ChatHandler::ReloadMonster(const char * msg)
 	//sMonsterManager->LoadNpcHandleList("../Data/Monster/NPCHandle.xml");
 	sMonsterManager->LoadMonster("../Data/Monster/MonsterSpawn.xml");
 
-	if (this->GetPlayer())
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters reloaded.");
+	if (this->m_Player)
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters reloaded.");
 
 	sMonsterManager->LoadMonsterEvent("../Data/Monster/MonsterSpawnEvent.xml");
 
-	if (this->GetPlayer())
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters event reloaded.");
+	if (this->m_Player)
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters event reloaded.");
 
 	HASH_MONSTER(i)
 	{
@@ -6058,8 +6064,8 @@ void ChatHandler::ReloadMonster(const char * msg)
 			sMonsterManager->LoadMonsterEquipment();
 			sMonsterManager->SetLastUpdate(time(nullptr));
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters data reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters data reloaded.");
 		} break;
 
 	case 1:
@@ -6080,8 +6086,8 @@ void ChatHandler::ReloadMonster(const char * msg)
 			sObjectMgr->SetRespawnMonsterTime(MyGetTickCount() + (5 * IN_MILLISECONDS));
 			sObjectMgr->SetRespawnMonster(true);
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters reloaded.");
 		} break;
 
 	case 2:
@@ -6110,16 +6116,16 @@ void ChatHandler::ReloadMonster(const char * msg)
 
 			sMonsterManager->LoadMonster(guid);
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters reloaded.");
 		} break;
 
 	case 3:
 		{
 			sMonsterManager->LoadMonsterEvent();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters event reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monsters event reloaded.");
 		} break;
 
 	case 5:
@@ -6218,8 +6224,8 @@ void ChatHandler::ReloadConfig(const char* msg)
 	sNoticeSystem->Load("../Data/Plugin/NoticeSystem.xml");
 	sMain->LoadAccountTestGS("../Data/AccountTest.xml");
 
-	if (this->GetPlayer())
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "All configs reloaded.");
+	if (this->m_Player)
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "All configs reloaded.");
 	/* std::stringstream conversor(msg);
 	int32 id = 0;
 	conversor >> id;
@@ -6230,24 +6236,24 @@ void ChatHandler::ReloadConfig(const char* msg)
 		{
 			sGameServer->LoadCommonSettings();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Configs reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Configs reloaded.");
 		} break;
 
 	case 3:
 		{
 			sGameServer->LoadNotice();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Notice reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Notice reloaded.");
 		} break;
 
 	case 4:
 		{
 			sGameServer->LoadFilter();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Filter reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Filter reloaded.");
 		} break;
 
 	case 5:
@@ -6256,16 +6262,16 @@ void ChatHandler::ReloadConfig(const char* msg)
 			sGenMgr->LoadGenRanking();
 			sGenMgr->LoadGenKillPoints();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Gens reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Gens reloaded.");
 		} break;
 
 	case 6:
 		{
 			sMiniMap->Load();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "MiniMap reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "MiniMap reloaded.");
 		} break;
 
 	case 7:
@@ -6275,8 +6281,8 @@ void ChatHandler::ReloadConfig(const char* msg)
 			sMuunSystem->LoadEnergy();
 			sMuunSystem->LoadExchange();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Muun reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Muun reloaded.");
 		} break;
 
 	case 8:
@@ -6284,16 +6290,16 @@ void ChatHandler::ReloadConfig(const char* msg)
 			sSummonScroll->Load();
 			sSummonScroll->LoadMonster();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Summon Scroll reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Summon Scroll reloaded.");
 		} break;
 
 	case 9:
 		{
 			sMiningSystem->Load();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Mining reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Mining reloaded.");
 		} break;
 
 	case 10:
@@ -6301,8 +6307,8 @@ void ChatHandler::ReloadConfig(const char* msg)
 			sEvomon->Load();
 			sEvomon->LoadReward();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Evomon reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Evomon reloaded.");
 		} break;
 
 	case 11:
@@ -6310,16 +6316,16 @@ void ChatHandler::ReloadConfig(const char* msg)
 			sGameServer->LoadNotification();
 			sGameServer->SendNotification();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Notifications reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Notifications reloaded.");
 		} break;
 
 	case 12:
 		{
 			sGameServer->LoadBaseData();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Base data reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Base data reloaded.");
 		} break;
 
 	case 14:
@@ -6327,8 +6333,8 @@ void ChatHandler::ReloadConfig(const char* msg)
 			sGameServer->LoadOffsetData();
 			sGameServer->SendOffsetData();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Offset Data reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Offset Data reloaded.");
 		} break;
 
 	case 15:
@@ -6336,16 +6342,16 @@ void ChatHandler::ReloadConfig(const char* msg)
 			sGameServer->LoadOffsetFPS();
 			sGameServer->SendOffsetFPS();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Offset FPS reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Offset FPS reloaded.");
 		} break;
 
 	case 16:
 		{
 			sGameServer->LoadCheatScanWhiteList();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Cheat Scan White List reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Cheat Scan White List reloaded.");
 		} break;
 
 	case 18:
@@ -6353,64 +6359,64 @@ void ChatHandler::ReloadConfig(const char* msg)
 			sGameServer->LoadOfflineAttackWorld();
 			sGameServer->LoadOfflineAttackZone();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Offline Attack World/Zone reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Offline Attack World/Zone reloaded.");
 		} break;
 
 	case 19:
 		{
 			sMiniBomb->LoadReward();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Mini Bomb Reward reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Mini Bomb Reward reloaded.");
 		} break;
 
 	case 20:
 		{
 			sMuRoomy->LoadReward();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Mu Roomy Reward reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Mu Roomy Reward reloaded.");
 		} break;
 
 	case 21:
 		{
 			sJewelBingo->LoadReward();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Jewel Bingo Reward reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Jewel Bingo Reward reloaded.");
 		} break;
 
 	case 22:
 		{
 			sMossMerchant->Load();
 
-			if ( this->GetPlayer() )
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Moss Merchant reloaded.");
+			if ( this->m_Player )
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Moss Merchant reloaded.");
 		} break;
 
 	case 23:
 		{
 			sGameServer->LoadGoblinPoint();
 
-			if (this->GetPlayer())
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Goblin Point reloaded.");
+			if (this->m_Player)
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Goblin Point reloaded.");
 		} break;
 
 	case 24:
 		{
 			sNumericBaseball->LoadReward();
 
-			if (this->GetPlayer())
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Numeric Baseball Reward reloaded.");
+			if (this->m_Player)
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Numeric Baseball Reward reloaded.");
 		} break;
 
 	case 25:
 		{
 			sFormulaMgr->Load();
 
-			if (this->GetPlayer())
-				this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Formula Data reloaded.");
+			if (this->m_Player)
+				this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Formula Data reloaded.");
 		} break;
 
 	case 26:
@@ -6419,8 +6425,8 @@ void ChatHandler::ReloadConfig(const char* msg)
 			   sMonsterSoul->LoadTransformation();
 			   sMonsterSoul->LoadReward();
 
-			   if (this->GetPlayer())
-				   this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monster Soul reloaded.");
+			   if (this->m_Player)
+				   this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Monster Soul reloaded.");
 	} break;
 	} */
 }
@@ -6474,8 +6480,8 @@ void ChatHandler::ReloadItem(const char * msg)
 	sMonsterSoul->LoadTransformation("../Data/Item/MonsterSoul/MonsterSoulTranformation.xml");
 	sMonsterSoul->LoadReward("../Data/Item/MonsterSoul/MonsterSoulReward.xml");
 
-	if ( this->GetPlayer() )
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Items reloaded.");
+	if ( this->m_Player )
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Items reloaded.");
 }
 
 void ChatHandler::ReloadCharacter(const char * msg)
@@ -6495,8 +6501,8 @@ void ChatHandler::ReloadCharacter(const char * msg)
 	sCharacterBase->LoadCharacterMaxLevelReward("../Data/Character/CharacterMaxLevelReward.xml");
 	sCharacterBase->LoadCharacterExperienceTable("../Data/Character/CharacterExpTable.xml");
 
-	if ( this->GetPlayer() )
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Characters data reloaded.");
+	if ( this->m_Player )
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Characters data reloaded.");
 }
 
 void ChatHandler::ReloadSkill(const char * msg)
@@ -6512,8 +6518,8 @@ void ChatHandler::ReloadSkill(const char * msg)
 	sSkillMgr->LoadSkillTreeMajesticStat("../Data/Skill/SkillTreeMajesticStat.xml");
 	sSkillMgr->LoadSkillAttackTime("../Data/Skill/SkillAttackTime.xml");
 
-	if ( this->GetPlayer() )
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Skills reloaded.");
+	if ( this->m_Player )
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Skills reloaded.");
 }
 
 void ChatHandler::ReloadTeleport(const char * msg)
@@ -6522,8 +6528,8 @@ void ChatHandler::ReloadTeleport(const char * msg)
 	sTeleport->LoadTeleportTemplate("../Data/World/TeleportTemplate.xml");
 	sTeleport->LoadMoveLevel("../Data/World/MoveLevel.xml");
 
-	if ( this->GetPlayer() )
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Teleport reloaded.");
+	if ( this->m_Player )
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Teleport reloaded.");
 }
 
 void ChatHandler::ReloadCashShop(const char * msg)
@@ -6545,8 +6551,8 @@ void ChatHandler::ReloadCashShop(const char * msg)
 		sCashShopMgr->SendUpdatedData(pPlayer);
 	}
 
-	if (this->GetPlayer())
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "CashShop reloaded.");
+	if (this->m_Player)
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "CashShop reloaded.");
 }
 
 void ChatHandler::ReloadMix(const char * msg)
@@ -6556,8 +6562,8 @@ void ChatHandler::ReloadMix(const char * msg)
 	sMixMgr->LoadGuardian("../Data/Guardian/GuardianMix.xml");
 	sJewelMix->Load("../Data/Mix/MixJewelTemplate.xml");
 
-	if ( this->GetPlayer() )
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Mix reloaded.");
+	if ( this->m_Player )
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Mix reloaded.");
 }
 
 void ChatHandler::ReloadWorld(const char* msg)
@@ -6576,8 +6582,8 @@ void ChatHandler::ReloadWorld(const char* msg)
 		sWorldMgr->LoadWorldServer("../Data/World/WorldServer.xml");
 	}
 
-	if (this->GetPlayer())
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "World reloaded.");
+	if (this->m_Player)
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "World reloaded.");
 }
 
 void ChatHandler::ReloadPentagram(const char * msg)
@@ -6589,6 +6595,6 @@ void ChatHandler::ReloadPentagram(const char * msg)
 	sPentagramSystem->LoadJewelUpgrade("../Data/Item/Pentagram/PentagramJewelUpgrade.xml");
 	//sPentagramSystem->LoadJewelUpgradeLevel();
 
-	if ( this->GetPlayer() )
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Pentagram reloaded.");
+	if ( this->m_Player )
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_BLUE, "Pentagram reloaded.");
 }
