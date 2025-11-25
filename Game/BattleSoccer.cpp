@@ -5,9 +5,26 @@
 * File: "BattleSoccer.cpp"
 *
 */
+BattleSoccerTeam::BattleSoccerTeam()
+{
+        this->Reset();
+}
+
+void BattleSoccerTeam::Reset()
+{
+        this->m_Guild = nullptr;
+        this->m_Score = 0;
+        this->m_PartyID = static_cast<uint16>(-1);
+
+        PARTY_LOOP(i)
+        {
+                this->m_Player[i].Reset();
+        }
+}
+
 CBattleSoccerMgr::CBattleSoccerMgr()
 {
-	this->SetState_None();
+        this->SetState_None();
 }
 
 CBattleSoccerMgr::~CBattleSoccerMgr()
@@ -17,7 +34,7 @@ CBattleSoccerMgr::~CBattleSoccerMgr()
 
 void CBattleSoccerMgr::Update()
 {
-	switch ( this->GetState() )
+	switch ( this->m_State )
 	{
 	case BATTLE_SOCCER_STATE_NONE:
 		{
@@ -43,35 +60,35 @@ void CBattleSoccerMgr::Update()
 
 void CBattleSoccerMgr::SetState_None()
 {
-	this->SetState(BATTLE_SOCCER_STATE_NONE);
-	this->GetTime()->Start(0);
-	this->GetBallMoveTime()->Reset();
-	this->SetBallMove(false);
+	this->m_State = BATTLE_SOCCER_STATE_NONE;
+	this->m_Time.Start(0);
+	this->m_BallMoveTime.Reset();
+	this->m_BallMove = false;
 	
 	GUILD_WAR_TEAM_LOOP(i)
 	{
-		this->GetTeam(i)->Reset();
+		this->m_Team[i].Reset();
 	}
 }
 	
 void CBattleSoccerMgr::SetState_StandBy()
 {
-	this->SetState(BATTLE_SOCCER_STATE_STANDBY);
-	this->GetTime()->Start(sGameServer->GetGuildWarMaxWaitInterval() + (5 * IN_MILLISECONDS));
-	this->GetBallMoveTime()->Reset();
-	this->SetBallMove(false);
+	this->m_State = BATTLE_SOCCER_STATE_STANDBY;
+	this->m_Time.Start(sGameServer->GetGuildWarMaxWaitInterval() + (5 * IN_MILLISECONDS));
+	this->m_BallMoveTime.Reset();
+	this->m_BallMove = false;
 }
 	
 void CBattleSoccerMgr::SetState_Playing()
 {
-	this->SetState(BATTLE_SOCCER_STATE_PLAYING);
-	this->GetTime()->Start(sGameServer->GetBattleSoccerDuration());
-	this->GetBallMoveTime()->Reset();
-	this->SetBallMove(false);
+	this->m_State = BATTLE_SOCCER_STATE_PLAYING;
+	this->m_Time.Start(sGameServer->GetBattleSoccerDuration());
+	this->m_BallMoveTime.Reset();
+	this->m_BallMove = false;
 
 	GUILD_WAR_TEAM_LOOP(i)
 	{
-		BattleSoccerTeam * pTeam = this->GetTeam(i);
+		BattleSoccerTeam * pTeam = &this->m_Team[i];
 
 		if ( !pTeam )
 		{
@@ -82,26 +99,26 @@ void CBattleSoccerMgr::SetState_Playing()
 
 		PARTY_LOOP(h)
 		{
-			Player* pPlayer = pTeam->GetPlayer(h)->GetPlayer();
+			Player* pPlayer = pTeam->m_Player[h].m_Player;
 
 			if ( !pPlayer )
 				continue;
 
-			sGuildWarMgr->SendStart(pPlayer, this->GetTeam(oposite)->GetGuild()->GetName(), GUILD_WAR_TYPE_SOCCER, i);
+			sGuildWarMgr->SendStart(pPlayer, this->m_Team[oposite].m_Guild->GetName(), GUILD_WAR_TYPE_SOCCER, i);
 			sGuildWarMgr->SendScore(pPlayer, 0, 0);
 			pPlayer->TeleportToLocation(WORLD_STADIUM, g_BattleSoccerStartZone[i].x1 + h, g_BattleSoccerStartZone[i].y1, -1, pPlayer->GetInstance());
 		}
 
-		pTeam->GetGuild()->SendNoticeArgToMembers(NOTICE_GLOBAL, "Battle Soccer against %s started!!", this->GetTeam(oposite)->GetGuild()->GetName());
+		pTeam->m_Guild->SendNoticeArgToMembers(NOTICE_GLOBAL, "Battle Soccer against %s started!!", this->m_Team[oposite].m_Guild->GetName());
 	}
 }
 	
 void CBattleSoccerMgr::SetState_Playend()
 {
-	this->SetState(BATTLE_SOCCER_STATE_PLAYEND);
-	this->GetTime()->Start(10 * IN_MILLISECONDS);
-	this->GetBallMoveTime()->Reset();
-	this->SetBallMove(false);
+	this->m_State = BATTLE_SOCCER_STATE_PLAYEND;
+	this->m_Time.Start(10 * IN_MILLISECONDS);
+	this->m_BallMoveTime.Reset();
+	this->m_BallMove = false;
 }
 
 void CBattleSoccerMgr::ProcState_None()
@@ -111,7 +128,7 @@ void CBattleSoccerMgr::ProcState_None()
 	
 void CBattleSoccerMgr::ProcState_StandBy()
 {
-	if ( this->GetTime()->Elapsed() )
+	if ( this->m_Time.Elapsed() )
 	{
 		this->SetState_None();
 	}
@@ -121,7 +138,7 @@ void CBattleSoccerMgr::ProcState_Playing()
 {
 	GUILD_WAR_TEAM_LOOP(i)
 	{
-		BattleSoccerTeam * pTeam = this->GetTeam(i);
+		BattleSoccerTeam * pTeam = &this->m_Team[i];
 
 		if ( !pTeam )
 		{
@@ -132,7 +149,7 @@ void CBattleSoccerMgr::ProcState_Playing()
 
 		PARTY_LOOP(h)
 		{
-			Player* pPlayer = pTeam->GetPlayer(h)->GetPlayer();
+			Player* pPlayer = pTeam->m_Player[h].m_Player;
 
 			if ( !pPlayer )
 				continue;
@@ -142,9 +159,9 @@ void CBattleSoccerMgr::ProcState_Playing()
 
 			if ( !pPlayer->Object::IsPlaying() )
 			{
-				pTeam->GetPlayer(h)->SetPlayer(nullptr);
+				pTeam->m_Player[h].m_Player = nullptr;
 
-				if ( pTeam->GetPlayer(h)->IsMaster() )
+				if ( pTeam->m_Player[h].m_Master )
 				{
 					this->Finish(BATTLE_SOCCER_END_REASON_LEFT, oposite, i, -1);
 					return;
@@ -157,11 +174,11 @@ void CBattleSoccerMgr::ProcState_Playing()
 				((pPlayer->GetX() < g_BattleSoccerFullGround.x1 || pPlayer->GetX() > g_BattleSoccerFullGround.x2) ||
 				 (pPlayer->GetY() < g_BattleSoccerFullGround.y1 || pPlayer->GetY() > g_BattleSoccerFullGround.y2)) )
 			{
-				sGuildWarMgr->SendEnd(pPlayer, pTeam->GetGuild()->GetName(), 7);
+				sGuildWarMgr->SendEnd(pPlayer, pTeam->m_Guild->GetName(), 7);
 
-				pTeam->GetPlayer(h)->SetPlayer(nullptr);
+				pTeam->m_Player[h].m_Player = nullptr;
 
-				if ( pTeam->GetPlayer(h)->IsMaster() )
+				if ( pTeam->m_Player[h].m_Master )
 				{
 					this->Finish(BATTLE_SOCCER_END_REASON_LEFT, oposite, i, -1);
 					return;
@@ -170,18 +187,18 @@ void CBattleSoccerMgr::ProcState_Playing()
 				continue;
 			}
 
-			if ( pTeam->GetPartyID() != pPlayer->GetPartyID() )
+                        if ( pTeam->m_PartyID != pPlayer->GetPartyID() )
 			{
-				if ( pTeam->GetPlayer(h)->IsMaster() )
+				if ( pTeam->m_Player[h].m_Master )
 				{
 					this->Finish(BATTLE_SOCCER_END_REASON_LEFT, oposite, i, -1);
 					return;
 				}
 				else
 				{
-					pTeam->GetPlayer(h)->SetPlayer(nullptr);
+					pTeam->m_Player[h].m_Player = nullptr;
 
-					sGuildWarMgr->SendEnd(pPlayer, pTeam->GetGuild()->GetName(), 7);
+					sGuildWarMgr->SendEnd(pPlayer, pTeam->m_Guild->GetName(), 7);
 					pPlayer->TeleportToGate(17);
 				}
 
@@ -194,16 +211,16 @@ void CBattleSoccerMgr::ProcState_Playing()
 
 	GUILD_WAR_TEAM_LOOP(i)
 	{
-		BattleSoccerTeam * pTeam = this->GetTeam(i);
+		BattleSoccerTeam * pTeam = &this->m_Team[i];
 
 		if ( !pTeam )
 		{
 			continue;
 		}
 
-		if ( pTeam->GetScore() != pTeam->GetGuild()->GetWarData()->GetScore() )
+		if ( pTeam->m_Score != pTeam->m_Guild->GetWarData()->GetScore() )
 		{
-			pTeam->SetScore(pTeam->GetGuild()->GetWarData()->GetScore());
+			pTeam->m_Score = pTeam->m_Guild->GetWarData()->GetScore();
 			send_score = true;
 		}
 	}
@@ -215,7 +232,7 @@ void CBattleSoccerMgr::ProcState_Playing()
 
 	GUILD_WAR_TEAM_LOOP(i)
 	{
-		BattleSoccerTeam * pTeam = this->GetTeam(i);
+		BattleSoccerTeam * pTeam = &this->m_Team[i];
 
 		if ( !pTeam )
 		{
@@ -224,15 +241,15 @@ void CBattleSoccerMgr::ProcState_Playing()
 
 		uint8 oposite = i == GUILD_WAR_TEAM_BLUE ? GUILD_WAR_TEAM_RED: GUILD_WAR_TEAM_BLUE;
 
-		if ( pTeam->GetScore() >= sGameServer->GetBattleSoccerMaxPoints() )
+		if ( pTeam->m_Score >= sGameServer->GetBattleSoccerMaxPoints() )
 		{
 			int32 add_score = 1;
 
-			if ( this->GetTeam(oposite)->GetScore() == 0 )
+			if ( this->m_Team[oposite].m_Score == 0 )
 			{
 				add_score = 3;
 			}
-			else if ( this->GetTeam(oposite)->GetScore() <= 10 )
+			else if ( this->m_Team[oposite].m_Score <= 10 )
 			{
 				add_score = 2;
 			}
@@ -242,12 +259,12 @@ void CBattleSoccerMgr::ProcState_Playing()
 		}
 	}
 
-	if ( !this->IsBallMove() && this->GetBallMoveTime()->Elapsed(10 * IN_MILLISECONDS) )
+	if ( !this->m_BallMove && this->m_BallMoveTime.Elapsed(10 * IN_MILLISECONDS) )
 	{
-		this->SetBallMove(true);
+		this->m_BallMove = true;
 	}
 	
-	if ( this->GetTime()->Elapsed() )
+	if ( this->m_Time.Elapsed() )
 	{
 		this->Finish(BATTLE_SOCCER_END_REASON_TIME_OUT, GUILD_WAR_TEAM_MAX, GUILD_WAR_TEAM_MAX, -1);
 	}
@@ -255,7 +272,7 @@ void CBattleSoccerMgr::ProcState_Playing()
 	
 void CBattleSoccerMgr::ProcState_Playend()
 {
-	if ( this->GetTime()->Elapsed() )
+	if ( this->m_Time.Elapsed() )
 	{
 		this->MovePlayersOut();
 		this->SetState_None();
@@ -264,7 +281,7 @@ void CBattleSoccerMgr::ProcState_Playend()
 
 void CBattleSoccerMgr::UpdateBall(Monster* Ball)
 {
-	if ( this->GetState() != BATTLE_SOCCER_STATE_PLAYING )
+	if ( this->m_State != BATTLE_SOCCER_STATE_PLAYING )
 		return;
 
 	int16 x = Ball->GetX();
@@ -277,7 +294,7 @@ void CBattleSoccerMgr::UpdateBall(Monster* Ball)
 		{
 			Ball->Kill();
 
-			this->GetTeam(i)->GetGuild()->GetWarData()->IncreaseScore(sGameServer->GetBattleSoccerGoalPoints());
+			this->m_Team[i].m_Guild->GetWarData()->IncreaseScore(sGameServer->GetBattleSoccerGoalPoints());
 		}
 	}
 }
@@ -292,20 +309,20 @@ bool CBattleSoccerMgr::IsInField(Player const* pPlayer) const
 	if ( !pGuild )
 		return false;
 
-	if ( this->GetState() != BATTLE_SOCCER_STATE_PLAYING &&
-		 this->GetState() != BATTLE_SOCCER_STATE_PLAYEND )
+	if ( this->m_State != BATTLE_SOCCER_STATE_PLAYING &&
+		 this->m_State != BATTLE_SOCCER_STATE_PLAYEND )
 		return false;
 
 	GUILD_WAR_TEAM_LOOP(i)
 	{
-		BattleSoccerTeam const* pTeam = this->GetTeam(i);
+		BattleSoccerTeam const* pTeam = &this->m_Team[i];
 
-		if ( pTeam->GetGuild() != pGuild )
+		if ( pTeam->m_Guild != pGuild )
 			continue;
 
 		PARTY_LOOP(h)
 		{
-			if ( pTeam->GetPlayer(h)->GetPlayer() == pPlayer )
+			if ( pTeam->m_Player[h].m_Player == pPlayer )
 				return true;
 		}
 	}
@@ -348,28 +365,28 @@ bool CBattleSoccerMgr::IsAttackAllowed(Player* pPlayer01, Player* pPlayer02)
 
 	GUILD_WAR_TEAM_LOOP(i)
 	{
-		BattleSoccerTeam const* pTeam = this->GetTeam(i);
+		BattleSoccerTeam const* pTeam = &this->m_Team[i];
 
 		if ( !pTeam )
 		{
 			continue;
 		}
 
-		if ( pTeam->GetGuild() == pGuild01 )
+		if ( pTeam->m_Guild == pGuild01 )
 		{
 			PARTY_LOOP(h)
 			{
-				if ( pTeam->GetPlayer(h)->GetPlayer() == pPlayer01 )
+				if ( pTeam->m_Player[h].m_Player == pPlayer01 )
 				{
 					Team01 = i;
 				}
 			}
 		}
-		if ( pTeam->GetGuild() == pGuild02 )
+		if ( pTeam->m_Guild == pGuild02 )
 		{
 			PARTY_LOOP(h)
 			{
-				if ( pTeam->GetPlayer(h)->GetPlayer() == pPlayer02 )
+				if ( pTeam->m_Player[h].m_Player == pPlayer02 )
 				{
 					Team02 = i;
 				}
@@ -397,7 +414,7 @@ bool CBattleSoccerMgr::IsAttackAllowed(Player* pPlayer01, Player* pPlayer02)
 		return false;
 	}
 	
-	if ( this->GetState() == BATTLE_SOCCER_STATE_PLAYING )
+	if ( this->m_State == BATTLE_SOCCER_STATE_PLAYING )
 	{
 		return true;
 	}
@@ -409,7 +426,7 @@ void CBattleSoccerMgr::MovePlayersOut()
 {
 	GUILD_WAR_TEAM_LOOP(i)
 	{
-		BattleSoccerTeam * pTeam = this->GetTeam(i);
+		BattleSoccerTeam * pTeam = &this->m_Team[i];
 
 		if ( !pTeam )
 		{
@@ -418,7 +435,7 @@ void CBattleSoccerMgr::MovePlayersOut()
 
 		PARTY_LOOP(h)
 		{
-			Player* pPlayer = pTeam->GetPlayer(h)->GetPlayer();
+			Player* pPlayer = pTeam->m_Player[h].m_Player;
 
 			if ( !pPlayer )
 				continue;
@@ -532,7 +549,7 @@ void CBattleSoccerMgr::ProcessRequest(Player* pPlayer, const char * guild)
 		return;
 	}
 
-	if ( this->GetState() != BATTLE_SOCCER_STATE_NONE )
+	if ( this->m_State != BATTLE_SOCCER_STATE_NONE )
 	{
 		pPlayer->SendNotice(CUSTOM_MESSAGE_ID_RED, "Battle soccer field is currently in use.");
 		return;
@@ -593,10 +610,10 @@ bool CBattleSoccerMgr::PartySuccess(Party* pParty, Guild* pGuild)
 
 void CBattleSoccerMgr::ProcessTeams(Player* pPlayer01, Player* pPlayer02, Guild* pGuild01, Guild* pGuild02)
 {
-	if ( this->GetState() != BATTLE_SOCCER_STATE_STANDBY )
+	if ( this->m_State != BATTLE_SOCCER_STATE_STANDBY )
 		return;
 
-	if ( this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetGuild() != pGuild01 || this->GetTeam(GUILD_WAR_TEAM_RED)->GetGuild() != pGuild02 )
+	if ( this->m_Team[GUILD_WAR_TEAM_BLUE].m_Guild != pGuild01 || this->m_Team[GUILD_WAR_TEAM_RED].m_Guild != pGuild02 )
 		return;
 
 	Party* pParty01 = pPlayer01->GetParty();
@@ -636,25 +653,25 @@ void CBattleSoccerMgr::ProcessTeams(Player* pPlayer01, Player* pPlayer02, Guild*
 		return;
 	}
 
-	this->GetTeam(GUILD_WAR_TEAM_BLUE)->SetPartyID(pParty01->GetID());
-	this->GetTeam(GUILD_WAR_TEAM_RED)->SetPartyID(pParty02->GetID());
+	this->m_Team[GUILD_WAR_TEAM_BLUE].m_PartyID = pParty01->GetID();
+	this->m_Team[GUILD_WAR_TEAM_RED].m_PartyID = pParty02->GetID();
 
 	PARTY_LOOP(i)
 	{
-		this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetPlayer(i)->Reset();
-		this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetPlayer(i)->SetPlayer(pParty01->GetMember(i)->GetPlayer());
+		this->m_Team[GUILD_WAR_TEAM_BLUE].m_Player[i].Reset();
+		this->m_Team[GUILD_WAR_TEAM_BLUE].m_Player[i].m_Player = pParty01->GetMember(i)->GetPlayer();
 
-		if ( this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetPlayer(i)->GetPlayer() )
+		if ( this->m_Team[GUILD_WAR_TEAM_BLUE].m_Player[i].m_Player )
 		{
-			this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetPlayer(i)->SetMaster(this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetPlayer(i)->GetPlayer()->GuildGetRanking() == GUILD_RANK_MASTER ? true: false);
+			this->m_Team[GUILD_WAR_TEAM_BLUE].m_Player[i].m_Master = this->m_Team[GUILD_WAR_TEAM_BLUE].m_Player[i].m_Player->GuildGetRanking() == GUILD_RANK_MASTER ? true: false;
 		}
 		
-		this->GetTeam(GUILD_WAR_TEAM_RED)->GetPlayer(i)->Reset();
-		this->GetTeam(GUILD_WAR_TEAM_RED)->GetPlayer(i)->SetPlayer(pParty02->GetMember(i)->GetPlayer());
+		this->m_Team[GUILD_WAR_TEAM_RED].m_Player[i].Reset();
+		this->m_Team[GUILD_WAR_TEAM_RED].m_Player[i].m_Player = pParty02->GetMember(i)->GetPlayer();
 
-		if ( this->GetTeam(GUILD_WAR_TEAM_RED)->GetPlayer(i)->GetPlayer() )
+		if ( this->m_Team[GUILD_WAR_TEAM_RED].m_Player[i].m_Player )
 		{
-			this->GetTeam(GUILD_WAR_TEAM_RED)->GetPlayer(i)->SetMaster(this->GetTeam(GUILD_WAR_TEAM_RED)->GetPlayer(i)->GetPlayer()->GuildGetRanking() == GUILD_RANK_MASTER ? true: false);
+			this->m_Team[GUILD_WAR_TEAM_RED].m_Player[i].m_Master = this->m_Team[GUILD_WAR_TEAM_RED].m_Player[i].m_Player->GuildGetRanking() == GUILD_RANK_MASTER ? true: false;
 		}
 	}
 
@@ -669,13 +686,13 @@ void CBattleSoccerMgr::ProcessTeams(Player* pPlayer01, Player* pPlayer02, Guild*
 
 void CBattleSoccerMgr::SetTeamData(Guild* pGuild01, Guild* pGuild02)
 {
-	this->SetState_StandBy();
+        this->SetState_StandBy();
 
-	this->GetTeam(GUILD_WAR_TEAM_BLUE)->Reset();
-	this->GetTeam(GUILD_WAR_TEAM_BLUE)->SetGuild(pGuild01);
+        this->m_Team[GUILD_WAR_TEAM_BLUE].Reset();
+        this->m_Team[GUILD_WAR_TEAM_BLUE].m_Guild = pGuild01;
 
-	this->GetTeam(GUILD_WAR_TEAM_RED)->Reset();
-	this->GetTeam(GUILD_WAR_TEAM_RED)->SetGuild(pGuild02);
+        this->m_Team[GUILD_WAR_TEAM_RED].Reset();
+        this->m_Team[GUILD_WAR_TEAM_RED].m_Guild = pGuild02;
 }
 
 void CBattleSoccerMgr::Finish(uint8 reason, uint8 winner, uint8 looser, int32 score)
@@ -684,12 +701,12 @@ void CBattleSoccerMgr::Finish(uint8 reason, uint8 winner, uint8 looser, int32 sc
 	{
 		if ( winner == GUILD_WAR_TEAM_MAX || looser == GUILD_WAR_TEAM_MAX )
 		{
-			if ( this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetScore() < this->GetTeam(GUILD_WAR_TEAM_RED)->GetScore() )
+			if ( this->m_Team[GUILD_WAR_TEAM_BLUE].m_Score < this->m_Team[GUILD_WAR_TEAM_RED].m_Score )
 			{
 				winner = GUILD_WAR_TEAM_RED;
 				looser = GUILD_WAR_TEAM_BLUE;
 			}
-			else if ( this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetScore() > this->GetTeam(GUILD_WAR_TEAM_RED)->GetScore() )
+			else if ( this->m_Team[GUILD_WAR_TEAM_BLUE].m_Score > this->m_Team[GUILD_WAR_TEAM_RED].m_Score )
 			{
 				winner = GUILD_WAR_TEAM_BLUE;
 				looser = GUILD_WAR_TEAM_RED;
@@ -698,11 +715,11 @@ void CBattleSoccerMgr::Finish(uint8 reason, uint8 winner, uint8 looser, int32 sc
 
 		if ( winner != GUILD_WAR_TEAM_MAX && looser != GUILD_WAR_TEAM_MAX )
 		{
-			if ( this->GetTeam(winner)->GetScore() < this->GetTeam(looser)->GetScore() )
+			if ( this->m_Team[winner].m_Score < this->m_Team[looser].m_Score )
 			{
 				score = 1;
 			}
-			else if ( this->GetTeam(winner)->GetScore() > this->GetTeam(looser)->GetScore() )
+			else if ( this->m_Team[winner].m_Score > this->m_Team[looser].m_Score )
 			{
 				score = 3;
 			}
@@ -714,27 +731,27 @@ void CBattleSoccerMgr::Finish(uint8 reason, uint8 winner, uint8 looser, int32 sc
 	}
 
 	if ( score != -1 && winner != GUILD_WAR_TEAM_MAX )
-		sDataServer->GuildScore(this->GetTeam(winner)->GetGuild()->GetID(), score);
+		sDataServer->GuildScore(this->m_Team[winner].m_Guild->GetID(), score);
 
 	if ( winner == GUILD_WAR_TEAM_MAX || looser == GUILD_WAR_TEAM_MAX ) // Empatados
 	{
 		PARTY_LOOP(h)
 		{
-			sGuildWarMgr->SendEnd(this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetPlayer(h)->GetPlayer(), this->GetTeam(GUILD_WAR_TEAM_RED)->GetGuild()->GetName(), 7);
-			sGuildWarMgr->SendEnd(this->GetTeam(GUILD_WAR_TEAM_RED)->GetPlayer(h)->GetPlayer(), this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetGuild()->GetName(), 7);
+			sGuildWarMgr->SendEnd(this->m_Team[GUILD_WAR_TEAM_BLUE].m_Player[h].m_Player, this->m_Team[GUILD_WAR_TEAM_RED].m_Guild->GetName(), 7);
+			sGuildWarMgr->SendEnd(this->m_Team[GUILD_WAR_TEAM_RED].m_Player[h].m_Player, this->m_Team[GUILD_WAR_TEAM_BLUE].m_Guild->GetName(), 7);
 		}
 	}
 	else
 	{
 		PARTY_LOOP(h)
 		{
-			sGuildWarMgr->SendEnd(this->GetTeam(winner)->GetPlayer(h)->GetPlayer(), this->GetTeam(looser)->GetGuild()->GetName(), reason == BATTLE_SOCCER_END_REASON_LEFT ? 2: 1);
-			sGuildWarMgr->SendEnd(this->GetTeam(looser)->GetPlayer(h)->GetPlayer(), this->GetTeam(winner)->GetGuild()->GetName(), reason == BATTLE_SOCCER_END_REASON_LEFT ? 3: 0);
+			sGuildWarMgr->SendEnd(this->m_Team[winner].m_Player[h].m_Player, this->m_Team[looser].m_Guild->GetName(), reason == BATTLE_SOCCER_END_REASON_LEFT ? 2: 1);
+			sGuildWarMgr->SendEnd(this->m_Team[looser].m_Player[h].m_Player, this->m_Team[winner].m_Guild->GetName(), reason == BATTLE_SOCCER_END_REASON_LEFT ? 3: 0);
 		}
 	}
 								
-	this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetGuild()->GetWarData()->Reset();
-	this->GetTeam(GUILD_WAR_TEAM_RED)->GetGuild()->GetWarData()->Reset();
+	this->m_Team[GUILD_WAR_TEAM_BLUE].m_Guild->GetWarData()->Reset();
+	this->m_Team[GUILD_WAR_TEAM_RED].m_Guild->GetWarData()->Reset();
 
 	this->SetState_Playend();
 }
@@ -743,7 +760,7 @@ void CBattleSoccerMgr::SendScore()
 {
 	PARTY_LOOP(h)
 	{
-		sGuildWarMgr->SendScore(this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetPlayer(h)->GetPlayer(), this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetScore(), this->GetTeam(GUILD_WAR_TEAM_RED)->GetScore());
-		sGuildWarMgr->SendScore(this->GetTeam(GUILD_WAR_TEAM_RED)->GetPlayer(h)->GetPlayer(), this->GetTeam(GUILD_WAR_TEAM_RED)->GetScore(), this->GetTeam(GUILD_WAR_TEAM_BLUE)->GetScore());
+		sGuildWarMgr->SendScore(this->m_Team[GUILD_WAR_TEAM_BLUE].m_Player[h].m_Player, this->m_Team[GUILD_WAR_TEAM_BLUE].m_Score, this->m_Team[GUILD_WAR_TEAM_RED].m_Score);
+		sGuildWarMgr->SendScore(this->m_Team[GUILD_WAR_TEAM_RED].m_Player[h].m_Player, this->m_Team[GUILD_WAR_TEAM_RED].m_Score, this->m_Team[GUILD_WAR_TEAM_BLUE].m_Score);
 	}
 }
