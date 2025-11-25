@@ -187,7 +187,7 @@ void CBattleSoccerMgr::ProcState_Playing()
 				continue;
 			}
 
-			if ( pTeam->GetPartyID() != pPlayer->GetPartyID() )
+                        if ( pTeam->m_PartyID != pPlayer->GetPartyID() )
 			{
 				if ( pTeam->m_Player[h].m_Master )
 				{
