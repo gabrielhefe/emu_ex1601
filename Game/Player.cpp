@@ -655,7 +655,7 @@ void Player::LogoutTimeCheck()
 					{
 						this->SaveCharacter();
 						this->SetCharacterListRequested(false);
-						sServerLink->CharacterOnOff(this, 0);
+						sDataServer->CharacterOnOff(this, 0);
 						this->SetConnectStatus(CONNECT_STATUS_LOGGED);
 						sObjectMgr->RemoveSessionCharacter(this);
 						this->GetAccountData()->SetMoveToSelectChar(true);
@@ -2450,7 +2450,7 @@ void Player::CharacterCreate(uint8 * Packet)
 	}
 
 	this->GetAccountData()->SetCharacterHandleAction(CHARACTER_HANDLE_ACTION_CREATE);
-	sServerLink->CharacterCreateRequest(this, lpMsg->character_class, character, slot, info);
+	sDataServer->CharacterCreateRequest(this, lpMsg->character_class, character, slot, info);
 	this->GetAccountData()->SetMoveToSelectChar(true);
 }
 
@@ -2506,7 +2506,7 @@ void Player::CharacterDelete(uint8 * Packet)
 
 	this->GetAccountData()->SetCharacterHandleAction(CHARACTER_HANDLE_ACTION_DELETE);
 
-	sServerLink->CharacterDeleteRequest(this, character);
+	sDataServer->CharacterDeleteRequest(this, character);
 }
 
 void Player::CharacterDeleteResult(uint8 result)
@@ -7040,7 +7040,7 @@ bool Player::IsTimeout() const
 
 void Player::UpdateAccountStatusType(uint8 type)
 {
-	SL_ACCOUNT_CONNECT_TYPE pMsg(this->GetAccountData()->GetGUID(), type);
+	DS_ACCOUNT_CONNECT_TYPE pMsg(this->GetAccountData()->GetGUID(), type);
 	pMsg.h.server = sGameServer->GetServerCode();
 	sAuthServer->SendPacket((uint8*)&pMsg, pMsg.h.get_size());
 }

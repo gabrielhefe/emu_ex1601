@@ -31,7 +31,7 @@
     <ClCompile Include="Main.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="ServerLinkPCH.cpp">
+    <ClCompile Include="DataServerPCH.cpp">
       <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="ServerSocket.cpp">
@@ -69,7 +69,7 @@
     <ClInclude Include="Main.h">
       <Filter>Main</Filter>
     </ClInclude>
-    <ClInclude Include="ServerLinkPCH.h">
+    <ClInclude Include="DataServerPCH.h">
       <Filter>Main</Filter>
     </ClInclude>
     <ClInclude Include="ServerSocket.h">

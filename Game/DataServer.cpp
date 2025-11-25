@@ -2,108 +2,108 @@
 *
 * Copyright (C) 2008-2017 Dimension Gamers <http://www.dimensiongamers.net>
 *
-* File: "ServerLink.cpp"
+* File: "DataServer.cpp"
 *
 */
 
-std::unordered_map<uint8, LoginHandler<ServerLink>> ServerLink::InitHandlers()
+std::unordered_map<uint8, LoginHandler<DataServer>> DataServer::InitHandlers()
 {
-    std::unordered_map<uint8, LoginHandler<ServerLink>> handlers;
+    std::unordered_map<uint8, LoginHandler<DataServer>> handlers;
 
-	handlers[HEADCODE_SERVER_LINK_ON_CONNECT]							= { "ON_CONNECT", sizeof(SL_ON_CONNECT), &ServerLink::HandleHeadcodeOnConnect };
+	handlers[HEADCODE_DATA_SERVER_ON_CONNECT]							= { "ON_CONNECT", sizeof(DS_ON_CONNECT), &DataServer::HandleHeadcodeOnConnect };
 
-    handlers[HEADCODE_SERVER_LINK_GUILD_CHAT]							= { "GUILD_CHAT", sizeof(SL_CHAT_PACKET), &ServerLink::HandleHeadcodeGuildChat };
-	handlers[HEADCODE_SERVER_LINK_ALLIANCE_CHAT]						= { "ALLIANCE_CHAT", sizeof(SL_CHAT_PACKET), &ServerLink::HandleHeadcodeAllianceChat };
-	handlers[HEADCODE_SERVER_LINK_GUILD_NOTICE]							= { "GUILD_NOTICE", sizeof(SL_CHAT_PACKET), &ServerLink::HandleHeadcodeGuildNotice };
-	handlers[HEADCODE_SERVER_LINK_POST]									= { "POST", sizeof(SL_CHAT_PACKET), &ServerLink::HandleHeadcodePost };
-	handlers[HEADCODE_SERVER_LINK_SIMPLE_MESSAGE]						= { "SIMPLE_MESSAGE", sizeof(SL_CHAT_PACKET), &ServerLink::SimpleMessageResult };
-	handlers[HEADCODE_SERVER_LINK_WHISPER]								= { "WHISPER", sizeof(SL_WHISPER), &ServerLink::WhisperResult };
+    handlers[HEADCODE_DATA_SERVER_GUILD_CHAT]							= { "GUILD_CHAT", sizeof(DS_CHAT_PACKET), &DataServer::HandleHeadcodeGuildChat };
+	handlers[HEADCODE_DATA_SERVER_ALLIANCE_CHAT]						= { "ALLIANCE_CHAT", sizeof(DS_CHAT_PACKET), &DataServer::HandleHeadcodeAllianceChat };
+	handlers[HEADCODE_DATA_SERVER_GUILD_NOTICE]							= { "GUILD_NOTICE", sizeof(DS_CHAT_PACKET), &DataServer::HandleHeadcodeGuildNotice };
+	handlers[HEADCODE_DATA_SERVER_POST]									= { "POST", sizeof(DS_CHAT_PACKET), &DataServer::HandleHeadcodePost };
+	handlers[HEADCODE_DATA_SERVER_SIMPLE_MESSAGE]						= { "SIMPLE_MESSAGE", sizeof(DS_CHAT_PACKET), &DataServer::SimpleMessageResult };
+	handlers[HEADCODE_DATA_SERVER_WHISPER]								= { "WHISPER", sizeof(DS_WHISPER), &DataServer::WhisperResult };
 
-	handlers[HEADCODE_SERVER_LINK_GUILD_ADD]							= { "GUILD_ADD", sizeof(SL_GUILD_ADD), &ServerLink::GuildCreateResult };
-	handlers[HEADCODE_SERVER_LINK_GUILD_REMOVE]							= { "GUILD_REMOVE", sizeof(SL_GUILD_DEL), &ServerLink::GuildDeleteResult };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MEMBER_ADD]						= { "GUILD_MEMBER_ADD", sizeof(SL_GUILD_MEMBER_ADD), &ServerLink::GuildMemberAddResult };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MEMBER_DEL]						= { "GUILD_MEMBER_DEL", sizeof(SL_GUILD_MEMBER_DEL), &ServerLink::GuildMemberDelResult };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MEMBER_STATUS]					= { "GUILD_MEMBER_STATUS", sizeof(SL_GUILD_MEMBER_STATUS), &ServerLink::GuildMemberStatusResult };
-	handlers[HEADCODE_SERVER_LINK_GUILD_RELATIONSHIP]					= { "GUILD_RELATIONSHIP", sizeof(SL_GUILD_RELATIONSHIP), &ServerLink::GuildRelationshipResult };
-	handlers[HEADCODE_SERVER_LINK_GUILD_SCORE]							= { "GUILD_SCORE", sizeof(SL_GUILD_SCORE), &ServerLink::GuildScoreResult };
+	handlers[HEADCODE_DATA_SERVER_GUILD_ADD]							= { "GUILD_ADD", sizeof(DS_GUILD_ADD), &DataServer::GuildCreateResult };
+	handlers[HEADCODE_DATA_SERVER_GUILD_REMOVE]							= { "GUILD_REMOVE", sizeof(DS_GUILD_DEL), &DataServer::GuildDeleteResult };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MEMBER_ADD]						= { "GUILD_MEMBER_ADD", sizeof(DS_GUILD_MEMBER_ADD), &DataServer::GuildMemberAddResult };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MEMBER_DEL]						= { "GUILD_MEMBER_DEL", sizeof(DS_GUILD_MEMBER_DEL), &DataServer::GuildMemberDelResult };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MEMBER_STATUS]					= { "GUILD_MEMBER_STATUS", sizeof(DS_GUILD_MEMBER_STATUS), &DataServer::GuildMemberStatusResult };
+	handlers[HEADCODE_DATA_SERVER_GUILD_RELATIONSHIP]					= { "GUILD_RELATIONSHIP", sizeof(DS_GUILD_RELATIONSHIP), &DataServer::GuildRelationshipResult };
+	handlers[HEADCODE_DATA_SERVER_GUILD_SCORE]							= { "GUILD_SCORE", sizeof(DS_GUILD_SCORE), &DataServer::GuildScoreResult };
 
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_LOAD_DATA]				= { "CASTLE_SIEGE_LOAD_DATA", sizeof(SL_CASTLE_SIEGE_LOAD_DATA_RESULT), &ServerLink::CastleSiegeLoadDataResult };
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_LOAD_NPC]				= { "CASTLE_SIEGE_LOAD_NPC", sizeof(SL_CASTLE_SIEGE_LOAD_NPC_HEAD), &ServerLink::CastleSiegeLoadNpcResult };
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_LOAD_REGISTERED_GUILD]	= { "CASTLE_SIEGE_LOAD_REGISTERED_GUILD", sizeof(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD), &ServerLink::CastleSiegeLoadRegisteredGuildResult };
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_REGISTERED_GUILD]		= { "CASTLE_SIEGE_REGISTERED_GUILD", sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD), &ServerLink::CastleSiegeRegisteredGuildResult };
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_REGISTERED_GUILD_ALL]	= { "CASTLE_SIEGE_REGISTERED_GUILD_ALL", sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD), &ServerLink::CastleSiegeRegisteredGuildAllResult };
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_REGISTER_GUILD]			= { "CASTLE_SIEGE_REGISTER_GUILD", sizeof(SL_CASTLE_SIEGE_REGISTER_GUILD), &ServerLink::HandleHeadcodeCastleSiegeRegisterGuild };
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_SAVE_TAX_RATE]			= { "CASTLE_SIEGE_SAVE_TAX_RATE", sizeof(SL_CASTLE_SIEGE_SAVE_TAX_RATE), &ServerLink::HandleHeadcodeCastleSiegeTaxRate };
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_SAVE_MONEY]				= { "CASTLE_SIEGE_SAVE_MONEY", sizeof(SL_CASTLE_SIEGE_SAVE_MONEY), &ServerLink::HandleHeadcodeCastleSiegeMoney };
-	handlers[HEADCODE_SERVER_LINK_CASTLE_SIEGE_SAVE_OWNER_STATUS]		= { "CASTLE_SIEGE_SAVE_OWNER_STATUS", sizeof(SL_CASTLE_SIEGE_SAVE_OWNER_STATUS), &ServerLink::HandleHeadcodeCastleSiegeUpdateOwner };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_LOAD_DATA]				= { "CASTLE_SIEGE_LOAD_DATA", sizeof(DS_CASTLE_SIEGE_LOAD_DATA_RESULT), &DataServer::CastleSiegeLoadDataResult };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_LOAD_NPC]				= { "CASTLE_SIEGE_LOAD_NPC", sizeof(DS_CASTLE_SIEGE_LOAD_NPC_HEAD), &DataServer::CastleSiegeLoadNpcResult };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_LOAD_REGISTERED_GUILD]	= { "CASTLE_SIEGE_LOAD_REGISTERED_GUILD", sizeof(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD), &DataServer::CastleSiegeLoadRegisteredGuildResult };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_REGISTERED_GUILD]		= { "CASTLE_SIEGE_REGISTERED_GUILD", sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD), &DataServer::CastleSiegeRegisteredGuildResult };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_REGISTERED_GUILD_ALL]	= { "CASTLE_SIEGE_REGISTERED_GUILD_ALL", sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD), &DataServer::CastleSiegeRegisteredGuildAllResult };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_REGISTER_GUILD]			= { "CASTLE_SIEGE_REGISTER_GUILD", sizeof(DS_CASTLE_SIEGE_REGISTER_GUILD), &DataServer::HandleHeadcodeCastleSiegeRegisterGuild };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_SAVE_TAX_RATE]			= { "CASTLE_SIEGE_SAVE_TAX_RATE", sizeof(DS_CASTLE_SIEGE_SAVE_TAX_RATE), &DataServer::HandleHeadcodeCastleSiegeTaxRate };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_SAVE_MONEY]				= { "CASTLE_SIEGE_SAVE_MONEY", sizeof(DS_CASTLE_SIEGE_SAVE_MONEY), &DataServer::HandleHeadcodeCastleSiegeMoney };
+	handlers[HEADCODE_DATA_SERVER_CASTLE_SIEGE_SAVE_OWNER_STATUS]		= { "CASTLE_SIEGE_SAVE_OWNER_STATUS", sizeof(DS_CASTLE_SIEGE_SAVE_OWNER_STATUS), &DataServer::HandleHeadcodeCastleSiegeUpdateOwner };
 
-	handlers[HEADCODE_SERVER_LINK_NOTICE]								= { "NOTICE", sizeof(SL_NOTICE), &ServerLink::HandleHeadcodeNotice };
-	handlers[HEADCODE_SERVER_LINK_CHARACTER_ON_OFF]						= { "CHARACTER_ON_OFF", sizeof(SL_CHARACTER_ON_OFF), &ServerLink::HandleHeadcodeCharacterOnOff };
-	handlers[HEADCODE_SERVER_LINK_CHARACTER_CREATE]						= { "CHARACTER_CREATE", sizeof(SL_CHARACTER_CREATE_RESULT), &ServerLink::CharacterCreateResult };
-	handlers[HEADCODE_SERVER_LINK_CHARACTER_DELETE]						= { "CHARACTER_DELETE", sizeof(SL_CHARACTER_DELETE_RESULT), &ServerLink::CharacterDeleteResult };
+	handlers[HEADCODE_DATA_SERVER_NOTICE]								= { "NOTICE", sizeof(DS_NOTICE), &DataServer::HandleHeadcodeNotice };
+	handlers[HEADCODE_DATA_SERVER_CHARACTER_ON_OFF]						= { "CHARACTER_ON_OFF", sizeof(DS_CHARACTER_ON_OFF), &DataServer::HandleHeadcodeCharacterOnOff };
+	handlers[HEADCODE_DATA_SERVER_CHARACTER_CREATE]						= { "CHARACTER_CREATE", sizeof(DS_CHARACTER_CREATE_RESULT), &DataServer::CharacterCreateResult };
+	handlers[HEADCODE_DATA_SERVER_CHARACTER_DELETE]						= { "CHARACTER_DELETE", sizeof(DS_CHARACTER_DELETE_RESULT), &DataServer::CharacterDeleteResult };
 
-	handlers[HEADCODE_SERVER_LINK_ADMIN_COMMAND]						= { "ADMIN_COMMAND", sizeof(SL_ADMIN_COMMAND), &ServerLink::AdminCommandResult };
+	handlers[HEADCODE_DATA_SERVER_ADMIN_COMMAND]						= { "ADMIN_COMMAND", sizeof(DS_ADMIN_COMMAND), &DataServer::AdminCommandResult };
 
-	handlers[HEADCODE_SERVER_LINK_SIGNAL]								= { "SIGNAL", sizeof(SL_SIGNAL), &ServerLink::Signal };
+	handlers[HEADCODE_DATA_SERVER_SIGNAL]								= { "SIGNAL", sizeof(DS_SIGNAL), &DataServer::Signal };
 
-	handlers[HEADCODE_SERVER_LINK_CRYWOLF_REQUEST]						= { "CRYWOLF_REQUEST", sizeof(SL_CRYWOLF_REQUEST), &ServerLink::CrywolfDataResult };
+	handlers[HEADCODE_DATA_SERVER_CRYWOLF_REQUEST]						= { "CRYWOLF_REQUEST", sizeof(DS_CRYWOLF_REQUEST), &DataServer::CrywolfDataResult };
 
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_LIST]					= { "GUILD_MATCHING_LIST", sizeof(SL_GUILD_MATCHING_LIST_HEAD), &ServerLink::GuildMatchingList };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_INSERT]				= { "GUILD_MATCHING_INSERT", sizeof(SL_GUILD_MATCHING_INSERT_SEND), &ServerLink::GuildMatchingInsert };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_CANCEL]				= { "GUILD_MATCHING_CANCEL", sizeof(SL_GUILD_MATCHING_CANCEL_SEND), &ServerLink::GuildMatchingCancel };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_JOIN_INSERT]			= { "GUILD_MATCHING_JOIN_INSERT", sizeof(SL_GUILD_MATCHING_JOIN_INSERT_SEND), &ServerLink::GuildMatchingJoinInsert };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_JOIN_CANCEL]			= { "GUILD_MATCHING_JOIN_CANCEL", sizeof(SL_GUILD_MATCHING_JOIN_CANCEL_SEND), &ServerLink::GuildMatchingJoinCancel };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_JOIN_ACCEPT]			= { "GUILD_MATCHING_JOIN_ACCEPT", sizeof(SL_GUILD_MATCHING_JOIN_ACCEPT_SEND), &ServerLink::GuildMatchingJoinAccept };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_JOIN_LIST]				= { "GUILD_MATCHING_JOIN_LIST", sizeof(SL_GUILD_MATCHING_JOIN_LIST_HEAD), &ServerLink::GuildMatchingJoinList };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_JOIN_INFO]				= { "GUILD_MATCHING_JOIN_INFO", sizeof(SL_GUILD_MATCHING_JOIN_INFO_SEND), &ServerLink::GuildMatchingJoinInfo };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_NOTIFY]				= { "GUILD_MATCHING_NOTIFY", sizeof(SL_GUILD_MATCHING_NOTIFY_SEND), &ServerLink::GuildMatchingNotify };
-	handlers[HEADCODE_SERVER_LINK_GUILD_MATCHING_MASTER_NOTIFY]			= { "GUILD_MATCHING_MASTER_NOTIFY", sizeof(SL_GUILD_MATCHING_NOTIFY_MASTER_SEND), &ServerLink::GuildMatchingMasterNotify };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_LIST]					= { "GUILD_MATCHING_LIST", sizeof(DS_GUILD_MATCHING_LIST_HEAD), &DataServer::GuildMatchingList };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_INSERT]				= { "GUILD_MATCHING_INSERT", sizeof(DS_GUILD_MATCHING_INSERT_SEND), &DataServer::GuildMatchingInsert };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_CANCEL]				= { "GUILD_MATCHING_CANCEL", sizeof(DS_GUILD_MATCHING_CANCEL_SEND), &DataServer::GuildMatchingCancel };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_JOIN_INSERT]			= { "GUILD_MATCHING_JOIN_INSERT", sizeof(DS_GUILD_MATCHING_JOIN_INSERT_SEND), &DataServer::GuildMatchingJoinInsert };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_JOIN_CANCEL]			= { "GUILD_MATCHING_JOIN_CANCEL", sizeof(DS_GUILD_MATCHING_JOIN_CANCEL_SEND), &DataServer::GuildMatchingJoinCancel };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_JOIN_ACCEPT]			= { "GUILD_MATCHING_JOIN_ACCEPT", sizeof(DS_GUILD_MATCHING_JOIN_ACCEPT_SEND), &DataServer::GuildMatchingJoinAccept };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_JOIN_LIST]				= { "GUILD_MATCHING_JOIN_LIST", sizeof(DS_GUILD_MATCHING_JOIN_LIST_HEAD), &DataServer::GuildMatchingJoinList };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_JOIN_INFO]				= { "GUILD_MATCHING_JOIN_INFO", sizeof(DS_GUILD_MATCHING_JOIN_INFO_SEND), &DataServer::GuildMatchingJoinInfo };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_NOTIFY]				= { "GUILD_MATCHING_NOTIFY", sizeof(DS_GUILD_MATCHING_NOTIFY_SEND), &DataServer::GuildMatchingNotify };
+	handlers[HEADCODE_DATA_SERVER_GUILD_MATCHING_MASTER_NOTIFY]			= { "GUILD_MATCHING_MASTER_NOTIFY", sizeof(DS_GUILD_MATCHING_NOTIFY_MASTER_SEND), &DataServer::GuildMatchingMasterNotify };
 
-	handlers[HEADCODE_SERVER_LINK_EVENT_NOTIFICATION]					= { "EVENT_NOTIFICATION", sizeof(SL_EVENT_NOTIFICATION), &ServerLink::EventNotification };
+	handlers[HEADCODE_DATA_SERVER_EVENT_NOTIFICATION]					= { "EVENT_NOTIFICATION", sizeof(DS_EVENT_NOTIFICATION), &DataServer::EventNotification };
 
-	handlers[HEADCODE_SERVER_LINK_EVENT_STATE_UPDATE]					= { "EVENT_STATE_UPDATE", sizeof(SL_EVENT_STATE_UPDATE), &ServerLink::EventStateUpdate };
+	handlers[HEADCODE_DATA_SERVER_EVENT_STATE_UPDATE]					= { "EVENT_STATE_UPDATE", sizeof(DS_EVENT_STATE_UPDATE), &DataServer::EventStateUpdate };
 
-	handlers[HEADCODE_SERVER_LINK_ARKA_WAR_MASTER_REGISTER]				= { "ARKA_WAR_MASTER_REGISTER", sizeof(SL_ARKA_WAR_MASTER_REGISTER), &ServerLink::ArkaWarMasterRegister };
-	handlers[HEADCODE_SERVER_LINK_ARKA_WAR_MEMBER_REGISTER]				= { "ARKA_WAR_MEMBER_REGISTER", sizeof(SL_ARKA_WAR_MEMBER_REGISTER), &ServerLink::ArkaWarMemberRegister };
-	handlers[HEADCODE_SERVER_LINK_ARKA_WAR_SIGN_REGISTER]				= { "ARKA_WAR_SIGN_REGISTER", sizeof(SL_ARKA_WAR_SIGN_REGISTER), &ServerLink::ArkaWarSignRegister };
-	handlers[HEADCODE_SERVER_LINK_ARKA_WAR_ENTER]						= { "ARKA_WAR_ENTER", sizeof(SL_ARKA_WAR_ENTER), &ServerLink::ArkaWarEnter };
-	handlers[HEADCODE_SERVER_LINK_ARKA_WAR_LIST]						= { "ARKA_WAR_LIST", sizeof(SL_ARKA_WAR_LIST_HEAD), &ServerLink::ArkaWarList };
-	handlers[HEADCODE_SERVER_LINK_ARKA_WAR_MEMBER_COUNT]				= { "ARKA_WAR_MEMBER_COUNT", sizeof(SL_ARKA_WAR_MEMBER_COUNT), &ServerLink::ArkaWarMemberCount };
-	handlers[HEADCODE_SERVER_LINK_ARKA_WAR_GUILD_REQUEST]				= { "ARKA_WAR_GUILD_REQUEST", sizeof(SL_ARKA_WAR_GUILD_HEAD), &ServerLink::ArkaWarGuildRequest };
-	handlers[HEADCODE_SERVER_LINK_ARKA_WAR_SIGN_REQUEST]				= { "ARKA_WAR_SIGN_REQUEST", sizeof(SL_ARKA_WAR_SIGN_REQUEST_HEAD), &ServerLink::ArkaWarSignOfLordCheckResult };
+	handlers[HEADCODE_DATA_SERVER_ARKA_WAR_MASTER_REGISTER]				= { "ARKA_WAR_MASTER_REGISTER", sizeof(DS_ARKA_WAR_MASTER_REGISTER), &DataServer::ArkaWarMasterRegister };
+	handlers[HEADCODE_DATA_SERVER_ARKA_WAR_MEMBER_REGISTER]				= { "ARKA_WAR_MEMBER_REGISTER", sizeof(DS_ARKA_WAR_MEMBER_REGISTER), &DataServer::ArkaWarMemberRegister };
+	handlers[HEADCODE_DATA_SERVER_ARKA_WAR_SIGN_REGISTER]				= { "ARKA_WAR_SIGN_REGISTER", sizeof(DS_ARKA_WAR_SIGN_REGISTER), &DataServer::ArkaWarSignRegister };
+	handlers[HEADCODE_DATA_SERVER_ARKA_WAR_ENTER]						= { "ARKA_WAR_ENTER", sizeof(DS_ARKA_WAR_ENTER), &DataServer::ArkaWarEnter };
+	handlers[HEADCODE_DATA_SERVER_ARKA_WAR_LIST]						= { "ARKA_WAR_LIST", sizeof(DS_ARKA_WAR_LIST_HEAD), &DataServer::ArkaWarList };
+	handlers[HEADCODE_DATA_SERVER_ARKA_WAR_MEMBER_COUNT]				= { "ARKA_WAR_MEMBER_COUNT", sizeof(DS_ARKA_WAR_MEMBER_COUNT), &DataServer::ArkaWarMemberCount };
+	handlers[HEADCODE_DATA_SERVER_ARKA_WAR_GUILD_REQUEST]				= { "ARKA_WAR_GUILD_REQUEST", sizeof(DS_ARKA_WAR_GUILD_HEAD), &DataServer::ArkaWarGuildRequest };
+	handlers[HEADCODE_DATA_SERVER_ARKA_WAR_SIGN_REQUEST]				= { "ARKA_WAR_SIGN_REQUEST", sizeof(DS_ARKA_WAR_SIGN_REQUEST_HEAD), &DataServer::ArkaWarSignOfLordCheckResult };
 
-	handlers[HEADCODE_SERVER_LINK_CHARACTER_SIGNAL]						= { "CHARACTER_SIGNAL", sizeof(SL_CHARACTER_SIGNAL), &ServerLink::CharacterSignal };
+	handlers[HEADCODE_DATA_SERVER_CHARACTER_SIGNAL]						= { "CHARACTER_SIGNAL", sizeof(DS_CHARACTER_SIGNAL), &DataServer::CharacterSignal };
 
     return handlers;
 }
 
-std::unordered_map<uint8, LoginHandler<ServerLink>> const Handlers = ServerLink::InitHandlers();
+std::unordered_map<uint8, LoginHandler<DataServer>> const Handlers = DataServer::InitHandlers();
 
-ServerLink::ServerLink(): TCPClientMgr("ServerLink")
+DataServer::DataServer(): TCPClientMgr("DataServer")
 {
 	
 }
 
-void ServerLinkSocket::OnStart()
+void DataServerSocket::OnStart()
 {
 	sLog->outInfo("root", "CONNECTED SERVERLINK");
 
-	sServerLink->IncreaseConnectCount(1);
-	sServerLink->SetStopped(false);
+	sDataServer->IncreaseConnectCount(1);
+	sDataServer->SetStopped(false);
 
-	SL_ON_CONNECT pMsg(sGameServer->GetServerCode());
+	DS_ON_CONNECT pMsg(sGameServer->GetServerCode());
 	this->QueuePacket(MAKE_PCT(pMsg));
 }
 
-void ServerLinkSocket::OnStop()
+void DataServerSocket::OnStop()
 {
 	sLog->outInfo("root", "DISCONNECTED SERVERLINK");
 
-	sServerLink->GetReconnectTime()->Start();
-	sServerLink->SetStopped(true);
+	sDataServer->GetReconnectTime()->Start();
+	sDataServer->SetStopped(true);
 }
 
-void ServerLinkSocket::ReadHandler()
+void DataServerSocket::ReadHandler()
 {
 	if ( this->IsStopped() )
 		return;
@@ -125,13 +125,13 @@ void ServerLinkSocket::ReadHandler()
 
 		CUSTOM_PACKET_HEAD * head = (CUSTOM_PACKET_HEAD*)packet.GetReadPointer();
 
-		sServerLink->AddPacket(new WorldPacket(cmd, packet.GetReadPointer(), head->size));	
+		sDataServer->AddPacket(new WorldPacket(cmd, packet.GetReadPointer(), head->size));	
 
 		packet.ReadCompleted(head->size);
     }
 }
 
-void ServerLink::HandleHeadcodeOnConnect(uint8 * Packet)
+void DataServer::HandleHeadcodeOnConnect(uint8 * Packet)
 {
 	if ( this->GetConnectCount() == 1 )
 	{
@@ -158,9 +158,9 @@ void ServerLink::HandleHeadcodeOnConnect(uint8 * Packet)
 	}
 }
 
-void ServerLink::HandleHeadcodeGuildChat(uint8 * packet)
+void DataServer::HandleHeadcodeGuildChat(uint8 * packet)
 {
-	POINTER_PCT(SL_CHAT_PACKET, lpMsg, packet, 0);
+	POINTER_PCT(DS_CHAT_PACKET, lpMsg, packet, 0);
 
 	Guild * pGuild = sGuildMgr->GetGuild(lpMsg->guild);
 
@@ -172,9 +172,9 @@ void ServerLink::HandleHeadcodeGuildChat(uint8 * packet)
 	sObjectMgr->SendGuildMessageToAdmin(lpMsg->guild,lpMsg->name,lpMsg->msg);
 }
 
-void ServerLink::HandleHeadcodeAllianceChat(uint8 * packet)
+void DataServer::HandleHeadcodeAllianceChat(uint8 * packet)
 {
-	POINTER_PCT(SL_CHAT_PACKET, lpMsg, packet, 0);
+	POINTER_PCT(DS_CHAT_PACKET, lpMsg, packet, 0);
 
 	Guild * pGuild = sGuildMgr->GetGuild(lpMsg->guild);
 
@@ -193,9 +193,9 @@ void ServerLink::HandleHeadcodeAllianceChat(uint8 * packet)
 	}
 }
 
-void ServerLink::HandleHeadcodeGuildNotice(uint8 * packet)
+void DataServer::HandleHeadcodeGuildNotice(uint8 * packet)
 {
-	POINTER_PCT(SL_CHAT_PACKET, lpMsg, packet, 0);
+	POINTER_PCT(DS_CHAT_PACKET, lpMsg, packet, 0);
 
 	Guild * pGuild = sGuildMgr->GetGuild(lpMsg->guild);
 
@@ -209,19 +209,19 @@ void ServerLink::HandleHeadcodeGuildNotice(uint8 * packet)
 	sObjectMgr->SendGuildNoticeToAdmin(lpMsg->guild,lpMsg->name,lpMsg->msg);
 }
 
-void ServerLink::HandleHeadcodePost(uint8 * packet)
+void DataServer::HandleHeadcodePost(uint8 * packet)
 {
 	if ( sGameServer->IsGlobalMute() )
 		return;
 
-	POINTER_PCT(SL_CHAT_PACKET, lpMsg, packet, 0);
+	POINTER_PCT(DS_CHAT_PACKET, lpMsg, packet, 0);
 
 	sObjectMgr->SendPostToAll(lpMsg->h.server, lpMsg->name, lpMsg->msg);
 }
 
-void ServerLink::HandleHeadcodeCharacterOnOff(uint8 * packet)
+void DataServer::HandleHeadcodeCharacterOnOff(uint8 * packet)
 {
-	POINTER_PCT(SL_CHARACTER_ON_OFF, lpMsg, packet, 0);
+	POINTER_PCT(DS_CHARACTER_ON_OFF, lpMsg, packet, 0);
 
 	if ( lpMsg->status == 2 )
 		return;
@@ -265,16 +265,16 @@ void ServerLink::HandleHeadcodeCharacterOnOff(uint8 * packet)
 	}
 }
 
-void ServerLink::HandleHeadcodeNotice(uint8 * packet)
+void DataServer::HandleHeadcodeNotice(uint8 * packet)
 {
-	POINTER_PCT(SL_NOTICE, lpMsg, packet, 0);
+	POINTER_PCT(DS_NOTICE, lpMsg, packet, 0);
 
 	sObjectMgr->SendNoticeToAllNormal(lpMsg->type, lpMsg->notice);
 }
 
-void ServerLink::CastleSiegeLoadDataResult(uint8 * packet)
+void DataServer::CastleSiegeLoadDataResult(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_LOAD_DATA_RESULT, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_LOAD_DATA_RESULT, lpMsg, packet, 0);
 
 	sCastleSiege->SetCastleOwner(lpMsg->owner);
 	sCastleSiege->SetOccupied(lpMsg->status);
@@ -285,29 +285,29 @@ void ServerLink::CastleSiegeLoadDataResult(uint8 * packet)
 	sCastleSiege->IncreaseTributeMoney(lpMsg->money);
 }
 
-void ServerLink::CastleSiegeLoadNpcResult(uint8 * packet)
+void DataServer::CastleSiegeLoadNpcResult(uint8 * packet)
 {
 	sCastleSiege->LoadNPC(packet);
 }
 
-void ServerLink::CastleSiegeLoadRegisteredGuildResult(uint8 * packet)
+void DataServer::CastleSiegeLoadRegisteredGuildResult(uint8 * packet)
 {
 	sCastleSiege->LoadGuildRegisterResult(packet);
 }
 
-void ServerLink::CastleSiegeRegisteredGuildResult(uint8 * packet)
+void DataServer::CastleSiegeRegisteredGuildResult(uint8 * packet)
 {
 	sCastleSiege->RegisterGuildInfoCallBack(packet);
 }
 
-void ServerLink::CastleSiegeRegisteredGuildAllResult(uint8 * packet)
+void DataServer::CastleSiegeRegisteredGuildAllResult(uint8 * packet)
 {
 	sCastleSiege->GuildRegisterListCallBack(packet);
 }
 
-void ServerLink::HandleHeadcodeCastleSiegeRegisterGuild(uint8 * packet)
+void DataServer::HandleHeadcodeCastleSiegeRegisterGuild(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTER_GUILD, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTER_GUILD, lpMsg, packet, 0);
 
 	if ( Guild* pGuild = sGuildMgr->GetGuild(lpMsg->guild) )
 	{
@@ -316,16 +316,16 @@ void ServerLink::HandleHeadcodeCastleSiegeRegisterGuild(uint8 * packet)
 	}
 }
 
-void ServerLink::HandleHeadcodeCastleSiegeTaxRate(uint8 * packet)
+void DataServer::HandleHeadcodeCastleSiegeTaxRate(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_TAX_RATE, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_TAX_RATE, lpMsg, packet, 0);
 
 	sCastleSiege->SetTaxRate(lpMsg->tax_hunt, lpMsg->tax_chaos, lpMsg->tax_store, lpMsg->hunt_allowed);
 }
 
-void ServerLink::HandleHeadcodeCastleSiegeMoney(uint8 * packet)
+void DataServer::HandleHeadcodeCastleSiegeMoney(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_MONEY, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_MONEY, lpMsg, packet, 0);
 
 	if ( !lpMsg->type )
 	{
@@ -356,25 +356,25 @@ void ServerLink::HandleHeadcodeCastleSiegeMoney(uint8 * packet)
 	}
 }
 
-void ServerLink::HandleHeadcodeCastleSiegeUpdateOwner(uint8 * packet)
+void DataServer::HandleHeadcodeCastleSiegeUpdateOwner(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_OWNER_STATUS, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_OWNER_STATUS, lpMsg, packet, 0);
 
 	sCastleSiege->SetCastleOwner(lpMsg->owner);
 	sCastleSiege->SetOccupied(lpMsg->status);
 }
 
-void ServerLink::ChatSend(uint8 headcode, Player * pPlayer, const char * msg)
+void DataServer::ChatSend(uint8 headcode, Player * pPlayer, const char * msg)
 {
-	SL_CHAT_PACKET pMsg(headcode, 0, pPlayer->GetName(), msg);
+	DS_CHAT_PACKET pMsg(headcode, 0, pPlayer->GetName(), msg);
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.guild = pPlayer->GetGuildID();
 
-	if ( pPlayer->IsAdministrator() && pPlayer->IsAdministratorFlag(ADMIN_FLAG_GUILD_TALK) && pPlayer->TalkingGuild != 0 && headcode == HEADCODE_SERVER_LINK_GUILD_CHAT )
+	if ( pPlayer->IsAdministrator() && pPlayer->IsAdministratorFlag(ADMIN_FLAG_GUILD_TALK) && pPlayer->TalkingGuild != 0 && headcode == HEADCODE_DATA_SERVER_GUILD_CHAT )
 	{
 		pMsg.guild = pPlayer->TalkingGuild.get();
 	}
-	else if ( pPlayer->IsAdministrator() && pPlayer->IsAdministratorFlag(ADMIN_FLAG_GUILD_TALK) && pPlayer->TalkingAlliance != 0 && headcode == HEADCODE_SERVER_LINK_ALLIANCE_CHAT )
+	else if ( pPlayer->IsAdministrator() && pPlayer->IsAdministratorFlag(ADMIN_FLAG_GUILD_TALK) && pPlayer->TalkingAlliance != 0 && headcode == HEADCODE_DATA_SERVER_ALLIANCE_CHAT )
 	{
 		pMsg.guild = pPlayer->TalkingAlliance.get();
 	}
@@ -382,9 +382,9 @@ void ServerLink::ChatSend(uint8 headcode, Player * pPlayer, const char * msg)
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::GuildCreateRequest(Player * pPlayer, const char * name, uint8 * emblem)
+void DataServer::GuildCreateRequest(Player * pPlayer, const char * name, uint8 * emblem)
 {
-	SL_GUILD_ADD pMsg;
+	DS_GUILD_ADD pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.player.entry = pPlayer->GetEntry();
 	pMsg.player.ms_time = pPlayer->GetMSTime();
@@ -397,9 +397,9 @@ void ServerLink::GuildCreateRequest(Player * pPlayer, const char * name, uint8 *
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::GuildCreateResult(uint8 * Packet)
+void DataServer::GuildCreateResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_ADD, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_ADD, lpMsg, Packet, 0);
 
 	Player* pPlayer = lpMsg->h.server == sGameServer->GetServerCode() ? sObjectMgr->FindPlayer(lpMsg->player.entry, lpMsg->player.ms_time, lpMsg->player.account_id, lpMsg->player.guid) : nullptr;
 
@@ -428,23 +428,23 @@ void ServerLink::GuildCreateResult(uint8 * Packet)
 	}
 }
 
-void ServerLink::GuildDeleteRequest(uint32 guild)
+void DataServer::GuildDeleteRequest(uint32 guild)
 {
-	SL_GUILD_DEL pMsg(guild);
+	DS_GUILD_DEL pMsg(guild);
 	pMsg.h.server = sGameServer->GetServerCode();
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::GuildDeleteResult(uint8 * Packet)
+void DataServer::GuildDeleteResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_DEL, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_DEL, lpMsg, Packet, 0);
 
 	sGuildMgr->RemoveGuild(lpMsg->guild);
 }
 
-void ServerLink::GuildMemberAddRequest(Player* pPlayer, Player* pToAdd, uint32 guild)
+void DataServer::GuildMemberAddRequest(Player* pPlayer, Player* pToAdd, uint32 guild)
 {
-	SL_GUILD_MEMBER_ADD pMsg(guild);
+	DS_GUILD_MEMBER_ADD pMsg(guild);
 	pMsg.h.server = sGameServer->GetServerCode();
 	if ( pPlayer )
 	{
@@ -464,9 +464,9 @@ void ServerLink::GuildMemberAddRequest(Player* pPlayer, Player* pToAdd, uint32 g
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::GuildMemberAddRequest(const char * member_name, uint32 guild)
+void DataServer::GuildMemberAddRequest(const char * member_name, uint32 guild)
 {
-	SL_GUILD_MEMBER_ADD pMsg(guild);
+	DS_GUILD_MEMBER_ADD pMsg(guild);
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.result = 1;
 	memcpy(pMsg.to_add.name, member_name, MAX_CHARACTER_LENGTH + 1);
@@ -474,9 +474,9 @@ void ServerLink::GuildMemberAddRequest(const char * member_name, uint32 guild)
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::GuildMemberAddResult(uint8 * packet)
+void DataServer::GuildMemberAddResult(uint8 * packet)
 {
-	POINTER_PCT(SL_GUILD_MEMBER_ADD, lpMsg, packet, 0);
+	POINTER_PCT(DS_GUILD_MEMBER_ADD, lpMsg, packet, 0);
 
 	Player* pPlayer = lpMsg->h.server == sGameServer->GetServerCode() ? sObjectMgr->FindPlayer(lpMsg->player.entry, lpMsg->player.ms_time, lpMsg->player.account_id, lpMsg->player.guid) : nullptr;
 	Player* pToAdd = lpMsg->h.server == sGameServer->GetServerCode() ? sObjectMgr->FindPlayer(lpMsg->to_add.entry, lpMsg->to_add.ms_time, lpMsg->to_add.account_id, lpMsg->to_add.guid) : nullptr;
@@ -512,18 +512,18 @@ void ServerLink::GuildMemberAddResult(uint8 * packet)
 	}
 }
 
-void ServerLink::GuildMemberDelRequest(uint32 guild, uint32 id)
+void DataServer::GuildMemberDelRequest(uint32 guild, uint32 id)
 {
-	SL_GUILD_MEMBER_DEL pMsg;
+	DS_GUILD_MEMBER_DEL pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.guild = guild;
 	pMsg.id = id;
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::GuildMemberDelResult(uint8 * Packet)
+void DataServer::GuildMemberDelResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MEMBER_DEL, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MEMBER_DEL, lpMsg, Packet, 0);
 
 	Guild * pGuild = sGuildMgr->GetGuild(lpMsg->guild);
 
@@ -535,16 +535,16 @@ void ServerLink::GuildMemberDelResult(uint8 * Packet)
 	pGuild->DelMember(lpMsg->id);
 }
 
-void ServerLink::GuildMemberStatusRequest(uint32 guild, const char * name, uint8 status)
+void DataServer::GuildMemberStatusRequest(uint32 guild, const char * name, uint8 status)
 {
-	SL_GUILD_MEMBER_STATUS pMsg(guild, name, status);
+	DS_GUILD_MEMBER_STATUS pMsg(guild, name, status);
 	pMsg.h.server = sGameServer->GetServerCode();
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::GuildMemberStatusResult(uint8 * packet)
+void DataServer::GuildMemberStatusResult(uint8 * packet)
 {
-	POINTER_PCT(SL_GUILD_MEMBER_STATUS, lpMsg, packet, 0);
+	POINTER_PCT(DS_GUILD_MEMBER_STATUS, lpMsg, packet, 0);
 
 	Guild * pGuild = sGuildMgr->GetGuild(lpMsg->guild);
 
@@ -555,17 +555,17 @@ void ServerLink::GuildMemberStatusResult(uint8 * packet)
 	pGuild->UpdateMemberRankingNotify(lpMsg->name, lpMsg->status);
 }
 
-void ServerLink::GuildRelationshipRequest(uint32 guild01, uint32 guild02, uint8 type, bool operation)
+void DataServer::GuildRelationshipRequest(uint32 guild01, uint32 guild02, uint8 type, bool operation)
 {
-	SL_GUILD_RELATIONSHIP pMsg(guild01, guild02, type, operation);
+	DS_GUILD_RELATIONSHIP pMsg(guild01, guild02, type, operation);
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::GuildRelationshipResult(uint8 * packet)
+void DataServer::GuildRelationshipResult(uint8 * packet)
 {
-	POINTER_PCT(SL_GUILD_RELATIONSHIP, lpMsg, packet, 0);
+	POINTER_PCT(DS_GUILD_RELATIONSHIP, lpMsg, packet, 0);
 
 	if ( lpMsg->result )
 	{
@@ -621,17 +621,17 @@ void ServerLink::GuildRelationshipResult(uint8 * packet)
 	}
 }
 
-void ServerLink::GuildScore(uint32 guild, int32 score)
+void DataServer::GuildScore(uint32 guild, int32 score)
 {
-	SL_GUILD_SCORE pMsg(guild, score);
+	DS_GUILD_SCORE pMsg(guild, score);
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::GuildScoreResult(uint8 * packet)
+void DataServer::GuildScoreResult(uint8 * packet)
 {
-	POINTER_PCT(SL_GUILD_SCORE, lpMsg, packet, 0);
+	POINTER_PCT(DS_GUILD_SCORE, lpMsg, packet, 0);
 
 	Guild * pGuild = sGuildMgr->GetGuild(lpMsg->guild);
 
@@ -641,14 +641,14 @@ void ServerLink::GuildScoreResult(uint8 * packet)
 	pGuild->IncreaseScore(lpMsg->score);
 }
 
-void ServerLink::CharacterOnOff(Player* pPlayer, uint8 status)
+void DataServer::CharacterOnOff(Player* pPlayer, uint8 status)
 {
 	if ( !pPlayer )
 	{
 		return;
 	}
 
-	SL_CHARACTER_ON_OFF pMsg(pPlayer->GetGuildID(), pPlayer->GetGUID(), status == 0 ? -1 : sGameServer->GetServerCode(), pPlayer->GetName(), status);
+	DS_CHARACTER_ON_OFF pMsg(pPlayer->GetGuildID(), pPlayer->GetGUID(), status == 0 ? -1 : sGameServer->GetServerCode(), pPlayer->GetName(), status);
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.authority = pPlayer->GetAuthority();
 	pMsg.admin_flags = pPlayer->GetAdminPanelFlag();
@@ -657,82 +657,82 @@ void ServerLink::CharacterOnOff(Player* pPlayer, uint8 status)
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::NoticeSend(uint8 type, const char * notice, ...)
+void DataServer::NoticeSend(uint8 type, const char * notice, ...)
 {
 	ARG(notice_buffer, notice);
 
-	SL_NOTICE pMsg(notice_buffer, type);
+	DS_NOTICE pMsg(notice_buffer, type);
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::NoticeSendNormal(uint8 type, const char * notice)
+void DataServer::NoticeSendNormal(uint8 type, const char * notice)
 {
-	SL_NOTICE pMsg(notice, type);
+	DS_NOTICE pMsg(notice, type);
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::NotifySendAllServer(uint8 type, const char* notice) 
+void DataServer::NotifySendAllServer(uint8 type, const char* notice) 
 {
 
 }
 
-void ServerLink::CastleSiegeLoadDataRequest()
+void DataServer::CastleSiegeLoadDataRequest()
 {
-	SL_CASTLE_SIEGE_LOAD_DATA_REQUEST pMsg;
+	DS_CASTLE_SIEGE_LOAD_DATA_REQUEST pMsg;
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::CastleSiegeLoadNpcRequest()
+void DataServer::CastleSiegeLoadNpcRequest()
 {
-	SL_CASTLE_SIEGE_LOAD_NPC_REQUEST pMsg;
+	DS_CASTLE_SIEGE_LOAD_NPC_REQUEST pMsg;
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::CastleSiegeLoadRegisteredGuildRequest()
+void DataServer::CastleSiegeLoadRegisteredGuildRequest()
 {
-	SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD pMsg;
+	DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD pMsg;
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::CastleSiegeClearGuild()
+void DataServer::CastleSiegeClearGuild()
 {
-	SL_CASTLE_SIEGE_CLEAR_GUILD pMsg;
+	DS_CASTLE_SIEGE_CLEAR_GUILD pMsg;
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::CastleSiegeRegisteredGuildRequest(Player* pPlayer, Guild* pGuild)
+void DataServer::CastleSiegeRegisteredGuildRequest(Player* pPlayer, Guild* pGuild)
 {
-	SL_CASTLE_SIEGE_REGISTERED_GUILD_REQUEST pMsg(pGuild->GetID(), pPlayer->GetEntry());
+	DS_CASTLE_SIEGE_REGISTERED_GUILD_REQUEST pMsg(pGuild->GetID(), pPlayer->GetEntry());
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::CastleSiegeRegisteredGuildAllRequest(Player* pPlayer)
+void DataServer::CastleSiegeRegisteredGuildAllRequest(Player* pPlayer)
 {
-	SL_CASTLE_SIEGE_REGISTERED_GUILD_ALL_REQUEST pMsg(pPlayer->GetEntry());
+	DS_CASTLE_SIEGE_REGISTERED_GUILD_ALL_REQUEST pMsg(pPlayer->GetEntry());
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::CastleSiegeRegisterGuild(uint32 guild, bool status, uint32 mark)
+void DataServer::CastleSiegeRegisterGuild(uint32 guild, bool status, uint32 mark)
 {
-	SL_CASTLE_SIEGE_REGISTER_GUILD pMsg(guild, status, mark);
+	DS_CASTLE_SIEGE_REGISTER_GUILD pMsg(guild, status, mark);
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::CharacterCreateRequest(Player* pPlayer, uint8 race, const char * name, uint8 slot, CharacterBaseData const* info)
+void DataServer::CharacterCreateRequest(Player* pPlayer, uint8 race, const char * name, uint8 slot, CharacterBaseData const* info)
 {
-	SL_CHARACTER_CREATE_REQUEST pMsg;
+	DS_CHARACTER_CREATE_REQUEST pMsg;
 	pMsg.entry = pPlayer->GetEntry();
 	pMsg.ms_time = pPlayer->GetMSTime();
 	pMsg.account_id = pPlayer->GetAccountData()->GetGUID();
@@ -756,9 +756,9 @@ void ServerLink::CharacterCreateRequest(Player* pPlayer, uint8 race, const char 
 	this->SendPacket((uint8*)&pMsg, pMsg.h.size);
 }
 
-void ServerLink::CharacterCreateResult(uint8 * Packet)
+void DataServer::CharacterCreateResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_CHARACTER_CREATE_RESULT, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CHARACTER_CREATE_RESULT, lpMsg, Packet, 0);
 
 	if ( lpMsg->h.server != sGameServer->GetServerCode() )
 		return;
@@ -800,9 +800,9 @@ void ServerLink::CharacterCreateResult(uint8 * Packet)
 		pPlayer->BuildLog().c_str(), lpMsg->character_name, lpMsg->character_class);
 }
 
-void ServerLink::CharacterDeleteRequest(Player* pPlayer, const char * name)
+void DataServer::CharacterDeleteRequest(Player* pPlayer, const char * name)
 {
-	SL_CHARACTER_DELETE_REQUEST pMsg;
+	DS_CHARACTER_DELETE_REQUEST pMsg;
 	pMsg.account_id = pPlayer->GetAccountData()->GetGUID();
 	pMsg.entry = pPlayer->GetEntry();
 	pMsg.ms_time = pPlayer->GetMSTime();
@@ -812,9 +812,9 @@ void ServerLink::CharacterDeleteRequest(Player* pPlayer, const char * name)
 	this->SendPacket((uint8*)&pMsg, pMsg.h.size);
 }
 	
-void ServerLink::CharacterDeleteResult(uint8 * Packet)
+void DataServer::CharacterDeleteResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_CHARACTER_DELETE_RESULT, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CHARACTER_DELETE_RESULT, lpMsg, Packet, 0);
 
 	if ( lpMsg->h.server != sGameServer->GetServerCode() )
 		return;
@@ -860,9 +860,9 @@ void ServerLink::CharacterDeleteResult(uint8 * Packet)
 	pPlayer->ResetCharacterHandleData();
 }
 
-void ServerLink::AdminCommandRequest(Player* pPlayer, uint8 type, uint16 sub_type, const char * target_name, const char * target_account, time_t time)
+void DataServer::AdminCommandRequest(Player* pPlayer, uint8 type, uint16 sub_type, const char * target_name, const char * target_account, time_t time)
 {
-	SL_ADMIN_COMMAND pMsg;
+	DS_ADMIN_COMMAND pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.type = type;
 	pMsg.sub_type = sub_type;
@@ -880,9 +880,9 @@ void ServerLink::AdminCommandRequest(Player* pPlayer, uint8 type, uint16 sub_typ
 	this->SendPacket((uint8*)&pMsg, pMsg.h.size);
 }
 
-void ServerLink::AdminCommandResult(uint8 * Packet)
+void DataServer::AdminCommandResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_ADMIN_COMMAND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ADMIN_COMMAND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->entry);
 
@@ -952,9 +952,9 @@ void ServerLink::AdminCommandResult(uint8 * Packet)
 	}
 }
 
-void ServerLink::WhisperRequest(Player* pPlayer, const char * target_name, const char * message)
+void DataServer::WhisperRequest(Player* pPlayer, const char * target_name, const char * message)
 {
-	SL_WHISPER pMsg;
+	DS_WHISPER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.entry = pPlayer->GetEntry();
 	pMsg.guid = pPlayer->GetGUID();
@@ -965,9 +965,9 @@ void ServerLink::WhisperRequest(Player* pPlayer, const char * target_name, const
 	this->SendPacket((uint8*)&pMsg, pMsg.h.size);
 }
 	
-void ServerLink::WhisperResult(uint8 * Packet)
+void DataServer::WhisperResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_WHISPER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_WHISPER, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->entry);
 
@@ -1010,19 +1010,19 @@ void ServerLink::WhisperResult(uint8 * Packet)
 	//	this->BuildLog().c_str(), lpMsg->message, lpMsg->name);
 }
 
-void ServerLink::SimpleMessageRequest(const char * name, CustomMessageID type, const char * message, ...)
+void DataServer::SimpleMessageRequest(const char * name, CustomMessageID type, const char * message, ...)
 {
 	ARG(buffer, message);
 
-	SL_CHAT_PACKET pMsg(HEADCODE_SERVER_LINK_SIMPLE_MESSAGE, type, name, buffer);
+	DS_CHAT_PACKET pMsg(HEADCODE_DATA_SERVER_SIMPLE_MESSAGE, type, name, buffer);
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket((uint8*)&pMsg, pMsg.h.size);
 }
 	
-void ServerLink::SimpleMessageResult(uint8 * Packet)
+void DataServer::SimpleMessageResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_CHAT_PACKET, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CHAT_PACKET, lpMsg, Packet, 0);
 
 	if ( Player* pPlayer = sObjectMgr->FindPlayerByNameNoSensitive(lpMsg->name) )
 	{
@@ -1030,9 +1030,9 @@ void ServerLink::SimpleMessageResult(uint8 * Packet)
 	}
 }
 
-void ServerLink::Signal(uint8 * Packet)
+void DataServer::Signal(uint8 * Packet)
 {
-	POINTER_PCT(SL_SIGNAL, lpMsg, Packet, 0);
+	POINTER_PCT(DS_SIGNAL, lpMsg, Packet, 0);
 
 	if ( lpMsg->h.server == uint16(-1) || lpMsg->h.server == sGameServer->GetServerCode() )
 	{
@@ -1040,99 +1040,99 @@ void ServerLink::Signal(uint8 * Packet)
 	}
 }
 
-void ServerLink::CrywolfDataRequest()
+void DataServer::CrywolfDataRequest()
 {
-	SL_CRYWOLF_REQUEST pMsg;
+	DS_CRYWOLF_REQUEST pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::CrywolfDataResult(uint8 * Packet)
+void DataServer::CrywolfDataResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_CRYWOLF_REQUEST, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CRYWOLF_REQUEST, lpMsg, Packet, 0);
 
 	sCrywolf->SetOccupationState(lpMsg->status);
 
 	sWorldMgr->statusChange(WORLD_CRYWOLF_FIRST_ZONE, sCrywolf->GetOccupationState());
 }
 
-void ServerLink::CrywolfDataSave()
+void DataServer::CrywolfDataSave()
 {
-	SL_CRYWOLF_SAVE pMsg(sCrywolf->GetOccupationState());
+	DS_CRYWOLF_SAVE pMsg(sCrywolf->GetOccupationState());
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::HandlePacketData(uint8 headcode, uint8 * packet)
+void DataServer::HandlePacketData(uint8 headcode, uint8 * packet)
 {
     auto itr = Handlers.find(headcode);
     if (itr == Handlers.end())
         return;
 
-	(*sServerLink.*Handlers.at(headcode).handler)(packet);
+	(*sDataServer.*Handlers.at(headcode).handler)(packet);
 }
 
-void ServerLink::GuildMatchingList(uint8 * Packet)
+void DataServer::GuildMatchingList(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingListRecv(Packet);
 }
 
-void ServerLink::GuildMatchingInsert(uint8 * Packet)
+void DataServer::GuildMatchingInsert(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingInsertRecv(Packet);
 }
 	
-void ServerLink::GuildMatchingCancel(uint8 * Packet)
+void DataServer::GuildMatchingCancel(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingCancelRecv(Packet);
 }
 	
-void ServerLink::GuildMatchingJoinInsert(uint8 * Packet)
+void DataServer::GuildMatchingJoinInsert(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingJoinInsertRecv(Packet);
 }
 	
-void ServerLink::GuildMatchingJoinCancel(uint8 * Packet)
+void DataServer::GuildMatchingJoinCancel(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingJoinCancelRecv(Packet);
 }
 	
-void ServerLink::GuildMatchingJoinAccept(uint8 * Packet)
+void DataServer::GuildMatchingJoinAccept(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingJoinAcceptRecv(Packet);
 }
 	
-void ServerLink::GuildMatchingJoinList(uint8 * Packet)
+void DataServer::GuildMatchingJoinList(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingJoinListRecv(Packet);
 }
 	
-void ServerLink::GuildMatchingJoinInfo(uint8 * Packet)
+void DataServer::GuildMatchingJoinInfo(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingJoinInfoRecv(Packet);
 }
 	
-void ServerLink::GuildMatchingNotify(uint8 * Packet)
+void DataServer::GuildMatchingNotify(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingNotifyRecv(Packet);
 }
 	
-void ServerLink::GuildMatchingMasterNotify(uint8 * Packet)
+void DataServer::GuildMatchingMasterNotify(uint8 * Packet)
 {
 	sGuildMatching->DGGuildMatchingNotifyMasterRecv(Packet);
 }
 
-void ServerLink::EventNotification(uint8 event_id, uint8 open)
+void DataServer::EventNotification(uint8 event_id, uint8 open)
 {
-	SL_EVENT_NOTIFICATION pMsg(event_id, open);
+	DS_EVENT_NOTIFICATION pMsg(event_id, open);
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::EventNotification(uint8 * Packet)
+void DataServer::EventNotification(uint8 * Packet)
 {
-	POINTER_PCT(SL_EVENT_NOTIFICATION, lpMsg, Packet, 0);
+	POINTER_PCT(DS_EVENT_NOTIFICATION, lpMsg, Packet, 0);
 
 	PlayerSessionMap const& players = sObjectMgr->GetAllCharacters();
 	for ( PlayerSessionMap::const_iterator it = players.begin(); it != players.end(); ++it )
@@ -1158,16 +1158,16 @@ void ServerLink::EventNotification(uint8 * Packet)
 	}
 }
 
-void ServerLink::EventStateUpdate(uint8 event_id, uint8 state, uint8 occupation_state)
+void DataServer::EventStateUpdate(uint8 event_id, uint8 state, uint8 occupation_state)
 {
-	SL_EVENT_STATE_UPDATE pMsg(event_id, state, occupation_state);
+	DS_EVENT_STATE_UPDATE pMsg(event_id, state, occupation_state);
 	pMsg.h.server = sGameServer->GetServerCode();
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::EventStateUpdate(uint8 * Packet)
+void DataServer::EventStateUpdate(uint8 * Packet)
 {
-	POINTER_PCT(SL_EVENT_STATE_UPDATE, lpMsg, Packet, 0);
+	POINTER_PCT(DS_EVENT_STATE_UPDATE, lpMsg, Packet, 0);
 
 	if ( lpMsg->h.server != sGameServer->GetServerCode() )
 	{
@@ -1203,9 +1203,9 @@ void ServerLink::EventStateUpdate(uint8 * Packet)
 	}
 }
 
-void ServerLink::ArkaWarMasterRegister(Player* pPlayer, uint32 guild)
+void DataServer::ArkaWarMasterRegister(Player* pPlayer, uint32 guild)
 {
-	SL_ARKA_WAR_MASTER_REGISTER pMsg;
+	DS_ARKA_WAR_MASTER_REGISTER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.guild = guild;
@@ -1213,9 +1213,9 @@ void ServerLink::ArkaWarMasterRegister(Player* pPlayer, uint32 guild)
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::ArkaWarMasterRegister(uint8 * Packet)
+void DataServer::ArkaWarMasterRegister(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_MASTER_REGISTER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_MASTER_REGISTER, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player.entry, lpMsg->player.ms_time, lpMsg->player.account_id, lpMsg->player.guid);
 
@@ -1238,9 +1238,9 @@ void ServerLink::ArkaWarMasterRegister(uint8 * Packet)
 	}
 }
 	
-void ServerLink::ArkaWarMemberRegister(Player* pPlayer)
+void DataServer::ArkaWarMemberRegister(Player* pPlayer)
 {
-	SL_ARKA_WAR_MEMBER_REGISTER pMsg;
+	DS_ARKA_WAR_MEMBER_REGISTER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.guild = pPlayer->GetGuildID();
@@ -1249,9 +1249,9 @@ void ServerLink::ArkaWarMemberRegister(Player* pPlayer)
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::ArkaWarMemberRegister(uint8 * Packet)
+void DataServer::ArkaWarMemberRegister(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_MEMBER_REGISTER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_MEMBER_REGISTER, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player.entry, lpMsg->player.ms_time, lpMsg->player.account_id, lpMsg->player.guid);
 
@@ -1284,9 +1284,9 @@ void ServerLink::ArkaWarMemberRegister(uint8 * Packet)
 	}
 }
 	
-void ServerLink::ArkaWarSignRegister(Player* pPlayer, uint8 result, int32 count)
+void DataServer::ArkaWarSignRegister(Player* pPlayer, uint8 result, int32 count)
 {
-	SL_ARKA_WAR_SIGN_REGISTER pMsg;
+	DS_ARKA_WAR_SIGN_REGISTER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.guild = pPlayer->GetGuildID();
@@ -1296,9 +1296,9 @@ void ServerLink::ArkaWarSignRegister(Player* pPlayer, uint8 result, int32 count)
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::ArkaWarSignRegister(uint8 * Packet)
+void DataServer::ArkaWarSignRegister(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_SIGN_REGISTER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_SIGN_REGISTER, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player.entry, lpMsg->player.ms_time, lpMsg->player.account_id, lpMsg->player.guid);
 
@@ -1340,18 +1340,18 @@ void ServerLink::ArkaWarSignRegister(uint8 * Packet)
 	}
 }
 	
-void ServerLink::ArkaWarEnter(Player* pPlayer)
+void DataServer::ArkaWarEnter(Player* pPlayer)
 {
-	SL_ARKA_WAR_ENTER pMsg;
+	DS_ARKA_WAR_ENTER pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pPlayer->BuildCustomPacketData(pMsg.player);
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::ArkaWarEnter(uint8 * Packet)
+void DataServer::ArkaWarEnter(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_ENTER, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_ENTER, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player.entry, lpMsg->player.ms_time, lpMsg->player.account_id, lpMsg->player.guid);
 
@@ -1376,9 +1376,9 @@ void ServerLink::ArkaWarEnter(uint8 * Packet)
 	}
 }
 
-void ServerLink::ArkaWarList()
+void DataServer::ArkaWarList()
 {
-	SL_ARKA_WAR_LIST pMsg;
+	DS_ARKA_WAR_LIST pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.min_member = sGameServer->GetArkaWarRegisterMinMembers();
 	pMsg.max_guild = MAX_ARKA_WAR_GUILD;
@@ -1386,9 +1386,9 @@ void ServerLink::ArkaWarList()
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::ArkaWarList(uint8 * Packet)
+void DataServer::ArkaWarList(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_LIST_HEAD, head, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_LIST_HEAD, head, Packet, 0);
 
 	if ( head->type == 0 )
 	{
@@ -1400,17 +1400,17 @@ void ServerLink::ArkaWarList(uint8 * Packet)
 	}
 }
 	
-void ServerLink::ArkaWarClear()
+void DataServer::ArkaWarClear()
 {
-	SL_ARKA_WAR_CLEAR pMsg;
+	DS_ARKA_WAR_CLEAR pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 
-void ServerLink::ArkaWarMemberCount(Player* pPlayer)
+void DataServer::ArkaWarMemberCount(Player* pPlayer)
 {
-	SL_ARKA_WAR_MEMBER_COUNT pMsg;
+	DS_ARKA_WAR_MEMBER_COUNT pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.guild = pPlayer->GetGuildID();
 	pPlayer->BuildCustomPacketData(pMsg.player);
@@ -1418,9 +1418,9 @@ void ServerLink::ArkaWarMemberCount(Player* pPlayer)
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::ArkaWarMemberCount(uint8 * Packet)
+void DataServer::ArkaWarMemberCount(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_MEMBER_COUNT, lpMsg, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_MEMBER_COUNT, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player.entry, lpMsg->player.ms_time, lpMsg->player.account_id, lpMsg->player.guid);
 
@@ -1448,17 +1448,17 @@ void ServerLink::ArkaWarMemberCount(uint8 * Packet)
 	}
 }
 
-void ServerLink::ArkaWarGuildRequest()
+void DataServer::ArkaWarGuildRequest()
 {
-	SL_ARKA_WAR_GUILD_REQUEST pMsg;
+	DS_ARKA_WAR_GUILD_REQUEST pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::ArkaWarGuildRequest(uint8 * Packet)
+void DataServer::ArkaWarGuildRequest(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_GUILD_HEAD, head, Packet, 0);
-	POINTER_PCT(SL_ARKA_WAR_GUILD_BODY, body, Packet, sizeof(SL_ARKA_WAR_GUILD_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_GUILD_HEAD, head, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_GUILD_BODY, body, Packet, sizeof(DS_ARKA_WAR_GUILD_HEAD));
 
 	for ( int32 i = 0; i < MAX_ARKA_WAR_ZONES; ++i )
 	{
@@ -1475,11 +1475,11 @@ void ServerLink::ArkaWarGuildRequest(uint8 * Packet)
 	}
 }
 	
-void ServerLink::ArkaWarGuildSave()
+void DataServer::ArkaWarGuildSave()
 {
 	uint8 buffer[8192];
-	POINTER_PCT(SL_ARKA_WAR_GUILD_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_ARKA_WAR_GUILD_BODY, body, buffer, sizeof(SL_ARKA_WAR_GUILD_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_GUILD_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_ARKA_WAR_GUILD_BODY, body, buffer, sizeof(DS_ARKA_WAR_GUILD_HEAD));
 	head->count = 0;
 
 	for ( int32 i = 0; i < MAX_ARKA_WAR_ZONES; ++i )
@@ -1495,22 +1495,22 @@ void ServerLink::ArkaWarGuildSave()
 		++head->count;
 	}
 
-	head->h.set(HEADCODE_SERVER_LINK_ARKA_WAR_GUILD_SAVE, sizeof(SL_ARKA_WAR_GUILD_HEAD) + (head->count * sizeof(SL_ARKA_WAR_GUILD_BODY)));
+	head->h.set(HEADCODE_DATA_SERVER_ARKA_WAR_GUILD_SAVE, sizeof(DS_ARKA_WAR_GUILD_HEAD) + (head->count * sizeof(DS_ARKA_WAR_GUILD_BODY)));
 	this->SendPacket(buffer, head->h.get_size());
 }
 
-void ServerLink::ArkaWarSignOfLordCheckRequest(Player* pPlayer)
+void DataServer::ArkaWarSignOfLordCheckRequest(Player* pPlayer)
 {
-	SL_ARKA_WAR_SIGN_REQUEST pMsg;
+	DS_ARKA_WAR_SIGN_REQUEST pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::ArkaWarSignOfLordCheckResult(uint8 * Packet)
+void DataServer::ArkaWarSignOfLordCheckResult(uint8 * Packet)
 {
-	POINTER_PCT(SL_ARKA_WAR_SIGN_REQUEST_HEAD, lpHead, Packet, 0);
-	POINTER_PCT(SL_ARKA_WAR_SIGN_REQUEST_BODY, lpBody, Packet, sizeof(SL_ARKA_WAR_SIGN_REQUEST_HEAD));
+	POINTER_PCT(DS_ARKA_WAR_SIGN_REQUEST_HEAD, lpHead, Packet, 0);
+	POINTER_PCT(DS_ARKA_WAR_SIGN_REQUEST_BODY, lpBody, Packet, sizeof(DS_ARKA_WAR_SIGN_REQUEST_HEAD));
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpHead->player.entry, lpHead->player.ms_time, lpHead->player.account_id, lpHead->player.guid);
 
@@ -1557,9 +1557,9 @@ void ServerLink::ArkaWarSignOfLordCheckResult(uint8 * Packet)
 	pPlayer->sendPacket(buffer, head->h.get_size());	
 }
 
-void ServerLink::CharacterSignal(uint32 id, uint8 type)
+void DataServer::CharacterSignal(uint32 id, uint8 type)
 {
-	SL_CHARACTER_SIGNAL pMsg;
+	DS_CHARACTER_SIGNAL pMsg;
 	pMsg.h.server = sGameServer->GetServerCode();
 	pMsg.id = id;
 	pMsg.type = type;
@@ -1567,9 +1567,9 @@ void ServerLink::CharacterSignal(uint32 id, uint8 type)
 	this->SendPacket(MAKE_PCT(pMsg));
 }
 	
-void ServerLink::CharacterSignal(uint8 * Packet)
+void DataServer::CharacterSignal(uint8 * Packet)
 {
-	POINTER_PCT(SL_CHARACTER_SIGNAL, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CHARACTER_SIGNAL, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayerByGUID(lpMsg->id);
 

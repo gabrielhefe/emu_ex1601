@@ -394,10 +394,10 @@ void MiningSystem::CGMiningSuccessRecv(Player* pPlayer, uint8 * Packet)
 	item_template const* item = sItemMgr->GetItem(pMiningInfo->GetItemIndex());
 
 	if (pMiningInfo->GetStage() == 5) {
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] Mining received reward final level %s x%d", pPlayer->GetName(), item->GetName(), pMiningInfo->GetItemCount());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] Mining received reward final level %s x%d", pPlayer->GetName(), item->GetName(), pMiningInfo->GetItemCount());
 	}
 	else if (pMiningInfo->GetStage() == 4) {
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] Mining received reward %s x%d", pPlayer->GetName(), item->GetName(), pMiningInfo->GetItemCount());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] Mining received reward %s x%d", pPlayer->GetName(), item->GetName(), pMiningInfo->GetItemCount());
 	}
 
 	if (pMiningInfo->GetBonusItemRate() > 0 && Random(1000000) < pMiningInfo->GetBonusItemRate())
@@ -406,7 +406,7 @@ void MiningSystem::CGMiningSuccessRecv(Player* pPlayer, uint8 * Packet)
 		this->CreateMiningReward(pPlayer, pMiningInfo->GetBonusItemIndex(), pMiningInfo->GetBonusItemCount());
 
 		item_template const* item_bonus = sItemMgr->GetItem(pMiningInfo->GetBonusItemIndex());
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "[%s] Mining received reward bonus %s x%d", pPlayer->GetName(), item_bonus->GetName(), pMiningInfo->GetBonusItemCount());
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "[%s] Mining received reward bonus %s x%d", pPlayer->GetName(), item_bonus->GetName(), pMiningInfo->GetBonusItemCount());
 	}
 
 	pPlayer->GetInterfaceState()->Reset();

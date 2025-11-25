@@ -25,7 +25,7 @@ void GuildCreateQueue::Update()
 
 void GuildCreateQueue::Process(GuildCreateDataPtr data)
 {
-	SL_GUILD_ADD pMsg;
+	DS_GUILD_ADD pMsg;
 	pMsg.h.server = data->server;
 	pMsg.player = data->player;
 	memcpy(pMsg.name, data->name, MAX_GUILD_NAME_LENGTH + 1);

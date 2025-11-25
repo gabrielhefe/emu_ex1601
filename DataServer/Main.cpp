@@ -14,7 +14,7 @@ Config * sConfigCommon = sConfig;
 boost::asio::io_service _ioService;
 boost::asio::signal_set signals(_ioService, SIGINT, SIGTERM);
 
-MainApplication::MainApplication(): AppConsole("ServerLink", "SERVER LINK", MAIN_DB_FLAG_MU, sConfig)
+MainApplication::MainApplication(): AppConsole("DataServer", "DATA SERVER", MAIN_DB_FLAG_MU, sConfig)
 {
 }
 
@@ -23,12 +23,12 @@ int main()
 	sLog->LoadFolder();
 
 	sLog->LoadAppender("Console", APPENDER_CONSOLE, LOG_LEVEL_TRACE, APPENDER_FLAGS_NONE, "", "", "w");
-	sLog->LoadAppender("ServerLink", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "ServerLink.log", "w");
+	sLog->LoadAppender("DataServer", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "DataServer.log", "w");
 	sLog->LoadAppender("Database", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "Database.log", "w");
 	sLog->LoadAppender("Player", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "Player.log", "w");
 	sLog->LoadAppender("Guild", APPENDER_FILE, LOG_LEVEL_TRACE, AppenderFlags(27), "", "Guild.log", "w");
 
-	sLog->LoadLogger("root", LOG_LEVEL_TRACE, " Console ServerLink");
+	sLog->LoadLogger("root", LOG_LEVEL_TRACE, " Console DataServer");
 	sLog->LoadLogger("database", LOG_LEVEL_TRACE, "Database");
 	sLog->LoadLogger("player", LOG_LEVEL_TRACE, "Player");
 	sLog->LoadLogger("guild", LOG_LEVEL_TRACE, "Guild");
@@ -93,7 +93,7 @@ void MainApplication::UpdateSignal()
 	{
 		Field* fields = result->Fetch();
 
-		SL_SIGNAL pMsg;
+		DS_SIGNAL pMsg;
 		pMsg.h.server = fields[0].GetUInt16();
 		pMsg.signal = fields[1].GetUInt16();
 		pMsg.data[0] = fields[2].GetInt32();

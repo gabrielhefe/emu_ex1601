@@ -55,7 +55,7 @@ void GuildMatching::CGGuildMatchingInsertRecv(Player* pPlayer, uint8 * Packet)
 		return;
 	}
 
-	SL_GUILD_MATCHING_INSERT_RECV pMsg;
+	DS_GUILD_MATCHING_INSERT_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	memcpy(pMsg.text, lpMsg->text, GUILD_MATCHING_TEXT_LENGTH + 1);
 	pMsg.GuildID = pPlayer->GetGuildID();
@@ -66,7 +66,7 @@ void GuildMatching::CGGuildMatchingInsertRecv(Player* pPlayer, uint8 * Packet)
 	pMsg.ClassType = lpMsg->GetClass();
 	pMsg.GensType = pPlayer->GetGen()->GetFamily();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::InsertResult(Player* pPlayer, uint32 result)
@@ -103,11 +103,11 @@ void GuildMatching::CGGuildMatchingCancelRecv(Player* pPlayer, uint8 * Packet)
 		return;
 	}
 
-	SL_GUILD_MATCHING_CANCEL_RECV pMsg;
+	DS_GUILD_MATCHING_CANCEL_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.GuildID = pGuild->GetID();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::CancelResult(Player* pPlayer, uint32 result)
@@ -144,13 +144,13 @@ void GuildMatching::CGGuildMatchingJoinInsertRecv(Player* pPlayer, uint8 * Packe
 		return;
 	}
 
-	SL_GUILD_MATCHING_JOIN_INSERT_RECV pMsg;
+	DS_GUILD_MATCHING_JOIN_INSERT_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.GuildID = pGuild->GetID();
 	pMsg.Class = pPlayer->GetClass();
 	pMsg.Level = pPlayer->GetTotalLevel();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::JoinInsertResult(Player* pPlayer, uint32 result)
@@ -246,13 +246,13 @@ void GuildMatching::CGGuildMatchingJoinAcceptRecv(Player* pPlayer, uint8 * Packe
 		}
 	}
 
-	SL_GUILD_MATCHING_JOIN_ACCEPT_RECV pMsg;
+	DS_GUILD_MATCHING_JOIN_ACCEPT_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.type = lpMsg->type;
 	pMsg.GuildID = pPlayer->GetGuildID();
 	memcpy(pMsg.MemberName, lpMsg->name, MAX_CHARACTER_LENGTH + 1);
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::JoinAcceptResult(Player* pPlayer, uint32 type, uint32 result, const char * name)
@@ -310,8 +310,8 @@ void GuildMatching::CGGuildMatchingJoinInfoRecv(Player* pPlayer, uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingListRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_LIST_HEAD, lpMsg, Packet, 0);
-	POINTER_PCT(SL_GUILD_MATCHING_LIST_BODY, lpBody, Packet, sizeof(SL_GUILD_MATCHING_LIST_HEAD));
+	POINTER_PCT(DS_GUILD_MATCHING_LIST_HEAD, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_LIST_BODY, lpBody, Packet, sizeof(DS_GUILD_MATCHING_LIST_HEAD));
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player);
 
@@ -352,7 +352,7 @@ void GuildMatching::DGGuildMatchingListRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingInsertRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_INSERT_SEND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_INSERT_SEND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player);
 
@@ -368,7 +368,7 @@ void GuildMatching::DGGuildMatchingInsertRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingCancelRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_CANCEL_SEND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_CANCEL_SEND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player);
 
@@ -384,7 +384,7 @@ void GuildMatching::DGGuildMatchingCancelRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingJoinInsertRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_INSERT_SEND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_INSERT_SEND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player);
 
@@ -400,7 +400,7 @@ void GuildMatching::DGGuildMatchingJoinInsertRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingJoinCancelRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_CANCEL_SEND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_CANCEL_SEND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player);
 
@@ -422,7 +422,7 @@ void GuildMatching::DGGuildMatchingJoinCancelRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingJoinAcceptRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_ACCEPT_SEND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_ACCEPT_SEND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player.entry, lpMsg->player.ms_time, lpMsg->player.account_id, lpMsg->player.guid);
 
@@ -433,7 +433,7 @@ void GuildMatching::DGGuildMatchingJoinAcceptRecv(uint8 * Packet)
 	
 	if( lpMsg->result == 1 && lpMsg->type == 1 )
 	{
-		sServerLink->GuildMemberAddRequest(lpMsg->MemberName, lpMsg->GuildID);
+		sDataServer->GuildMemberAddRequest(lpMsg->MemberName, lpMsg->GuildID);
 	}
 
 	this->JoinAcceptResult(pPlayer, lpMsg->type, (lpMsg->result == 1) ? 0 : lpMsg->result, lpMsg->MemberName);
@@ -441,8 +441,8 @@ void GuildMatching::DGGuildMatchingJoinAcceptRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingJoinListRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_LIST_HEAD, lpMsg, Packet, 0);
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_LIST_BODY, lpBody, Packet, sizeof(SL_GUILD_MATCHING_JOIN_LIST_HEAD));
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_LIST_HEAD, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_LIST_BODY, lpBody, Packet, sizeof(DS_GUILD_MATCHING_JOIN_LIST_HEAD));
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player);
 
@@ -474,7 +474,7 @@ void GuildMatching::DGGuildMatchingJoinListRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingJoinInfoRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_JOIN_INFO_SEND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_JOIN_INFO_SEND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayer(lpMsg->player);
 
@@ -492,7 +492,7 @@ void GuildMatching::DGGuildMatchingJoinInfoRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingNotifyRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_NOTIFY_SEND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_NOTIFY_SEND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayerByGUID(lpMsg->id);
 
@@ -503,7 +503,7 @@ void GuildMatching::DGGuildMatchingNotifyRecv(uint8 * Packet)
 
 	if (lpMsg->result == 1)
 	{
-		sServerLink->GuildMemberAddRequest(nullptr, pPlayer, lpMsg->GuildID);
+		sDataServer->GuildMemberAddRequest(nullptr, pPlayer, lpMsg->GuildID);
 	}
 
 	this->GDGuildMatchingJoinCancelSend(pPlayer, 1);
@@ -515,7 +515,7 @@ void GuildMatching::DGGuildMatchingNotifyRecv(uint8 * Packet)
 
 void GuildMatching::DGGuildMatchingNotifyMasterRecv(uint8 * Packet)
 {
-	POINTER_PCT(SL_GUILD_MATCHING_NOTIFY_MASTER_SEND, lpMsg, Packet, 0);
+	POINTER_PCT(DS_GUILD_MATCHING_NOTIFY_MASTER_SEND, lpMsg, Packet, 0);
 
 	Player* pPlayer = sObjectMgr->FindPlayerByGUID(lpMsg->id);
 
@@ -532,46 +532,46 @@ void GuildMatching::DGGuildMatchingNotifyMasterRecv(uint8 * Packet)
 
 void GuildMatching::GDGuildMatchingListSend(Player* pPlayer, uint32 page)
 {
-	SL_GUILD_MATCHING_LIST_RECV pMsg;
+	DS_GUILD_MATCHING_LIST_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.page = page;
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::GDGuildMatchingListSearchSend(Player* pPlayer, uint32 page, const char* SearchWord)
 {
-	SL_GUILD_MATCHING_LIST_SEARCH_RECV pMsg;
+	DS_GUILD_MATCHING_LIST_SEARCH_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.page = page;
 	memcpy(pMsg.SearchWord, SearchWord, 11);
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::GDGuildMatchingJoinCancelSend(Player* pPlayer, uint8 flag)
 {
-	SL_GUILD_MATCHING_JOIN_CANCEL_RECV pMsg;
+	DS_GUILD_MATCHING_JOIN_CANCEL_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.flag = flag;
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::GDGuildMatchingJoinListSend(Player* pPlayer)
 {
-	SL_GUILD_MATCHING_JOIN_LIST_RECV pMsg;
+	DS_GUILD_MATCHING_JOIN_LIST_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.GuildID = pPlayer->GetGuildID();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::GDGuildMatchingJoinInfoSend(Player* pPlayer)
 {
-	SL_GUILD_MATCHING_JOIN_INFO_RECV pMsg;
+	DS_GUILD_MATCHING_JOIN_INFO_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }
 
 void GuildMatching::Update(Player* pPlayer)
@@ -585,12 +585,12 @@ void GuildMatching::Update(Player* pPlayer)
 
 	Guild* pGuild = pPlayer->GuildGet();
 
-	SL_GUILD_MATCHING_INSERT_SAVE_RECV pMsg;
+	DS_GUILD_MATCHING_INSERT_SAVE_RECV pMsg;
 	pPlayer->BuildCustomPacketData(pMsg.player);
 	pMsg.GuildID = (pGuild && (pGuild->GetID() == pPlayer->GetGUID())) ? pGuild->GetID() : 0;
 	pMsg.GensType = pPlayer->GetGen()->GetFamily();
 	pMsg.GuildMasterLevel = pPlayer->GetTotalLevel();
 	pMsg.GuildMasterClass = pPlayer->GetMatchingClass();
 
-	sServerLink->SendPacket(MAKE_PCT(pMsg));
+	sDataServer->SendPacket(MAKE_PCT(pMsg));
 }

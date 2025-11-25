@@ -277,8 +277,8 @@ class MuRoomyInfo;
 #include "GamePacket.h"
 #include "NoticeSystem.h"
 
-#define WM_GM_SERVER_LINK_MSG_PROC		0x403
-#include "ServerLink.h"
+#define WM_GM_DATA_SERVER_MSG_PROC		0x403
+#include "DataServer.h"
 #include "AuthServer.h"
 #include "ConnectServer.h"
 

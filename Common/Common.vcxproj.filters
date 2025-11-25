@@ -146,7 +146,7 @@
     <ClInclude Include="CustomPacket.h">
       <Filter>PacketData</Filter>
     </ClInclude>
-    <ClInclude Include="ServerLinkPacket.h">
+    <ClInclude Include="DataServerPacket.h">
       <Filter>PacketData</Filter>
     </ClInclude>
     <ClInclude Include="PacketDefine.h">

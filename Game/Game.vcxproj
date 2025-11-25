@@ -303,7 +303,7 @@
     <ClInclude Include="RuudSystem.h" />
     <ClInclude Include="Scramble.h" />
     <ClInclude Include="ScrambleDef.h" />
-    <ClInclude Include="ServerLink.h" />
+    <ClInclude Include="DataServer.h" />
     <ClInclude Include="ServerToServer.h" />
     <ClInclude Include="SkillHandler.h" />
     <ClInclude Include="SocketSystem.h" />
@@ -558,7 +558,7 @@
     <ClCompile Include="ResetSystemMgr.cpp" />
     <ClCompile Include="RuudSystem.cpp" />
     <ClCompile Include="Scramble.cpp" />
-    <ClCompile Include="ServerLink.cpp" />
+    <ClCompile Include="DataServer.cpp" />
     <ClCompile Include="ServerToServer.cpp" />
     <ClCompile Include="SkillHandler.cpp" />
     <ClCompile Include="SocketSystem.cpp" />

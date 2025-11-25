@@ -12,7 +12,7 @@ void CastleSiege::LoadData(std::shared_ptr<ServerSocket> socket)
 {
 	PreparedQueryResult result = MuDatabase.Query(MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CASTLE_SIEGE_LOAD_DATA));
 
-	SL_CASTLE_SIEGE_LOAD_DATA_RESULT pMsg;
+	DS_CASTLE_SIEGE_LOAD_DATA_RESULT pMsg;
 	pMsg.owner = 0;
 	pMsg.status = 0;
 	pMsg.tax_hunt = 3;
@@ -49,8 +49,8 @@ void CastleSiege::LoadNpc(std::shared_ptr<ServerSocket> socket)
 	PreparedQueryResult result = MuDatabase.Query(MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CASTLE_SIEGE_LOAD_NPC));
 
 	uint8 buffer[15000];
-	POINTER_PCT(SL_CASTLE_SIEGE_LOAD_NPC_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_LOAD_NPC_BODY, body, buffer, sizeof(SL_CASTLE_SIEGE_LOAD_NPC_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_LOAD_NPC_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_LOAD_NPC_BODY, body, buffer, sizeof(DS_CASTLE_SIEGE_LOAD_NPC_HEAD));
 	head->count = 0;
 
 	if ( result )
@@ -71,7 +71,7 @@ void CastleSiege::LoadNpc(std::shared_ptr<ServerSocket> socket)
 		while (result->NextRow());
 	}
 
-	head->h.set(HEADCODE_SERVER_LINK_CASTLE_SIEGE_LOAD_NPC, sizeof(SL_CASTLE_SIEGE_LOAD_NPC_HEAD) + (sizeof(SL_CASTLE_SIEGE_LOAD_NPC_BODY) * head->count));
+	head->h.set(HEADCODE_DATA_SERVER_CASTLE_SIEGE_LOAD_NPC, sizeof(DS_CASTLE_SIEGE_LOAD_NPC_HEAD) + (sizeof(DS_CASTLE_SIEGE_LOAD_NPC_BODY) * head->count));
 
 	socket->QueuePacket(buffer, head->h.get_size());
 }
@@ -81,8 +81,8 @@ void CastleSiege::LoadGuildRegister(std::shared_ptr<ServerSocket> socket)
 	PreparedQueryResult result = MuDatabase.Query(MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CASTLE_SIEGE_SELECT_REGISTERED_GUILD));
 
 	uint8 buffer[15000];
-	POINTER_PCT(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_BODY, body, buffer, sizeof(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_BODY, body, buffer, sizeof(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD));
 	head->count = 0;
 
 	if ( result )
@@ -99,7 +99,7 @@ void CastleSiege::LoadGuildRegister(std::shared_ptr<ServerSocket> socket)
 			if ( !pGuild )
 				continue;
 
-			SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_BODY & add_guild = body[head->count];
+			DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_BODY & add_guild = body[head->count];
 
 			add_guild.guid = fields[0].GetUInt32();
 			add_guild.marks = fields[1].GetInt32();
@@ -114,15 +114,15 @@ void CastleSiege::LoadGuildRegister(std::shared_ptr<ServerSocket> socket)
 		while(result->NextRow());
 	}
 
-	head->h.set(HEADCODE_SERVER_LINK_CASTLE_SIEGE_LOAD_REGISTERED_GUILD, sizeof(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD) + (sizeof(SL_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_BODY) * head->count));
+	head->h.set(HEADCODE_DATA_SERVER_CASTLE_SIEGE_LOAD_REGISTERED_GUILD, sizeof(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_HEAD) + (sizeof(DS_CASTLE_SIEGE_LOAD_REGISTERED_GUILD_BODY) * head->count));
 
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 
 void CastleSiege::SaveNpc(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_NPC_HEAD, head, packet, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_NPC_BODY, body, packet, sizeof(SL_CASTLE_SIEGE_SAVE_NPC_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_NPC_HEAD, head, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_NPC_BODY, body, packet, sizeof(DS_CASTLE_SIEGE_SAVE_NPC_HEAD));
 
 	SQLTransaction trans = MuDatabase.BeginTransaction();
 
@@ -156,8 +156,8 @@ void CastleSiege::ClearGuild()
 
 void CastleSiege::InsertFinalGuild(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD, head, packet, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_INSERT_FINAL_GUILD_BODY, body, packet, sizeof(SL_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD, head, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_INSERT_FINAL_GUILD_BODY, body, packet, sizeof(DS_CASTLE_SIEGE_INSERT_FINAL_GUILD_HEAD));
 
 	SQLTransaction trans = MuDatabase.BeginTransaction();
 
@@ -177,7 +177,7 @@ void CastleSiege::InsertFinalGuild(uint8 * packet)
 
 void CastleSiege::SaveTaxRate(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_TAX_RATE, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_TAX_RATE, lpMsg, packet, 0);
 
 	PreparedStatement *stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CASTLE_SIEGE_UPDATE_DATA_TAX);
 	stmt->setInt32(0, lpMsg->tax_hunt);
@@ -191,7 +191,7 @@ void CastleSiege::SaveTaxRate(uint8 * packet)
 
 void CastleSiege::UpdateMoney(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_MONEY, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_MONEY, lpMsg, packet, 0);
 
 	PreparedStatement *stmt = nullptr;
 
@@ -218,7 +218,7 @@ void CastleSiege::UpdateMoney(uint8 * packet)
 
 void CastleSiege::SaveOwnerStatus(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_SAVE_OWNER_STATUS, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_SAVE_OWNER_STATUS, lpMsg, packet, 0);
 
 	PreparedStatement *stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CASTLE_SIEGE_UPDATE_DATA);
 	stmt->setUInt32(0, lpMsg->owner);
@@ -230,7 +230,7 @@ void CastleSiege::SaveOwnerStatus(uint8 * packet)
 
 void CastleSiege::InsertRegisteredGuild(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_INSERT_REGISTERED_GUILD, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_INSERT_REGISTERED_GUILD, lpMsg, packet, 0);
 
 	PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CASTLE_SIEGE_INSERT_REGISTERED_GUILD);
 	stmt->setUInt32(0, lpMsg->guild);
@@ -245,7 +245,7 @@ void CastleSiege::InsertRegisteredGuild(uint8 * packet)
 
 void CastleSiege::DeleteRegisteredGuild(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_DELETE_REGISTERED_GUILD, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_DELETE_REGISTERED_GUILD, lpMsg, packet, 0);
 
 	PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CASTLE_SIEGE_DELETE_REGISTERED_GUILD);
 	stmt->setUInt32(0, lpMsg->guild);
@@ -260,7 +260,7 @@ void CastleSiege::DeleteRegisteredGuild(uint8 * packet)
 
 void CastleSiege::UpdateRegisteredGuild(uint8 * packet)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD, lpMsg, packet, 0);
 
 	PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CASTLE_SIEGE_UPDATE_REGISTERED_GUILD);
 	stmt->setUInt32(0, lpMsg->marks);
@@ -275,11 +275,11 @@ void CastleSiege::UpdateRegisteredGuild(uint8 * packet)
 
 void CastleSiege::RegisteredGuild(uint8 * packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_REQUEST, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_REQUEST, lpMsg, packet, 0);
 
 	uint8 buffer[10000];
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_BODY, body, buffer, sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_BODY, body, buffer, sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD));
 	head->count = 0;
 	head->entry = lpMsg->entry;
 
@@ -299,18 +299,18 @@ void CastleSiege::RegisteredGuild(uint8 * packet, std::shared_ptr<ServerSocket> 
 		++head->count;
 	}
 
-	head->h.set(HEADCODE_SERVER_LINK_CASTLE_SIEGE_REGISTERED_GUILD, sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD) + (sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_BODY) * head->count));
+	head->h.set(HEADCODE_DATA_SERVER_CASTLE_SIEGE_REGISTERED_GUILD, sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD) + (sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_BODY) * head->count));
 
 	socket->QueuePacket(buffer, head->h.get_size());
 }
 	
 void CastleSiege::RegisteredGuildAll(uint8 * packet, std::shared_ptr<ServerSocket> socket)
 {
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_ALL_REQUEST, lpMsg, packet, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_ALL_REQUEST, lpMsg, packet, 0);
 
 	uint8 buffer[10000];
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD, head, buffer, 0);
-	POINTER_PCT(SL_CASTLE_SIEGE_REGISTERED_GUILD_BODY, body, buffer, sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD));
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD, head, buffer, 0);
+	POINTER_PCT(DS_CASTLE_SIEGE_REGISTERED_GUILD_BODY, body, buffer, sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD));
 	head->count = 0;
 	head->entry = lpMsg->entry;
 
@@ -331,7 +331,7 @@ void CastleSiege::RegisteredGuildAll(uint8 * packet, std::shared_ptr<ServerSocke
 		while(result->NextRow());
 	}
 
-	head->h.set(HEADCODE_SERVER_LINK_CASTLE_SIEGE_REGISTERED_GUILD_ALL, sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_HEAD) + (sizeof(SL_CASTLE_SIEGE_REGISTERED_GUILD_BODY) * head->count));
+	head->h.set(HEADCODE_DATA_SERVER_CASTLE_SIEGE_REGISTERED_GUILD_ALL, sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_HEAD) + (sizeof(DS_CASTLE_SIEGE_REGISTERED_GUILD_BODY) * head->count));
 
 	socket->QueuePacket(buffer, head->h.get_size());
 }

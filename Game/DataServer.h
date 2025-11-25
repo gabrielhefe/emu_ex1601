@@ -1,22 +1,22 @@
-#ifndef SERVER_LINK_H
-#define SERVER_LINK_H
+#ifndef DATA_SERVER_H
+#define DATA_SERVER_H
 
-class ServerLinkSocket: public TCPClient<ServerLinkSocket>
+class DataServerSocket: public TCPClient<DataServerSocket>
 {
 	public:
-		explicit ServerLinkSocket(): TCPClient(_ioService, "ServerLink", TCPCLIENT_ON_ERROR_CLOSE) {}
+		explicit DataServerSocket(): TCPClient(_ioService, "DataServer", TCPCLIENT_ON_ERROR_CLOSE) {}
 
 		void OnStart() override;
 		void OnStop() override;
 		void ReadHandler() override;
 };
 
-class ServerLink: public TCPClientMgr<ServerLinkSocket>
+class DataServer: public TCPClientMgr<DataServerSocket>
 {
-	SingletonInstance(ServerLink);
+	SingletonInstance(DataServer);
 
 	public:
-		static std::unordered_map<uint8, LoginHandler<ServerLink>> InitHandlers();
+		static std::unordered_map<uint8, LoginHandler<DataServer>> InitHandlers();
 
 		void HandleHeadcodeOnConnect(uint8 * Packet);
 
@@ -139,11 +139,11 @@ class ServerLink: public TCPClientMgr<ServerLinkSocket>
 		void CharacterSignal(uint32 id, uint8 type);
 		void CharacterSignal(uint8 * Packet);
 	public:
-		ServerLink();
+		DataServer();
 
 		void HandlePacketData(uint8 headcode, uint8 * packet);
 
 };
 
-#define sServerLink SingNull(ServerLink)
+#define sDataServer SingNull(DataServer)
 #endif

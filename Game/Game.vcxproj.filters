@@ -386,7 +386,7 @@
     <ClInclude Include="GamePCH.h">
       <Filter>Main</Filter>
     </ClInclude>
-    <ClInclude Include="ServerLink.h">
+    <ClInclude Include="DataServer.h">
       <Filter>Main</Filter>
     </ClInclude>
     <ClInclude Include="Main.h">
@@ -904,7 +904,7 @@
     <ClCompile Include="GamePCH.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="ServerLink.cpp">
+    <ClCompile Include="DataServer.cpp">
       <Filter>Main</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">

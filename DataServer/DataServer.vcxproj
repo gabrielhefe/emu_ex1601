@@ -16,8 +16,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6054EEE0-FDAC-4537-A888-2F5C965578EA}</ProjectGuid>
-    <RootNamespace>Server_Link</RootNamespace>
-    <ProjectName>ServerLink</ProjectName>
+    <RootNamespace>DataServer</RootNamespace>
+    <ProjectName>DataServer</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -49,15 +49,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>ServerLink</TargetName>
+    <TargetName>DataServer</TargetName>
     <GenerateManifest>false</GenerateManifest>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>E:\Boost\;$(IncludePath)</IncludePath>
     <LibraryPath>E:\Boost\stage\lib\;$(LibraryPath)</LibraryPath>
-    <OutDir>..\Release\ServerLink</OutDir>
+    <OutDir>..\Release\DataServer</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>ServerLink</TargetName>
+    <TargetName>DataServer</TargetName>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -69,8 +69,8 @@
       <PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>ServerLinkPCH.h</PrecompiledHeaderFile>
-      <ForcedIncludeFiles>ServerLinkPCH.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <PrecompiledHeaderFile>DataServerPCH.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>DataServerPCH.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <ExceptionHandling>Sync</ExceptionHandling>
       <AdditionalOptions>/Zm500 %(AdditionalOptions)</AdditionalOptions>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -110,8 +110,8 @@
       <PreprocessorDefinitions>ACE_AS_STATIC_LIBS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>ServerLinkPCH.h</PrecompiledHeaderFile>
-      <ForcedIncludeFiles>ServerLinkPCH.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <PrecompiledHeaderFile>DataServerPCH.h</PrecompiledHeaderFile>
+      <ForcedIncludeFiles>DataServerPCH.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -136,7 +136,7 @@
     <ClCompile Include="GuildMatching.cpp" />
     <ClCompile Include="GuildMgr.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="ServerLinkPCH.cpp">
+    <ClCompile Include="DataServerPCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
     </ClCompile>
@@ -153,7 +153,7 @@
     <ClInclude Include="GuildMatching.h" />
     <ClInclude Include="GuildMgr.h" />
     <ClInclude Include="Main.h" />
-    <ClInclude Include="ServerLinkPCH.h" />
+    <ClInclude Include="DataServerPCH.h" />
     <ClInclude Include="ServerSocket.h" />
     <ClInclude Include="ServerSocketMgr.h" />
   </ItemGroup>

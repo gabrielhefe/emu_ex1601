@@ -329,11 +329,11 @@ struct ACCOUNT_COMPLETE_BAN
 	uint8 type;
 };
 
-struct SL_ACCOUNT_VALIDATE
+struct DS_ACCOUNT_VALIDATE
 {
-	SL_ACCOUNT_VALIDATE(uint32 account_id, bool warning)
+	DS_ACCOUNT_VALIDATE(uint32 account_id, bool warning)
 	{
-		this->h.set(HEADCODE_LOGIN_SERVER_ACCOUNT_VALIDATE, sizeof(SL_ACCOUNT_VALIDATE));
+		this->h.set(HEADCODE_LOGIN_SERVER_ACCOUNT_VALIDATE, sizeof(DS_ACCOUNT_VALIDATE));
 		this->account_id = account_id;
 		this->warning = warning;
 	}
@@ -343,11 +343,11 @@ struct SL_ACCOUNT_VALIDATE
 	bool warning;
 };
 
-struct SL_ACCOUNT_CONNECT_TYPE
+struct DS_ACCOUNT_CONNECT_TYPE
 {
-	SL_ACCOUNT_CONNECT_TYPE(uint32 account_id, uint8 type)
+	DS_ACCOUNT_CONNECT_TYPE(uint32 account_id, uint8 type)
 	{
-		this->h.set(HEADCODE_LOGIN_SERVER_ACCOUNT_TYPE, sizeof(SL_ACCOUNT_CONNECT_TYPE));
+		this->h.set(HEADCODE_LOGIN_SERVER_ACCOUNT_TYPE, sizeof(DS_ACCOUNT_CONNECT_TYPE));
 		this->account_id = account_id;
 		this->type = type;
 	}
@@ -357,11 +357,11 @@ struct SL_ACCOUNT_CONNECT_TYPE
 	uint8 type;
 };
 
-struct SL_ACCOUNT_DUPLICATE
+struct DS_ACCOUNT_DUPLICATE
 {
-	SL_ACCOUNT_DUPLICATE()
+	DS_ACCOUNT_DUPLICATE()
 	{
-		this->h.set(HEADCODE_LOGIN_SERVER_ACCOUNT_DUPLICATE, sizeof(SL_ACCOUNT_DUPLICATE));
+		this->h.set(HEADCODE_LOGIN_SERVER_ACCOUNT_DUPLICATE, sizeof(DS_ACCOUNT_DUPLICATE));
 		this->account_id = 0;
 	}
 	

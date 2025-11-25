@@ -27,7 +27,7 @@ void Crywolf::GetStatus(std::shared_ptr<ServerSocket> socket)
 		MuDatabase.Execute(stmt);
 	}
 
-	SL_CRYWOLF_REQUEST pMsg;
+	DS_CRYWOLF_REQUEST pMsg;
 	pMsg.status = status;
 
 	socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
@@ -35,13 +35,13 @@ void Crywolf::GetStatus(std::shared_ptr<ServerSocket> socket)
 
 void Crywolf::UpdateStatus(uint8 * Packet)
 {
-	POINTER_PCT(SL_CRYWOLF_SAVE, lpMsg, Packet, 0);
+	POINTER_PCT(DS_CRYWOLF_SAVE, lpMsg, Packet, 0);
 
 	PreparedStatement * stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_CRYWOLF_UPDATE);
 	stmt->setUInt8(0, lpMsg->status);
 	MuDatabase.Execute(stmt);
 
-	SL_CRYWOLF_REQUEST pMsg;
+	DS_CRYWOLF_REQUEST pMsg;
 	pMsg.status = lpMsg->status;
 
 	sServerSocketMgr.SendPacketAll((uint8*)&pMsg, pMsg.h.get_size());

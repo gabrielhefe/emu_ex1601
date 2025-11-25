@@ -84,7 +84,7 @@ void LastManStanding::SetState_None()
 
 	this->MovePlayersOut();
 
-	sServerLink->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
+	sDataServer->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
 
 	sLog->outInfo("last_man_standing", "%s", __FUNCTION__);
 }
@@ -97,7 +97,7 @@ void LastManStanding::SetState_Notify()
 	this->SetCurrentMinute(-1);
 	this->SetCurrentSecond(-1);
 
-	sServerLink->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
+	sDataServer->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
 
 	sLog->outInfo("last_man_standing", "%s", __FUNCTION__);
 }
@@ -109,9 +109,9 @@ void LastManStanding::SetState_Open()
 	this->GetTime()->Start(5 * MINUTE * IN_MILLISECONDS);
 	this->SetCurrentMinute(-1);
 
-	sServerLink->NoticeSendNormal(NOTICE_GLOBAL, "[Last Man Standing] is open!");
+	sDataServer->NoticeSendNormal(NOTICE_GLOBAL, "[Last Man Standing] is open!");
 
-	sServerLink->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
+	sDataServer->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
 
 	sLog->outInfo("last_man_standing", "%s", __FUNCTION__);
 }
@@ -124,13 +124,13 @@ void LastManStanding::SetState_Standby()
 	this->SetCurrentMinute(-1);
 	this->SetCurrentSecond(-1);
 
-	sServerLink->NoticeSendNormal(NOTICE_GLOBAL, "[Last Man Standing] has been closed.");
+	sDataServer->NoticeSendNormal(NOTICE_GLOBAL, "[Last Man Standing] has been closed.");
 
 	this->SetInstance();
 
 	sObjectMgr->SendNoticeToMap(WORLD_LAST_MAN_STANDING, NOTICE_NORMAL_BLUE, "[Last Man Standing] battle will start in 60 second(s).");
 
-	sServerLink->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
+	sDataServer->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
 
 	sLog->outInfo("last_man_standing", "%s", __FUNCTION__);
 }
@@ -141,7 +141,7 @@ void LastManStanding::SetState_Playing()
 	this->GetTime()->Start(sGameServer->GetLastManStandingDuration());
 	this->SetCurrentSecond(-1);
 	
-	sServerLink->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
+	sDataServer->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
 
 	sLog->outInfo("last_man_standing", "%s", __FUNCTION__);
 }
@@ -151,7 +151,7 @@ void LastManStanding::SetState_End()
 	this->SetState(LAST_MAN_STANDING_STATE_END);
 	this->GetTime()->Start(30 * IN_MILLISECONDS);
 
-	sServerLink->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
+	sDataServer->EventStateUpdate(EVENT_LAST_MAN_STANDING, this->GetState(), 0);
 
 	sLog->outInfo("last_man_standing", "%s", __FUNCTION__);
 }
@@ -231,7 +231,7 @@ void LastManStanding::SendRemainMinutes(std::string const& message, int32 period
 		return;
 	}
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, message.c_str(), this->GetCurrentMinute() + 1);
+	sDataServer->NoticeSend(NOTICE_GLOBAL, message.c_str(), this->GetCurrentMinute() + 1);
 }
 
 void LastManStanding::MovePlayersOut()
@@ -324,21 +324,21 @@ void LastManStanding::CheckWinner()
 			{
 			case LAST_MAN_STANDING_TYPE_NORMAL:
 				{
-					sServerLink->NoticeSend(NOTICE_GLOBAL, "[Last Man Standing] %s is the winner.", pPlayer->GetName());
+					sDataServer->NoticeSend(NOTICE_GLOBAL, "[Last Man Standing] %s is the winner.", pPlayer->GetName());
 
 					sLog->outInfo("last_man_standing", "%s --  %u/%s is the winner.", __FUNCTION__, pPlayer->GetGUID(), pPlayer->GetName());
 				} break;
 
 			case LAST_MAN_STANDING_TYPE_LEVEL:
 				{
-					sServerLink->NoticeSend(NOTICE_GLOBAL, "[Last Man Standing] %s is the level %d-%d winner.", pPlayer->GetName(), (pPlayer->GetEventGround() * sGameServer->GetLastManStandingLevelRange()) + 1, (pPlayer->GetEventGround() * sGameServer->GetLastManStandingLevelRange()) + sGameServer->GetLastManStandingLevelRange());
+					sDataServer->NoticeSend(NOTICE_GLOBAL, "[Last Man Standing] %s is the level %d-%d winner.", pPlayer->GetName(), (pPlayer->GetEventGround() * sGameServer->GetLastManStandingLevelRange()) + 1, (pPlayer->GetEventGround() * sGameServer->GetLastManStandingLevelRange()) + sGameServer->GetLastManStandingLevelRange());
 
 					sLog->outInfo("last_man_standing", "%s --  %u/%s is the level %d-%d winner.", __FUNCTION__, pPlayer->GetGUID(), pPlayer->GetName(), (pPlayer->GetEventGround() * sGameServer->GetLastManStandingLevelRange()) + 1, (pPlayer->GetEventGround() * sGameServer->GetLastManStandingLevelRange()) + sGameServer->GetLastManStandingLevelRange());
 				} break;
 
 			case LAST_MAN_STANDING_TYPE_RACE:
 				{
-					sServerLink->NoticeSend(NOTICE_GLOBAL, "[Last Man Standing] %s is the %s class winner.", pPlayer->GetName(), CharacterToName[pPlayer->GetClass()]);
+					sDataServer->NoticeSend(NOTICE_GLOBAL, "[Last Man Standing] %s is the %s class winner.", pPlayer->GetName(), CharacterToName[pPlayer->GetClass()]);
 
 					sLog->outInfo("last_man_standing", "%s -- %u/%s is the %s class winner.", __FUNCTION__, pPlayer->GetGUID(), pPlayer->GetName(), CharacterToName[pPlayer->GetClass()]);
 				} break;

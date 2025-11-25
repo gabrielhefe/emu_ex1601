@@ -714,7 +714,7 @@ void CBattleSoccerMgr::Finish(uint8 reason, uint8 winner, uint8 looser, int32 sc
 	}
 
 	if ( score != -1 && winner != GUILD_WAR_TEAM_MAX )
-		sServerLink->GuildScore(this->GetTeam(winner)->GetGuild()->GetID(), score);
+		sDataServer->GuildScore(this->GetTeam(winner)->GetGuild()->GetID(), score);
 
 	if ( winner == GUILD_WAR_TEAM_MAX || looser == GUILD_WAR_TEAM_MAX ) // Empatados
 	{

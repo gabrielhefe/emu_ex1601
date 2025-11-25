@@ -333,7 +333,7 @@ void Crywolf::sendNoticeToPlayersOnMap(bool map_only, NoticeType type, const cha
 
 		pPlayer->SendNoticeNormal(type, output_notice);
 	}
-	//sServerLink->NoticeSend(type, notice);
+	//sDataServer->NoticeSend(type, notice);
 }
 
 void Crywolf::removeCommonMonsters()
@@ -664,11 +664,11 @@ void Crywolf::SetState_Notify_1()
 	this->GetNotifyTime()->Start();
 	this->GetBossTime()->Start();
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, "Balgass joined forces with Kundun's army and now prepares to attack Crywolf Fortress");
+	sDataServer->NoticeSend(NOTICE_GLOBAL, "Balgass joined forces with Kundun's army and now prepares to attack Crywolf Fortress");
 
 	this->sendStateInfo();
 
-	sServerLink->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_NOTIFY_1, this->GetOccupationState());
+	sDataServer->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_NOTIFY_1, this->GetOccupationState());
 
 	sLog->outInfo(LOG_CRYWOLF, "SetState_Notify_1()");
 }
@@ -685,11 +685,11 @@ void Crywolf::SetState_Notify_2()
 	this->removeCommonMonsters();
 	sWorldMgr->statusChange(WORLD_CRYWOLF_FIRST_ZONE, CRYWOLF_OCCUPATION_FIGHT);
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, "The army of Balgass is ready to attack Crywolf Fortress");
+	sDataServer->NoticeSend(NOTICE_GLOBAL, "The army of Balgass is ready to attack Crywolf Fortress");
 
 	this->sendStateInfo();
 
-	sServerLink->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_NOTIFY_2, this->GetOccupationState());
+	sDataServer->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_NOTIFY_2, this->GetOccupationState());
 
 	sLog->outInfo(LOG_CRYWOLF, "SetState_Notify_2()");
 }
@@ -708,12 +708,12 @@ void Crywolf::SetState_Ready()
 	this->altarPrepare();
 	this->ResetPlayerScore();
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, "The army of Balgass is marching towards Crywolf Fortress");
+	sDataServer->NoticeSend(NOTICE_GLOBAL, "The army of Balgass is marching towards Crywolf Fortress");
 
 	this->AddMonster("1 2 3 4 6 7 8 9 10 11 12 13");
 	this->sendStateInfo();
 
-	sServerLink->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_READY, this->GetOccupationState());
+	sDataServer->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_READY, this->GetOccupationState());
 
 	sLog->outInfo(LOG_CRYWOLF, "SetState_Ready()");
 }
@@ -725,7 +725,7 @@ void Crywolf::SetState_Start()
 	this->GetNotifyTime()->Start();
 	this->GetBossTime()->Start();
 
-	sServerLink->NoticeSend(NOTICE_GLOBAL, "The army of Balgass is marching towards Crywolf Fortress");
+	sDataServer->NoticeSend(NOTICE_GLOBAL, "The army of Balgass is marching towards Crywolf Fortress");
 
 	if ( this->altarGetCount() == 0 )
 	{
@@ -740,7 +740,7 @@ void Crywolf::SetState_Start()
 	this->SetChangeAI(false);
 	this->sendStateInfo();
 
-	sServerLink->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_START, this->GetOccupationState());
+	sDataServer->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_START, this->GetOccupationState());
 
 	sLog->outInfo(LOG_CRYWOLF, "SetState_Start()");
 }
@@ -764,16 +764,16 @@ void Crywolf::SetState_End()
 	
 	if ( this->GetOccupationState() == CRYWOLF_OCCUPATION_FAIL )
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "Defending has failed! The statue of holy wolf has been taken over by Balgass");
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "Defending has failed! The statue of holy wolf has been taken over by Balgass");
 		sLog->outInfo(LOG_CRYWOLF, "Failed");
 	}
 	else
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "Defending has been successful! The statue of holy wolf has been protected");
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "Defending has been successful! The statue of holy wolf has been protected");
 		sLog->outInfo(LOG_CRYWOLF, "Success");
 	}
 
-	sServerLink->CrywolfDataSave();
+	sDataServer->CrywolfDataSave();
 
 	this->ChangeAI("1 2 3 4 6 7 8 9 10 11 12 13", 0);
 
@@ -809,7 +809,7 @@ void Crywolf::SetState_End()
 	this->NotifyPersonalRank();
 	this->sendStateInfo();
 
-	sServerLink->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_END, this->GetOccupationState());
+	sDataServer->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_END, this->GetOccupationState());
 
 	sLog->outInfo(LOG_CRYWOLF, "SetState_End()");
 }
@@ -829,7 +829,7 @@ void Crywolf::SetState_EndCycle()
 	this->NotifyHeroList();
 	this->ResetPlayerScore();
 
-	sServerLink->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_END_CYCLE, this->GetOccupationState());
+	sDataServer->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_END_CYCLE, this->GetOccupationState());
 
 	sLog->outInfo(LOG_CRYWOLF, "SetState_EndCycle()");
 }
@@ -843,7 +843,7 @@ void Crywolf::ProcState_Notify_1()
 {
 	if ( this->IsMinuteElapsed(1) )
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "Balgass joined forces with Kundun's army and now prepares to attack Crywolf Fortress");
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "Balgass joined forces with Kundun's army and now prepares to attack Crywolf Fortress");
 	}
 
 	if ( this->TimePassed() )
@@ -856,7 +856,7 @@ void Crywolf::ProcState_Notify_2()
 {
 	if ( this->IsMinuteElapsed(1) )
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "Elf's can make contract in the wolf altar in %d minute(s)", (this->GetCurrentMinute() + 1));
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "Elf's can make contract in the wolf altar in %d minute(s)", (this->GetCurrentMinute() + 1));
 	}
 
 	if ( this->TimePassed() )
@@ -869,7 +869,7 @@ void Crywolf::ProcState_Ready()
 {
 	if ( this->IsMinuteElapsed(1) )
 	{
-		sServerLink->NoticeSend(NOTICE_GLOBAL, "Balgass's army will attack in %d minute(s)", (this->GetCurrentMinute() + 1));
+		sDataServer->NoticeSend(NOTICE_GLOBAL, "Balgass's army will attack in %d minute(s)", (this->GetCurrentMinute() + 1));
 	}
 
 	if ( this->TimePassed() )
@@ -919,7 +919,7 @@ void Crywolf::ProcState_EndCycle()
 	if ( this->TimePassed() )
 	{
 		this->SetState_None();
-		sServerLink->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_NONE, this->GetOccupationState());
+		sDataServer->EventStateUpdate(EVENT_CRYWOLF, CRYWOLF_STATE_NONE, this->GetOccupationState());
 	}
 }
 

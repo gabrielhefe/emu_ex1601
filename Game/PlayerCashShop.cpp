@@ -535,7 +535,7 @@ void Player::CashShopGiftSendCallBack(PreparedQueryResult result)
 	this->GetInterfaceState()->SetState(0);
 	sCashShopMgr->CashShopItemGiftResult(this, 0);
 
-	sServerLink->CharacterSignal(GUID, 1);
+	sDataServer->CharacterSignal(GUID, 1);
 }
 
 void Player::CashShopGiftSendNew(const char* Name)
@@ -754,7 +754,7 @@ void Player::CashShopGiftSendNew(const char* Name)
 	this->GetInterfaceState()->SetState(0);
 	sCashShopMgr->CashShopItemGiftResult(this, 0);
 
-	sServerLink->CharacterSignal(GUID, 1);
+	sDataServer->CharacterSignal(GUID, 1);
 }
 	
 void Player::CashShopGiftUpdate()

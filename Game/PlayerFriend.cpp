@@ -395,7 +395,7 @@ void Player::FriendMailRequestCallBack(PreparedQueryResult result)
 	
 	this->FriendMailResult(FRIEND_MAIL_SEND_SUCCESS, this->mail_data.window_guid);
 
-	sServerLink->CharacterSignal(tmp_id, 0);
+	sDataServer->CharacterSignal(tmp_id, 0);
 }
 
 void Player::SelectDBFriendMail() {
@@ -463,7 +463,7 @@ void Player::SelectDBFriendMail() {
 
 	this->FriendMailResult(FRIEND_MAIL_SEND_SUCCESS, this->mail_data.window_guid);
 
-	sServerLink->CharacterSignal(tmp_id, 0);
+	sDataServer->CharacterSignal(tmp_id, 0);
 }
 
 void Player::FriendMailResult(uint8 result, uint32 window_guid)

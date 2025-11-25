@@ -188,7 +188,7 @@
     <ClInclude Include="RandomValueMgr.h" />
     <ClInclude Include="Readscript.h" />
     <ClInclude Include="Security.h" />
-    <ClInclude Include="ServerLinkPacket.h" />
+    <ClInclude Include="DataServerPacket.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SFMT.h" />
     <ClInclude Include="Sha256.h" />

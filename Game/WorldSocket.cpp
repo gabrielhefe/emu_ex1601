@@ -82,7 +82,7 @@ bool WorldSocket::HandleSendAuthSession()
 		return false;
 	}
 
-	if ( sServerLink->IsStopped() )
+	if ( sDataServer->IsStopped() )
 	{
 		CloseSocket();
 		return false;

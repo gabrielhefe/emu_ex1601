@@ -620,8 +620,8 @@ void GameServer::LoadCommonSettings()
 	this->SetConnectServerReconnecTime(5 * IN_MILLISECONDS);
 	this->SetAuthServerReconnect(true);
 	this->SetAuthServerReconnecTime(5 * IN_MILLISECONDS);
-	this->SetServerLinkServerReconnect(true);
-	this->SetServerLinkServerReconnecTime(5 * IN_MILLISECONDS);
+	this->SetDataServerServerReconnect(true);
+	this->SetDataServerServerReconnecTime(5 * IN_MILLISECONDS);
 
 	//this->SetSkillManaShieldLimit(sMain->GetInt32("Skill.ManaShieldLimit", 0));
 	//this->SetSkillManaShieldCastleSiegeLimit(sMain->GetInt32("Skill.ManaShieldCastleSiegeLimit", 0));
