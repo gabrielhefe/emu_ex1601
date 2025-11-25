@@ -3,18 +3,18 @@
 
 struct ArkaWarGuild
 {
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_PROPERTY(int32, Signs);
-	DECLARE_PROPERTY(int32, MemberCount);
-	DECLARE_BOOL(Admited);
-	DECLARE_ENUM(time_t, RegisterTime);
+uint32 m_ID = 0;
+int32 m_Signs = 0;
+int32 m_MemberCount = 0;
+bool m_Admited = false;
+time_t m_RegisterTime = 0;
 };
 
 struct ArkaWarMember
 {
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_STRING_FIXED(Name, MAX_CHARACTER_LENGTH + 1);
-	DECLARE_ENUM(uint32, Guild);
+uint32 m_ID = 0;
+char m_Name[MAX_CHARACTER_LENGTH + 1] = { 0 };
+uint32 m_Guild = 0;
 };
 
 typedef std::unordered_map<uint32, ArkaWarGuild*> ArkaWarGuildMap;

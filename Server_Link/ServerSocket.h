@@ -25,8 +25,8 @@ using boost::asio::ip::tcp;
 
 class ServerSocket : public Socket<ServerSocket>
 {
-	public:
-		DECLARE_ENUM(uint16, ServerCode);
+public:
+uint16 m_ServerCode;
 
 		explicit ServerSocket(tcp::socket&& socket);
 

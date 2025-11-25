@@ -22,21 +22,21 @@ using boost::asio::ip::tcp;
 
 struct EventState
 {
-	EventState()
-	{
-		this->SetState(0);
-		this->SetOccupationState(0);
-	}
+EventState()
+{
+this->m_State = 0;
+this->m_OccupationState = 0;
+}
 
-	DECLARE_ENUM(uint8, State);
-	DECLARE_ENUM(uint8, OccupationState);
+uint8 m_State;
+uint8 m_OccupationState;
 };
 
 std::map<uint8, EventState> EventStateMap;
 
 ServerSocket::ServerSocket(tcp::socket&& socket): Socket(std::move(socket))
 {
-	this->SetServerCode(-1);	
+this->m_ServerCode = -1;
 }
 
 void ServerSocket::Start()
@@ -78,15 +78,15 @@ void ServerSocket::HandleHeadcodeOnConnect(uint8 * Packet)
 {
 	POINTER_PCT(SL_ON_CONNECT, lpMsg, Packet, 0);
 
-	this->SetServerCode(lpMsg->h.server);
+this->m_ServerCode = lpMsg->h.server;
 
 	this->QueuePacket(Packet, lpMsg->h.get_size());
 
-	for ( std::map<uint8, EventState>::const_iterator it = EventStateMap.begin(); it != EventStateMap.end(); ++it )
-	{
-		SL_EVENT_STATE_UPDATE pMsg(it->first, it->second.GetState(), it->second.GetOccupationState());
-		this->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
-	}
+for ( std::map<uint8, EventState>::const_iterator it = EventStateMap.begin(); it != EventStateMap.end(); ++it )
+{
+SL_EVENT_STATE_UPDATE pMsg(it->first, it->second.m_State, it->second.m_OccupationState);
+this->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
+}
 }
 
 void ServerSocket::HandleHeadcodeCommon(uint8 * Packet)
@@ -109,14 +109,14 @@ void ServerSocket::HandleWhisper(uint8 * Packet)
 	memcpy(pMsg.message, lpMsg->message, MAX_CHAT_LENGTH + 1);
 	pMsg.result = 0;
 
-	if ( CharacterDataPtr pCharacterData = sCharacterMgr->GetCharacterData(lpMsg->target_name) )
-	{
-		uint32 target_guid = pCharacterData->GetID();
+if ( CharacterDataPtr pCharacterData = sCharacterMgr->GetCharacterData(lpMsg->target_name) )
+{
+uint32 target_guid = pCharacterData->m_ID;
 
-		if ( target_guid != lpMsg->guid )
-		{
-			if ( pCharacterData->GetAuthority() != AUTHORITY_CODE_ADMINISTRATOR || (pCharacterData->GetAdminPanelFlags() & ADMIN_PANEL_WHISPER) )
-			{
+if ( target_guid != lpMsg->guid )
+{
+if ( pCharacterData->m_Authority != AUTHORITY_CODE_ADMINISTRATOR || (pCharacterData->m_AdminPanelFlags & ADMIN_PANEL_WHISPER) )
+{
 				
 			}
 			else

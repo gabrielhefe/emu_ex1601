@@ -24,18 +24,18 @@ void GuildMatching::LoadGuildMatching()
 		{
 			Field* fields = result->Fetch();
 
-			Guild* pGuild = sGuildMgr->GetGuild(fields[0].GetUInt32());
+Guild* pGuild = sGuildMgr->GetGuild(fields[0].GetUInt32());
 
-			if ( pGuild )
-			{
-				pGuild->SetMatchingEnabled(true);
-				pGuild->SetMatchingText(fields[1].GetBase64String().c_str());
-				pGuild->SetMatchingInterestType(fields[2].GetUInt8());
-				pGuild->SetMatchingLevelRange(fields[3].GetUInt8());
-				pGuild->SetMatchingClassType(fields[4].GetUInt16());
-				pGuild->SetMatchingBoardNumber(fields[5].GetUInt32());
-				pGuild->SetMatchingMasterLevel(fields[6].GetUInt16() + fields[7].GetUInt16());
-				pGuild->SetMatchingGensType(fields[9].GetUInt8());
+if ( pGuild )
+{
+pGuild->m_MatchingEnabled = true;
+memcpy(pGuild->m_MatchingText, fields[1].GetBase64String().c_str(), sizeof(pGuild->m_MatchingText));
+pGuild->m_MatchingInterestType = fields[2].GetUInt8();
+pGuild->m_MatchingLevelRange = fields[3].GetUInt8();
+pGuild->m_MatchingClassType = fields[4].GetUInt16();
+pGuild->m_MatchingBoardNumber = fields[5].GetUInt32();
+pGuild->m_MatchingMasterLevel = fields[6].GetUInt16() + fields[7].GetUInt16();
+pGuild->m_MatchingGensType = fields[9].GetUInt8();
 
 				uint8 db_class = fields[8].GetUInt8();
 				uint8 matching_class = db_class >> 4;
@@ -56,7 +56,7 @@ void GuildMatching::LoadGuildMatching()
 					matching_class |= 0x40;
 				}
 
-				pGuild->SetMatchingMasterClass(matching_class);
+pGuild->m_MatchingMasterClass = matching_class;
 
 				++count;
 			}
@@ -84,12 +84,12 @@ GuildMatchingJoinInfo* GuildMatching::GetGuildMatchingJoinInfo(uint32 id)
 
 GuildMatchingJoinInfo* GuildMatching::GetGuildMatchingJoinInfo(const char* name)
 {
-	for ( GuildMatchingJoinInfoMap::const_iterator it = this->m_guild_matching_join_info_map.begin(); it != this->m_guild_matching_join_info_map.end(); ++it )
-	{
-		if ( !memcmp(name, it->second->GetName(), MAX_CHARACTER_LENGTH) )
-		{
-			return it->second;
-		}
+for ( GuildMatchingJoinInfoMap::const_iterator it = this->m_guild_matching_join_info_map.begin(); it != this->m_guild_matching_join_info_map.end(); ++it )
+{
+if ( !memcmp(name, it->second->m_Name, MAX_CHARACTER_LENGTH) )
+{
+return it->second;
+}
 	}
 
 	return nullptr;
@@ -108,12 +108,12 @@ void GuildMatching::RemoveGuildMatchingJoinInfo(uint32 id)
 
 void GuildMatching::RemoveGuildMatchingJoinInfo(const char* name)
 {
-	for ( GuildMatchingJoinInfoMap::const_iterator it = this->m_guild_matching_join_info_map.begin(); it != this->m_guild_matching_join_info_map.end(); )
-	{
-		if ( !memcmp(name, it->second->GetName(), MAX_CHARACTER_LENGTH) )
-		{
-			delete it->second;
-			this->m_guild_matching_join_info_map.erase(it++);
+for ( GuildMatchingJoinInfoMap::const_iterator it = this->m_guild_matching_join_info_map.begin(); it != this->m_guild_matching_join_info_map.end(); )
+{
+if ( !memcmp(name, it->second->m_Name, MAX_CHARACTER_LENGTH) )
+{
+delete it->second;
+this->m_guild_matching_join_info_map.erase(it++);
 		}
 		else
 		{
@@ -124,13 +124,13 @@ void GuildMatching::RemoveGuildMatchingJoinInfo(const char* name)
 
 void GuildMatching::RemoveGuildMatchingJoinInfoNotifyAll(uint32 id)
 {
-	for ( GuildMatchingJoinInfoMap::const_iterator it = this->m_guild_matching_join_info_map.begin(); it != this->m_guild_matching_join_info_map.end(); ++it )
-	{
-		if ( it->second->GetGuildID() == id )
-		{
-			this->DGGuildMatchingNotifySend(it->second->GetName(), it->second->GetGuildID(), 2);
-		}
-	}
+for ( GuildMatchingJoinInfoMap::const_iterator it = this->m_guild_matching_join_info_map.begin(); it != this->m_guild_matching_join_info_map.end(); ++it )
+{
+if ( it->second->m_GuildID == id )
+{
+this->DGGuildMatchingNotifySend(it->second->m_Name, it->second->m_GuildID, 2);
+}
+}
 }
 
 void GuildMatching::GuildMatchingListRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
@@ -152,28 +152,28 @@ void GuildMatching::GuildMatchingListRecv(uint8 * Packet, std::shared_ptr<Server
 	{
 		Guild* pGuild = itr->second;
 
-		if ( !pGuild || !pGuild->IsMatchingEnabled() )
-		{
-			continue;
-		}
+if ( !pGuild || !pGuild->m_MatchingEnabled )
+{
+continue;
+}
 
-		if( PageCount >= (((head->CurPage)-1)*9) && PageCount < ((head->CurPage)*9) )
-		{
-			memcpy(body[head->count].text, pGuild->GetMatchingText(), GUILD_MATCHING_TEXT_LENGTH + 1);
-			memcpy(body[head->count].name, pGuild->GetMember(0)->GetName(), MAX_CHARACTER_LENGTH + 1);
-			memcpy(body[head->count].GuildName, pGuild->GetName(), MAX_GUILD_NAME_LENGTH + 1);
-			body[head->count].GuildMemberCount = pGuild->GetTotalMembers();
-			body[head->count].GuildMasterClass = pGuild->GetMatchingMasterClass();
-			body[head->count].InterestType = pGuild->GetMatchingInterestType();
-			body[head->count].LevelRange = pGuild->GetMatchingLevelRange();
-			body[head->count].ClassType = pGuild->GetMatchingClassType();
-			body[head->count].GuildMasterLevel = pGuild->GetMatchingMasterLevel();
-			body[head->count].BoardNumber = pGuild->GetMatchingBoardNumber();
-			body[head->count].GuildNumber = pGuild->GetID();
-			body[head->count].GensType = pGuild->GetMatchingGensType();
+if( PageCount >= (((head->CurPage)-1)*9) && PageCount < ((head->CurPage)*9) )
+{
+memcpy(body[head->count].text, pGuild->m_MatchingText, GUILD_MATCHING_TEXT_LENGTH + 1);
+memcpy(body[head->count].name, pGuild->m_Member[0].m_Name, MAX_CHARACTER_LENGTH + 1);
+memcpy(body[head->count].GuildName, pGuild->m_Name, MAX_GUILD_NAME_LENGTH + 1);
+body[head->count].GuildMemberCount = pGuild->GetTotalMembers();
+body[head->count].GuildMasterClass = pGuild->m_MatchingMasterClass;
+body[head->count].InterestType = pGuild->m_MatchingInterestType;
+body[head->count].LevelRange = pGuild->m_MatchingLevelRange;
+body[head->count].ClassType = pGuild->m_MatchingClassType;
+body[head->count].GuildMasterLevel = pGuild->m_MatchingMasterLevel;
+body[head->count].BoardNumber = pGuild->m_MatchingBoardNumber;
+body[head->count].GuildNumber = pGuild->m_ID;
+body[head->count].GensType = pGuild->m_MatchingGensType;
 
-			++head->count;
-		}
+++head->count;
+}
 
 		PageCount++;
 	}
@@ -197,41 +197,41 @@ void GuildMatching::GuildMatchingListSearchRecv(uint8 * Packet, std::shared_ptr<
 	head->MaxPage = 1;
 	head->count = 0;
 
-	uint32 PageCount = 0;
+        uint32 PageCount = 0;
 
-	for ( GuildMap::const_iterator itr = sGuildMgr->guild_map.begin(); itr != sGuildMgr->guild_map.end(); ++itr )
-	{
-		Guild* pGuild = itr->second;
+        for ( GuildMap::const_iterator itr = sGuildMgr->guild_map.begin(); itr != sGuildMgr->guild_map.end(); ++itr )
+        {
+                Guild* pGuild = itr->second;
 
-		if ( !pGuild || !pGuild->IsMatchingEnabled() )
-		{
-			continue;
-		}
+                if ( !pGuild || !pGuild->m_MatchingEnabled )
+                {
+                        continue;
+                }
 
-		//if( strstr(pGuild->GetMatchingText(), lpMsg->SearchWord) == 0 )
-		if ( FindString<std::string>(pGuild->GetMatchingText(), lpMsg->SearchWord) != size_t(-1) )
-		{
-			if( PageCount >= (((head->CurPage)-1)*9) && PageCount < ((head->CurPage)*9) )
-			{
-				memcpy(body[head->count].text, pGuild->GetMatchingText(), GUILD_MATCHING_TEXT_LENGTH + 1);
-				memcpy(body[head->count].name, pGuild->GetMember(0)->GetName(), MAX_CHARACTER_LENGTH + 1);
-				memcpy(body[head->count].GuildName, pGuild->GetName(), MAX_GUILD_NAME_LENGTH + 1);
-				body[head->count].GuildMemberCount = pGuild->GetTotalMembers();
-				body[head->count].GuildMasterClass = pGuild->GetMatchingMasterClass();
-				body[head->count].InterestType = pGuild->GetMatchingInterestType();
-				body[head->count].LevelRange = pGuild->GetMatchingLevelRange();
-				body[head->count].ClassType = pGuild->GetMatchingClassType();
-				body[head->count].GuildMasterLevel = pGuild->GetMatchingMasterLevel();
-				body[head->count].BoardNumber = pGuild->GetMatchingBoardNumber();
-				body[head->count].GuildNumber = pGuild->GetID();
-				body[head->count].GensType = pGuild->GetMatchingGensType();
+                //if( strstr(pGuild->m_MatchingText, lpMsg->SearchWord) == 0 )
+                if ( FindString<std::string>(pGuild->m_MatchingText, lpMsg->SearchWord) != size_t(-1) )
+                {
+                        if( PageCount >= (((head->CurPage)-1)*9) && PageCount < ((head->CurPage)*9) )
+                        {
+                                memcpy(body[head->count].text, pGuild->m_MatchingText, GUILD_MATCHING_TEXT_LENGTH + 1);
+                                memcpy(body[head->count].name, pGuild->m_Member[0].m_Name, MAX_CHARACTER_LENGTH + 1);
+                                memcpy(body[head->count].GuildName, pGuild->m_Name, MAX_GUILD_NAME_LENGTH + 1);
+                                body[head->count].GuildMemberCount = pGuild->GetTotalMembers();
+                                body[head->count].GuildMasterClass = pGuild->m_MatchingMasterClass;
+                                body[head->count].InterestType = pGuild->m_MatchingInterestType;
+                                body[head->count].LevelRange = pGuild->m_MatchingLevelRange;
+                                body[head->count].ClassType = pGuild->m_MatchingClassType;
+                                body[head->count].GuildMasterLevel = pGuild->m_MatchingMasterLevel;
+                                body[head->count].BoardNumber = pGuild->m_MatchingBoardNumber;
+                                body[head->count].GuildNumber = pGuild->m_ID;
+                                body[head->count].GensType = pGuild->m_MatchingGensType;
 
-				++head->count;
-			}
+                                ++head->count;
+                        }
 
-			PageCount++;
-		}
-	}
+                        PageCount++;
+                }
+        }
 
 	head->MaxPage = ((PageCount==0)?1:(((PageCount-1)/9)+1));
 
@@ -249,22 +249,22 @@ void GuildMatching::GuildMatchingInsertRecv(uint8 * Packet, std::shared_ptr<Serv
 
 	Guild* pGuild = sGuildMgr->GetGuild(lpMsg->GuildID);
 
-	if ( !pGuild || pGuild->IsMatchingEnabled() )
-	{
-		pMsg.result = 0xFFFFFFFF;
-		socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
-		return;
-	}
+if ( !pGuild || pGuild->m_MatchingEnabled )
+{
+pMsg.result = 0xFFFFFFFF;
+socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
+return;
+}
 
-	pGuild->SetMatchingEnabled(true);
-	pGuild->SetMatchingText(lpMsg->text);
-	pGuild->SetMatchingMasterClass(lpMsg->GuildMasterClass);
-	pGuild->SetMatchingInterestType(lpMsg->InterestType);
-	pGuild->SetMatchingLevelRange(lpMsg->LevelRange);
-	pGuild->SetMatchingClassType(lpMsg->ClassType);
-	pGuild->SetMatchingMasterLevel(lpMsg->GuildMasterLevel);
-	pGuild->SetMatchingBoardNumber(0);
-	pGuild->SetMatchingGensType(lpMsg->GensType);
+pGuild->m_MatchingEnabled = true;
+memcpy(pGuild->m_MatchingText, lpMsg->text, sizeof(pGuild->m_MatchingText));
+pGuild->m_MatchingMasterClass = lpMsg->GuildMasterClass;
+pGuild->m_MatchingInterestType = lpMsg->InterestType;
+pGuild->m_MatchingLevelRange = lpMsg->LevelRange;
+pGuild->m_MatchingClassType = lpMsg->ClassType;
+pGuild->m_MatchingMasterLevel = lpMsg->GuildMasterLevel;
+pGuild->m_MatchingBoardNumber = 0;
+pGuild->m_MatchingGensType = lpMsg->GensType;
 	
 	SQLTransaction trans = MuDatabase.BeginTransaction();
 
@@ -292,10 +292,10 @@ void GuildMatching::GuildMatchingCancelRecv(uint8 * Packet, std::shared_ptr<Serv
 
 	Guild* pGuild = sGuildMgr->GetGuild(lpMsg->GuildID);
 
-	if ( !pGuild || !pGuild->IsMatchingEnabled() )
-	{
-		pMsg.result = 0xFFFFFFFF;
-		socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
+if ( !pGuild || !pGuild->m_MatchingEnabled )
+{
+pMsg.result = 0xFFFFFFFF;
+socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
 		return;
 	}
 
@@ -303,8 +303,8 @@ void GuildMatching::GuildMatchingCancelRecv(uint8 * Packet, std::shared_ptr<Serv
 
 	SQLTransaction trans = MuDatabase.BeginTransaction();
 
-	PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_GUILD_MATCHING_DELETE);
-	stmt->setUInt32(pGuild->GetID());
+PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_GUILD_MATCHING_DELETE);
+stmt->setUInt32(pGuild->m_ID);
 	trans->Append(stmt);
 
 	MuDatabase.CommitTransaction(trans);
@@ -329,27 +329,27 @@ void GuildMatching::GuildMatchingJoinInsertRecv(uint8 * Packet, std::shared_ptr<
 		return;
 	}
 
-	Guild* pGuild = sGuildMgr->GetGuild(lpMsg->GuildID);
+Guild* pGuild = sGuildMgr->GetGuild(lpMsg->GuildID);
 
-	if ( !pGuild || !pGuild->IsMatchingEnabled() )
-	{
-		pMsg.result = 0xFFFFFFFF;
-		socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
-		return;
-	}
+if ( !pGuild || !pGuild->m_MatchingEnabled )
+{
+pMsg.result = 0xFFFFFFFF;
+socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
+return;
+}
 
-	GuildMatchingJoinInfo * pGuildMatchingJoinInfo = new GuildMatchingJoinInfo;
-	pGuildMatchingJoinInfo->SetID(lpMsg->player.guid);
-	pGuildMatchingJoinInfo->SetName(lpMsg->player.name);
-	pGuildMatchingJoinInfo->SetGuildID(lpMsg->GuildID);
-	pGuildMatchingJoinInfo->SetClass(lpMsg->Class);
-	pGuildMatchingJoinInfo->SetLevel(lpMsg->Level);
+GuildMatchingJoinInfo * pGuildMatchingJoinInfo = new GuildMatchingJoinInfo;
+pGuildMatchingJoinInfo->m_ID = lpMsg->player.guid;
+memcpy(pGuildMatchingJoinInfo->m_Name, lpMsg->player.name, sizeof(pGuildMatchingJoinInfo->m_Name));
+pGuildMatchingJoinInfo->m_GuildID = lpMsg->GuildID;
+pGuildMatchingJoinInfo->m_Class = lpMsg->Class;
+pGuildMatchingJoinInfo->m_Level = lpMsg->Level;
 
-	this->m_guild_matching_join_info_map[pGuildMatchingJoinInfo->GetID()] = pGuildMatchingJoinInfo;
+this->m_guild_matching_join_info_map[pGuildMatchingJoinInfo->m_ID] = pGuildMatchingJoinInfo;
 
 	socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
 
-	this->DGGuildMatchingNotifyMasterSend(pGuild->GetMember(0)->GetName(), 0);
+this->DGGuildMatchingNotifyMasterSend(pGuild->m_Member[0].m_Name, 0);
 }
 
 void GuildMatching::GuildMatchingJoinCancelRecv(uint8 * Packet, std::shared_ptr<ServerSocket> socket)
@@ -391,7 +391,7 @@ void GuildMatching::GuildMatchingJoinAcceptRecv(uint8 * Packet, std::shared_ptr<
 
 	Guild* pGuild = sGuildMgr->GetGuild(lpMsg->GuildID);
 
-	if ( !pGuild || !pGuild->IsMatchingEnabled() )
+if ( !pGuild || !pGuild->m_MatchingEnabled )
 	{
 		pMsg.result = 0xFFFFFFFF;
 		socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
@@ -427,11 +427,11 @@ void GuildMatching::GuildMatchingJoinListRecv(uint8 * Packet, std::shared_ptr<Se
 	{
 		GuildMatchingJoinInfo const* pData = it->second;
 
-		if( pData && (pData->GetGuildID() == lpMsg->GuildID) )
-		{
-			memcpy(body[head->count].name, pData->GetName(), MAX_CHARACTER_LENGTH + 1);
-			body[head->count].Class = pData->GetClass();
-			body[head->count].Level = pData->GetLevel();
+if( pData && (pData->m_GuildID == lpMsg->GuildID) )
+{
+memcpy(body[head->count].name, pData->m_Name, MAX_CHARACTER_LENGTH + 1);
+body[head->count].Class = pData->m_Class;
+body[head->count].Level = pData->m_Level;
 
 			++head->count;
 		}
@@ -458,7 +458,7 @@ void GuildMatching::GuildMatchingJoinInfoRecv(uint8 * Packet, std::shared_ptr<Se
 		return;
 	}
 
-	Guild* pGuild = sGuildMgr->GetGuild(pGuildMatchingJoinInfo->GetGuildID());
+Guild* pGuild = sGuildMgr->GetGuild(pGuildMatchingJoinInfo->m_GuildID);
 
 	if ( !pGuild )
 	{
@@ -467,8 +467,8 @@ void GuildMatching::GuildMatchingJoinInfoRecv(uint8 * Packet, std::shared_ptr<Se
 		return;
 	}
 	
-	memcpy(pMsg.GuildName, pGuild->GetName(), MAX_GUILD_NAME_LENGTH + 1);
-	memcpy(pMsg.GuildMasterName, pGuild->GetMember(0)->GetName(), MAX_CHARACTER_LENGTH + 1);
+memcpy(pMsg.GuildName, pGuild->m_Name, MAX_GUILD_NAME_LENGTH + 1);
+memcpy(pMsg.GuildMasterName, pGuild->m_Member[0].m_Name, MAX_CHARACTER_LENGTH + 1);
 
 	socket->QueuePacket((uint8*)&pMsg, pMsg.h.get_size());
 }
@@ -479,21 +479,21 @@ void GuildMatching::GuildMatchingInsertSaveRecv(uint8 * Packet, std::shared_ptr<
 
 	Guild* pGuild = sGuildMgr->GetGuild(lpMsg->GuildID);
 
-	if ( pGuild && pGuild->IsMatchingEnabled() )
-	{
-		pGuild->SetMatchingMasterClass(lpMsg->GuildMasterClass);
-		pGuild->SetMatchingMasterLevel(lpMsg->GuildMasterLevel);
-		pGuild->SetMatchingGensType(lpMsg->GensType);
-	}
-	
-	GuildMatchingJoinInfo * pGuildMatchingJoinInfo = this->GetGuildMatchingJoinInfo(lpMsg->player.guid);
+if ( pGuild && pGuild->m_MatchingEnabled )
+{
+pGuild->m_MatchingMasterClass = lpMsg->GuildMasterClass;
+pGuild->m_MatchingMasterLevel = lpMsg->GuildMasterLevel;
+pGuild->m_MatchingGensType = lpMsg->GensType;
+}
 
-	if ( pGuildMatchingJoinInfo )
-	{
-		pGuildMatchingJoinInfo->SetClass(lpMsg->GuildMasterClass);
-		pGuildMatchingJoinInfo->SetLevel(lpMsg->GuildMasterLevel);
-		pGuildMatchingJoinInfo->SetName(lpMsg->player.name);
-	}
+GuildMatchingJoinInfo * pGuildMatchingJoinInfo = this->GetGuildMatchingJoinInfo(lpMsg->player.guid);
+
+if ( pGuildMatchingJoinInfo )
+{
+pGuildMatchingJoinInfo->m_Class = lpMsg->GuildMasterClass;
+pGuildMatchingJoinInfo->m_Level = lpMsg->GuildMasterLevel;
+memcpy(pGuildMatchingJoinInfo->m_Name, lpMsg->player.name, sizeof(pGuildMatchingJoinInfo->m_Name));
+}
 }
 
 void GuildMatching::DGGuildMatchingNotifySend(const char* name, uint32 guild, uint32 result)
@@ -506,7 +506,7 @@ void GuildMatching::DGGuildMatchingNotifySend(const char* name, uint32 guild, ui
 	}
 
 	SL_GUILD_MATCHING_NOTIFY_SEND pMsg;
-	pMsg.id = pCharacterData->GetID();
+pMsg.id = pCharacterData->m_ID;
 	pMsg.GuildID = guild;
 	pMsg.result = result;
 
@@ -526,7 +526,7 @@ void GuildMatching::DGGuildMatchingNotifyMasterSend(const char* name, uint32 res
 	}
 
 	SL_GUILD_MATCHING_NOTIFY_MASTER_SEND pMsg;
-	pMsg.id = pCharacterData->GetID();
+pMsg.id = pCharacterData->m_ID;
 	pMsg.result = result;
 
 	if ( pCharacterData->socket && pCharacterData->socket->IsOpen() )
