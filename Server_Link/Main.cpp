@@ -125,7 +125,7 @@ void MainApplication::Update(uint32 diff)
 	{
 		m_timers[WUPDATE_QUEUE].Reset();
 
-		CharacterCreateQueue.Update();
+		CharacterCreateQueue::instance()->Update();
 		sGuildCreateQueue->Update();
 		sCharacterMgr->Update();
 	}

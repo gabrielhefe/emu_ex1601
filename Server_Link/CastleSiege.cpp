@@ -238,8 +238,8 @@ void CastleSiege::InsertRegisteredGuild(uint8 * packet)
 
 	if ( Guild* pGuild = sGuildMgr->GetGuild(lpMsg->guild) )
 	{
-		pGuild->SetRegisteredMarks(0);
-		pGuild->SetCastleSiegeRegistered(true);
+		pGuild->m_RegisteredMarks = 0;
+		pGuild->m_CastleSiegeRegistered = true;
 	}
 }
 
@@ -253,8 +253,8 @@ void CastleSiege::DeleteRegisteredGuild(uint8 * packet)
 
 	if ( Guild* pGuild = sGuildMgr->GetGuild(lpMsg->guild) )
 	{
-		pGuild->SetRegisteredMarks(0);
-		pGuild->SetCastleSiegeRegistered(false);
+		pGuild->m_RegisteredMarks = 0;
+		pGuild->m_CastleSiegeRegistered = false;
 	}
 }
 
@@ -269,7 +269,7 @@ void CastleSiege::UpdateRegisteredGuild(uint8 * packet)
 
 	if ( Guild* pGuild = sGuildMgr->GetGuild(lpMsg->guild) )
 	{
-		pGuild->SetRegisteredMarks(lpMsg->marks);
+		pGuild->m_RegisteredMarks = lpMsg->marks;
 	}
 }
 

@@ -160,7 +160,7 @@ void ServerSocket::CharacterCreateRequest(uint8 * Packet)
 	add_data->y = lpMsg->y;
 	add_data->slot = lpMsg->slot;
 
-	CharacterCreateQueue.Queue(add_data);
+	CharacterCreateQueue::instance()->Queue(add_data);
 }
 
 void ServerSocket::CharacterDeleteRequest(uint8 * Packet)
@@ -676,8 +676,8 @@ void ServerSocket::EventStateUpdate(uint8 * Packet)
 	POINTER_PCT(SL_EVENT_STATE_UPDATE, lpMsg, Packet, 0);
 
 	EventState & EventStateData = EventStateMap[lpMsg->event_id];
-	EventStateData.SetState(lpMsg->state);
-	EventStateData.SetOccupationState(lpMsg->occupation_state);
+	EventStateData.m_State = lpMsg->state;
+	EventStateData.m_OccupationState = lpMsg->occupation_state;
 
 	this->HandleHeadcodeCommon(Packet);
 }
