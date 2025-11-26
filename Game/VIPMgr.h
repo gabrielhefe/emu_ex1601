@@ -11,31 +11,31 @@
 
 struct vip_template
 {
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_PROPERTY_STRING(Name);
-	DECLARE_FLOAT(Experience);
-	DECLARE_ENUM(int32, Instance);
-	DECLARE_ENUM(uint32, Duration);
-	DECLARE_PROPERTY_STRING(Comment);
+    uint32 m_Id = 0;
+    std::string m_Name;
+    float m_Experience = 0.0f;
+    int32 m_Instance = 0;
+    uint32 m_Duration = 0;
+    std::string m_Comment;
 };
 
 typedef std::map<uint32, vip_template*> VipTemplateMap;
 
 class CVipMgr
 {
-	SingletonInstance(CVipMgr);
+    SingletonInstance(CVipMgr);
 
-	public:
-		CVipMgr();
-		virtual ~CVipMgr();
+    public:
+        CVipMgr();
+        virtual ~CVipMgr();
 
-		void LoadVipTemplate(char* pchFileName);
-		vip_template * GetVipData(uint32 guid) const;
+        void LoadVipTemplate(char* pchFileName);
+        vip_template * GetVipData(uint32 guid) const;
 
-		void ApplyVipExperience(Player* pPlayer, int64 & experience);
-		void SendVipData(Player* pPlayer);
-	private:
-		VipTemplateMap vip_template_map;
+        void ApplyVipExperience(Player* pPlayer, int64 & experience);
+        void SendVipData(Player* pPlayer);
+    private:
+        VipTemplateMap m_VipTemplateMap;
 };
 
 #endif
