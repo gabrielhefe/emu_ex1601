@@ -185,7 +185,7 @@ public:
 				return true;
 			}
 
-			if (pInstance->GetBossKilled() != 0)
+			if (pInstance->m_BossKilled != 0)
 			{
 				me()->Remove();
 				return true;
@@ -378,7 +378,7 @@ public:
 				return true;
 			}
 
-			if (pInstance->GetBossKilled() != 0)
+			if (pInstance->m_BossKilled != 0)
 			{
 				me()->Remove();
 				return true;
