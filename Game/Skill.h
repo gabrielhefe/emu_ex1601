@@ -11,27 +11,34 @@
 
 class Skill
 {
-	public:
-		Skill()
-		{
-			this->Clear();
-		}
+public:
+    Skill(): m_Skill(0), m_Level(0), m_Weapon(false), m_Type(0)
+    {
+    }
 
-		Skill(uint16 skill, uint8 level)
-		{
-			this->SetSkill(skill);
-			this->SetLevel(level);
-			this->SetWeapon(false);
-			this->SetType(0);
-		}
+    Skill(uint16 skill, uint8 level): m_Skill(skill), m_Level(level), m_Weapon(false), m_Type(0)
+    {
+    }
 
-		void Clear();
+    void Clear();
 
-	private:
-		DECLARE_PROPERTY(uint16, Skill);
-		DECLARE_PROPERTY(uint8, Level);
-		DECLARE_BOOL(Weapon);
-		DECLARE_ENUM(uint8, Type);
+public:
+    uint16 GetSkill() const { return this->m_Skill; }
+    void SetSkill(uint16 value) { this->m_Skill = value; }
+
+    uint8 GetLevel() const { return this->m_Level; }
+    void SetLevel(uint8 value) { this->m_Level = value; }
+
+    bool IsWeapon() const { return this->m_Weapon; }
+    void SetWeapon(bool value) { this->m_Weapon = value; }
+
+    uint8 GetType() const { return this->m_Type; }
+    void SetType(uint8 value) { this->m_Type = value; }
+
+    uint16 m_Skill;
+    uint8 m_Level;
+    bool m_Weapon;
+    uint8 m_Type;
 };
 
 #endif

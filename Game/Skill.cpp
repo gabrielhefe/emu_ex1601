@@ -8,8 +8,8 @@
 
 void Skill::Clear()
 {
-	this->SetSkill(0);
-	this->SetLevel(0);
-	this->SetWeapon(false);
-	this->SetType(0);
+    this->m_Skill = 0;
+    this->m_Level = 0;
+    this->m_Weapon = false;
+    this->m_Type = 0;
 }
