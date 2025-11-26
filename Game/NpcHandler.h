@@ -20,16 +20,16 @@ struct NpcTalkData
 
 class NpcHandler
 {
-	private:
-		DECLARE_PROPERTY_PTR(Player, Player);
-		DECLARE_PROPERTY_PTR(Monster, Npc);
+        private:
+                Player* m_Player;
+                Monster* m_Npc;
 
-	public:
-		NpcHandler(Player * pPlayer, Monster * pNpc)
-		{
-			this->SetPlayer(pPlayer);
-			this->SetNpc(pNpc);
-		}
+        public:
+                NpcHandler(Player * pPlayer, Monster * pNpc)
+                {
+                        this->m_Player = pPlayer;
+                        this->m_Npc = pNpc;
+                }
 
 		bool ExecuteCommandInTable(NpcTalkData * table, const char * text);
 		void OnTalk();

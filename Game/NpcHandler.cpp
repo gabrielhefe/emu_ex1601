@@ -88,45 +88,45 @@ bool NpcHandler::ExecuteCommandInTable(NpcTalkData * table, const char * text)
 
 void NpcHandler::OnTalk()
 {
-	if (!this->GetPlayer()->IsAuthorizationEnabled()) {
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+	if (!this->m_Player->IsAuthorizationEnabled()) {
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
-	this->GetPlayer()->QuestMUObjectiveUpdate(QUEST_MU_OBJECTIVE_FIND_NPC, this->GetNpc());
+	this->m_Player->QuestMUObjectiveUpdate(QUEST_MU_OBJECTIVE_FIND_NPC, this->m_Npc);
 
-	if ( this->GetNpc()->GetAI() && this->GetNpc()->GetAI()->OnTalk(this->GetPlayer()) )
+	if ( this->m_Npc->GetAI() && this->m_Npc->GetAI()->OnTalk(this->m_Player) )
 	{
 		return;
 	}
 
-	if ( this->GetNpc()->GetNpcFunction().empty() )
+	if ( this->m_Npc->GetNpcFunction().empty() )
 	{
 		return;
 	}
 
-	if ( this->ExecuteCommandInTable(npc_talk_data, this->GetNpc()->GetNpcFunction().c_str()) )
+	if ( this->ExecuteCommandInTable(npc_talk_data, this->m_Npc->GetNpcFunction().c_str()) )
 	{
-		this->GetNpc()->AddTalkReference(this->GetPlayer());
+		this->m_Npc->AddTalkReference(this->m_Player);
 		return;
 	}
 
-	if ( Shop const* shop = sShopMgr->GetShop(this->GetNpc()->GetNpcFunction()) )
+	if ( Shop const* shop = sShopMgr->GetShop(this->m_Npc->GetNpcFunction()) )
 	{
-		if ( shop->IsFlag(SHOP_FLAG_ADMINISTRATOR) && !this->GetPlayer()->IsAdministrator() )
+		if ( shop->IsFlag(SHOP_FLAG_ADMINISTRATOR) && !this->m_Player->IsAdministrator() )
 		{
 			return;
 		}
 
-		if ( this->GetPlayer()->GetPKLevel() > shop->GetMaxPKLevel() )
+		if ( this->m_Player->GetPKLevel() > shop->GetMaxPKLevel() )
 		{
 			if ( shop->IsFlag(SHOP_FLAG_PK_SCORE) )
 			{
-				this->GetNpc()->SayTo(this->GetPlayer(), "You have to earn %d points to get out of Outlaw status..", this->GetPlayer()->GetPKPoints());
+				this->m_Npc->SayTo(this->m_Player, "You have to earn %d points to get out of Outlaw status..", this->m_Player->GetPKPoints());
 			}
 			else
 			{
-				this->GetNpc()->SayTo(this->GetPlayer(), shop->GetPKText().c_str());
+				this->m_Npc->SayTo(this->m_Player, shop->GetPKText().c_str());
 			}
 
 			return;
@@ -172,7 +172,7 @@ void NpcHandler::SendShopList(Shop const* shop)
 
 			if ( required_class )
 			{
-				if ( !shop->GetItem(i)->IsRequiredClass(this->GetPlayer()->GetClass(), 1, 1, 1) )
+				if ( !shop->GetItem(i)->IsRequiredClass(this->m_Player->GetClass(), 1, 1, 1) )
 				{
 					continue;
 				}
@@ -196,194 +196,194 @@ void NpcHandler::SendShopList(Shop const* shop)
 		return;
 	}
 
-	GetPlayer()->GetInterfaceState()->Set(this->GetNpc()->GetNpcFunction(), this->GetNpc());
-	GetPlayer()->SetShopTime(0);
-	GetNpc()->AddTalkReference(GetPlayer());
+	this->m_Player->GetInterfaceState()->Set(this->m_Npc->GetNpcFunction(), this->m_Npc);
+	this->m_Player->SetShopTime(0);
+	this->m_Npc->AddTalkReference(this->m_Player);
 
 	TALK_TO_NPC_RESULT pMsg(shop->GetType() == SHOP_TYPE_RUUD ? 0x35 : 0);
 	pMsg.data[0] = shop->IsFlag(SHOP_FLAG_REPAIR);
-	GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+	this->m_Player->sendPacket(MAKE_PCT(pMsg));
 
 	head_misc->h.set(HEADCODE_MISC_CHARACTER_DATA, SUBCODE_MISC_CHARACTER_DATA_MISC_SHOP, sizeof(SHOP_MISC_HEAD) + (head_misc->count * sizeof(SHOP_MISC_BODY)));
-	GetPlayer()->sendPacket(buffer_misc, head_misc->h.get_size());
+	this->m_Player->sendPacket(buffer_misc, head_misc->h.get_size());
 
 	head->type = shop->GetType() == SHOP_TYPE_RUUD ? 0x17 : 0x00;
 	head->h.set(HEADCODE_CLOSE_INTERFACE, sizeof(SHOP_ITEM_LIST_HEAD) + (head->count * sizeof(SHOP_ITEM_LIST_BODY)));
-	GetPlayer()->sendPacket(buffer, head->h.get_size());
+	this->m_Player->sendPacket(buffer, head->h.get_size());
 	
 	if ( shop->IsFlag(SHOP_FLAG_SIEGE_TAX) )
 	{
-		sCastleSiege->SendTaxRate(GetPlayer(), 2);
+		sCastleSiege->SendTaxRate(this->m_Player, 2);
 	}
 
 	if (shop->GetType() == SHOP_TYPE_RUUD)
 	{
-		sMonsterSoul->SendPurchaseAvailable(this->GetPlayer());
-		sMonsterSoul->SendPurchaseList(this->GetPlayer());
+		sMonsterSoul->SendPurchaseAvailable(this->m_Player);
+		sMonsterSoul->SendPurchaseList(this->m_Player);
 	}
 }
 
 void NpcHandler::Warehouse()
 {
-	GetPlayer()->GetInterfaceState()->Set(InterfaceData::Warehouse, this->GetNpc());
+	this->m_Player->GetInterfaceState()->Set(InterfaceData::Warehouse, this->m_Npc);
 
-	GetPlayer()->GetWarehouse()->Open();
+	this->m_Player->GetWarehouse()->Open();
 }
 
 void NpcHandler::Guild()
 {
 	if ( !sGameServer->guild_enabled )
 	{
-		GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild Creation is closed");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Guild Creation is closed");
 		return;
 	}
 
-	if ( GetPlayer()->GuildGet() != nullptr )
+	if ( this->m_Player->GuildGet() != nullptr )
 	{
-		GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are already in a guild");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are already in a guild");
 		return;
 	}
 
-	if ( sGameServer->guild_create_min_level > GetPlayer()->GetLevel() )
+	if ( sGameServer->guild_create_min_level > this->m_Player->GetLevel() )
 	{
-		GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You need to be level %d to create a guild", sGameServer->guild_create_min_level.get());
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You need to be level %d to create a guild", sGameServer->guild_create_min_level.get());
 		return;
 	}
 
-	if ( sGameServer->guild_create_gens.get() && !GetPlayer()->GetGen()->IsFamily() )
+	if ( sGameServer->guild_create_gens.get() && !this->m_Player->GetGen()->IsFamily() )
 	{
-		GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You need to join a gens before creating a guild");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You need to join a gens before creating a guild");
 		return;
 	}
 
 	GUILD_CREATE_MENU pMsg;
-	GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+	this->m_Player->sendPacket(MAKE_PCT(pMsg));
 
-	GetPlayer()->GetInterfaceState()->Set(InterfaceData::Guild, this->GetNpc());
+	this->m_Player->GetInterfaceState()->Set(InterfaceData::Guild, this->m_Npc);
 }
 
 void NpcHandler::QuestEvolutionNpc()
 {
-	this->GetPlayer()->QuestEvolutionNpcTalk(this->GetNpc());
+	this->m_Player->QuestEvolutionNpcTalk(this->m_Npc);
 }
 
 void NpcHandler::BloodCastleEntrance()
 {
-	if ( !sBloodCastleMgr->HaveTicket(this->GetPlayer(), -1) )
+	if ( !sBloodCastleMgr->HaveTicket(this->m_Player, -1) )
 	{
-		this->GetPlayer()->CommandSend(1,0x15,0);
+		this->m_Player->CommandSend(1,0x15,0);
 		return;
 	}
 
 	if ( sBloodCastleMgr->GetState() == EVENT_MGR_STATE_OPEN )
 	{
 		TALK_TO_NPC_RESULT pMsg(0x06);
-		this->GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+		this->m_Player->sendPacket(MAKE_PCT(pMsg));
 
-		this->GetPlayer()->GetInterfaceState()->Set(InterfaceData::BloodCastleEntrance, this->GetNpc());
+		this->m_Player->GetInterfaceState()->Set(InterfaceData::BloodCastleEntrance, this->m_Npc);
 	}
 	else
 	{
-		this->GetPlayer()->CommandSend(1,0x14,0);
+		this->m_Player->CommandSend(1,0x14,0);
 	}
 }
 
 void NpcHandler::BloodCastleAngel()
 {
-	if ( !BC_MAP_RANGE(this->GetPlayer()->GetWorldId()) || !BC_MAP_RANGE(this->GetNpc()->GetWorldId()) )
+	if ( !BC_MAP_RANGE(this->m_Player->GetWorldId()) || !BC_MAP_RANGE(this->m_Npc->GetWorldId()) )
 	{
-		this->GetPlayer()->CommandSend(1, 0x18, 0);
+		this->m_Player->CommandSend(1, 0x18, 0);
 		return;
 	}
 
-	if ( this->GetPlayer()->GetEventId() != EVENT_BLOOD_CASTLE || this->GetNpc()->GetEventId() != EVENT_BLOOD_CASTLE )
+	if ( this->m_Player->GetEventId() != EVENT_BLOOD_CASTLE || this->m_Npc->GetEventId() != EVENT_BLOOD_CASTLE )
 	{
-		this->GetPlayer()->CommandSend(1, 0x18, 0);
+		this->m_Player->CommandSend(1, 0x18, 0);
 		return;
 	}
 
-	if ( this->GetPlayer()->GetEventGround() != this->GetNpc()->GetEventGround() || this->GetPlayer()->GetEventGround() == -1 )
+	if ( this->m_Player->GetEventGround() != this->m_Npc->GetEventGround() || this->m_Player->GetEventGround() == -1 )
 	{
-		this->GetPlayer()->CommandSend(1, 0x18, 0);
+		this->m_Player->CommandSend(1, 0x18, 0);
 		return;
 	}
 
-	BloodCastle * Ground = sBloodCastleMgr->GetGround(this->GetPlayer()->GetEventGround());
+	BloodCastle * Ground = sBloodCastleMgr->GetGround(this->m_Player->GetEventGround());
 
 	if ( !Ground )
 	{
-		this->GetPlayer()->CommandSend(1, 0x18, 0);
+		this->m_Player->CommandSend(1, 0x18, 0);
 		return;
 	}
 
 	if ( Ground->GetState() != BLOOD_CASTLE_STATE_PLAYING )
 	{
-		this->GetPlayer()->CommandSend(1, 0x18, 0);
+		this->m_Player->CommandSend(1, 0x18, 0);
 		return;
 	}
 
 	if ( Ground->GetSubState() == BLOOD_CASTLE_SUBSTATE_COMPLETE )
 	{
-		this->GetPlayer()->CommandSend(1, 0x2E, 0);
+		this->m_Player->CommandSend(1, 0x2E, 0);
 		return;
 	}
 
 	if ( Ground->GetSubState() != BLOOD_CASTLE_SUBSTATE_DELIVER_WEAPON )
 	{
-		this->GetPlayer()->CommandSend(1, 0x18, 0);
+		this->m_Player->CommandSend(1, 0x18, 0);
 		return;
 	}
 
 	if ( Ground->GetRemain() > sGameServer->GetBloodCastleDeliverWeaponTime() )
 	{
-		this->GetPlayer()->CommandSend(1, 0x18, 0);
+		this->m_Player->CommandSend(1, 0x18, 0);
 		return;
 	}
 
-	if ( Ground->CheckPlayerComplete(this->GetPlayer()) )
+	if ( Ground->CheckPlayerComplete(this->m_Player) )
 	{
-		this->GetPlayer()->CommandSend(1, 0x2E, 0);
+		this->m_Player->CommandSend(1, 0x2E, 0);
 		return;
 	}
 
-	if ( !Ground->CanGetReward(this->GetPlayer()) )
+	if ( !Ground->CanGetReward(this->m_Player) )
 	{
-		this->GetPlayer()->CommandSend(1, 0x18, 0);
+		this->m_Player->CommandSend(1, 0x18, 0);
 		return;
 	}
 
-	if ( this->GetPlayer() == Ground->GetWeaponOwner() )
+	if ( this->m_Player == Ground->GetWeaponOwner() )
 	{
-		this->GetPlayer()->QuestMUObjectiveUpdate(QUEST_MU_OBJECTIVE_BLOOD_CASTLE_CLEAR);
+		this->m_Player->QuestMUObjectiveUpdate(QUEST_MU_OBJECTIVE_BLOOD_CASTLE_CLEAR);
 
-		Ground->SetPlayerComplete(this->GetPlayer());
+		Ground->SetPlayerComplete(this->m_Player);
 		Ground->SetSubState(BLOOD_CASTLE_SUBSTATE_WEAPON_DELIVERED);
 
-		this->GetPlayer()->CommandSend(1, 0x17, 0);
-		//sItemMgr->ItemSerialCreateGremoryCase(this->GetPlayer(), Item(JEWEL::CHAOS, 0, 1, 0, 0, 0, 0, 0, nullptr, 0xFF, 604800), GREMORY_CASE_TYPE_CHARACTER, GremoryCaseReward::BLOOD_CASTLE);
+		this->m_Player->CommandSend(1, 0x17, 0);
+		//sItemMgr->ItemSerialCreateGremoryCase(this->m_Player, Item(JEWEL::CHAOS, 0, 1, 0, 0, 0, 0, 0, nullptr, 0xFF, 604800), GREMORY_CASE_TYPE_CHARACTER, GremoryCaseReward::BLOOD_CASTLE);
 
-		//sEventMgr->GiveContributionReward(this->GetPlayer(), EVENT_BLOOD_CASTLE, Ground->GetGround() + 1, 1, GremoryCaseReward::BLOOD_CASTLE);
+		//sEventMgr->GiveContributionReward(this->m_Player, EVENT_BLOOD_CASTLE, Ground->GetGround() + 1, 1, GremoryCaseReward::BLOOD_CASTLE);
 	}
 }
 
 void NpcHandler::DevilSquareEntrance()
 {
-	if ( !sDevilSquareMgr->EventCommonMgr::HaveTicket(this->GetPlayer(), ITEMGET(14, 19), ITEMGET(13, 46)) )
+	if ( !sDevilSquareMgr->EventCommonMgr::HaveTicket(this->m_Player, ITEMGET(14, 19), ITEMGET(13, 46)) )
 	{
-		this->GetPlayer()->CommandSend(1,2,0);
+		this->m_Player->CommandSend(1,2,0);
 		return;
 	}
 
 	if ( sDevilSquareMgr->GetState() == EVENT_MGR_STATE_OPEN )
 	{
 		TALK_TO_NPC_RESULT pMsg(0x04);
-		this->GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+		this->m_Player->sendPacket(MAKE_PCT(pMsg));
 
-		this->GetPlayer()->GetInterfaceState()->Set(InterfaceData::DevilSquareEntrance, this->GetNpc());
+		this->m_Player->GetInterfaceState()->Set(InterfaceData::DevilSquareEntrance, this->m_Npc);
 	}
 	else
 	{
-		this->GetPlayer()->CommandSend(1,3,0);
+		this->m_Player->CommandSend(1,3,0);
 	}
 }
 	
@@ -406,39 +406,39 @@ void NpcHandler::DoubleGoerEntrance()
 		pMsg.data[1] = 0;
 	}
 
-	this->GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+	this->m_Player->sendPacket(MAKE_PCT(pMsg));
 }
 
 void NpcHandler::KanturuGateway()
 {
-	sKanturuMgr->EntranceInfoNotify(this->GetPlayer());
+	sKanturuMgr->EntranceInfoNotify(this->m_Player);
 }
 
 void NpcHandler::LordMix()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
 	if ( sCastleSiege->GetState() == CASTLE_SIEGE_STATE_START )
 	{
-		this->GetNpc()->SayTo(this->GetPlayer(), "Can't use right now!");
+		this->m_Npc->SayTo(this->m_Player, "Can't use right now!");
 		return;
 	}
 
-	if ( !sCastleSiege->CastleOwnerMember(this->GetPlayer()) )
+	if ( !sCastleSiege->CastleOwnerMember(this->m_Player) )
 	{
-		this->GetNpc()->SayTo(this->GetPlayer(), "Only the castle Lord can use!");
+		this->m_Npc->SayTo(this->m_Player, "Only the castle Lord can use!");
 		return;
 	}
 
-	class Guild* pGuild = this->GetPlayer()->GuildGet();
+	class Guild* pGuild = this->m_Player->GuildGet();
 
-	if ( !pGuild || (pGuild->GetMemberRanking(this->GetPlayer()) != GUILD_RANK_MASTER && pGuild->GetMemberRanking(this->GetPlayer()) != GUILD_RANK_ASISTANT) )
+	if ( !pGuild || (pGuild->GetMemberRanking(this->m_Player) != GUILD_RANK_MASTER && pGuild->GetMemberRanking(this->m_Player) != GUILD_RANK_ASISTANT) )
 	{
-		this->GetNpc()->SayTo(this->GetPlayer(), "Only the castle Lord can use!");
+		this->m_Npc->SayTo(this->m_Player, "Only the castle Lord can use!");
 		return;
 	}
 
@@ -447,7 +447,7 @@ void NpcHandler::LordMix()
 
 void NpcHandler::Snowman()
 {
-	this->GetPlayer()->CommandSend(17, 1, 0);
+	this->m_Player->CommandSend(17, 1, 0);
 }
 	
 void NpcHandler::SantaClaus()
@@ -458,28 +458,28 @@ void NpcHandler::SantaClaus()
 	if ( !sEventMgr->IsSeasonEventOn(sGameServer->GetSantaVillageSeason()) )
 		return;
 
-	GetPlayer()->SetSantaClausGiftRequest(0);
+	this->m_Player->SetSantaClausGiftRequest(0);
 
-	if ( GetPlayer()->GetSantaClausGiftDate() == 0 )
+	if ( this->m_Player->GetSantaClausGiftDate() == 0 )
 	{
-		GetPlayer()->SetSantaClausGiftRequest(1);
-		GetPlayer()->CommandSend(16, 0, 0);
+		this->m_Player->SetSantaClausGiftRequest(1);
+		this->m_Player->CommandSend(16, 0, 0);
 	}
 	else
 	{
-		time_t diff = (GetPlayer()->GetSantaClausGiftDate() + sGameServer->GetSantaVillageSantaClausGiftTime()) - time(nullptr);
+		time_t diff = (this->m_Player->GetSantaClausGiftDate() + sGameServer->GetSantaVillageSantaClausGiftTime()) - time(nullptr);
 
-		if ( diff > 0 && !GetPlayer()->IsAdministrator() )
+		if ( diff > 0 && !this->m_Player->IsAdministrator() )
 		{
-			GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "Need to wait %s until you can get new gift", 
+			this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "Need to wait %s until you can get new gift", 
 				secsToTimeString(diff).c_str());
 
-			GetPlayer()->CommandSend(16, 2, 0);
+			this->m_Player->CommandSend(16, 2, 0);
 		}
 		else
 		{
-			GetPlayer()->SetSantaClausGiftRequest(1);
-			GetPlayer()->CommandSend(16, 1, 0);
+			this->m_Player->SetSantaClausGiftRequest(1);
+			this->m_Player->CommandSend(16, 1, 0);
 		}
 	}
 }
@@ -492,14 +492,14 @@ void NpcHandler::LandOfTrialsGuard()
 	pMsg.current_price = sCastleSiege->GetTaxRateHunt(nullptr);
 	pMsg.allowed = sCastleSiege->IsHuntEnabled();
 
-	if ( sCastleSiege->CastleOwnerUnionMember(this->GetPlayer()) )
+	if ( sCastleSiege->CastleOwnerUnionMember(this->m_Player) )
 	{
 		pMsg.result = 0x02;
 	}
 	
-	if ( sCastleSiege->CastleOwnerMember(this->GetPlayer()) )
+	if ( sCastleSiege->CastleOwnerMember(this->m_Player) )
 	{
-		if ( this->GetPlayer()->GuildGetRanking() == GUILD_RANK_MASTER )
+		if ( this->m_Player->GuildGetRanking() == GUILD_RANK_MASTER )
 		{
 			pMsg.result = 0x03;
 		}
@@ -509,28 +509,28 @@ void NpcHandler::LandOfTrialsGuard()
 		}
 	}
 
-	this->GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+	this->m_Player->sendPacket(MAKE_PCT(pMsg));
 }
 
 void NpcHandler::IllusionTempleEntrance()
 {
-	uint8 ground = sEventMgr->GetEventLevel(EVENT_ILLUSION_TEMPLE, this->GetPlayer());
+	uint8 ground = sEventMgr->GetEventLevel(EVENT_ILLUSION_TEMPLE, this->m_Player);
 
 	if ( ground >= MAX_ILLUSION_TEMPLE_GROUND )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "[Illusion Temple] is closed. Try again next time.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "[Illusion Temple] is closed. Try again next time.");
 		return;
 	}
 
-	if ( (this->GetPlayer()->GetPKLevel() >= sIllusionTempleMgr->GetGround(ground)->GetSettings()->GetPKLevelMax()) && sIllusionTempleMgr->GetGround(ground)->GetSettings()->IsPKCheck() )
+	if ( (this->m_Player->GetPKLevel() >= sIllusionTempleMgr->GetGround(ground)->GetSettings()->GetPKLevelMax()) && sIllusionTempleMgr->GetGround(ground)->GetSettings()->IsPKCheck() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "[Illusion Temple] Your PK level is not allowed to enter.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "[Illusion Temple] Your PK level is not allowed to enter.");
 		return;
 	}
 
-	if ( !sIllusionTempleMgr->HaveTicket(this->GetPlayer(), ground) )
+	if ( !sIllusionTempleMgr->HaveTicket(this->m_Player, ground) )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "[Illusion Temple] Ticket is missing.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "[Illusion Temple] Ticket is missing.");
 		return;
 	}
 
@@ -539,40 +539,40 @@ void NpcHandler::IllusionTempleEntrance()
 		TALK_TO_NPC_RESULT pMsg(0x14);
 		pMsg.data[0] = sEventMgr->GetNextRemainTime(EVENT_ILLUSION_TEMPLE) / MINUTE;
 		pMsg.data[1] = sIllusionTempleMgr->GetGround(ground)->GetPlayersCount(true);
-		this->GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+		this->m_Player->sendPacket(MAKE_PCT(pMsg));
 
-		this->GetPlayer()->GetInterfaceState()->Set(InterfaceData::IllusionTempleEntrance, this->GetNpc());
+		this->m_Player->GetInterfaceState()->Set(InterfaceData::IllusionTempleEntrance, this->m_Npc);
 	}
 	else
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "[Illusion Temple] is closed. Try again next time.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "[Illusion Temple] is closed. Try again next time.");
 	}
 }
 
 void NpcHandler::NpcTalkTormentedSquare()
 {
 	TALK_TO_NPC_RESULT pMsg(0x34);
-	this->GetPlayer()->sendPacket(MAKE_PCT(pMsg));
+	this->m_Player->sendPacket(MAKE_PCT(pMsg));
 }
 
 void NpcHandler::NpcTalkQuestSupport()
 {
-	TALK_TO_NPC_QUEST_SUPPORT pMsg(1, this->GetNpc()->GetClass(), this->GetPlayer()->GetGen()->GetFamily(), this->GetPlayer()->GetGen()->GetLevel(), this->GetPlayer()->GetGen()->GetContribution());
-	this->GetPlayer()->SEND_PCT(pMsg);
+	TALK_TO_NPC_QUEST_SUPPORT pMsg(1, this->m_Npc->GetClass(), this->m_Player->GetGen()->GetFamily(), this->m_Player->GetGen()->GetLevel(), this->m_Player->GetGen()->GetContribution());
+	this->m_Player->SEND_PCT(pMsg);
 
-	this->GetPlayer()->GetInterfaceState()->Set("interface_quest_support_giver", this->GetNpc());
+	this->m_Player->GetInterfaceState()->Set("interface_quest_support_giver", this->m_Npc);
 }
 
 void NpcHandler::NpcTalkLorenMarketTraveler()
 {
 	TALK_TO_NPC_RESULT pMsg(0x25);
 	
-	if ( this->GetPlayer()->GetWorldId() == WORLD_LOREN_MARKET )
+	if ( this->m_Player->GetWorldId() == WORLD_LOREN_MARKET )
 	{
 		pMsg.data[0] = 0x01;
 	}
 
-	this->GetPlayer()->SEND_PCT(pMsg);
+	this->m_Player->SEND_PCT(pMsg);
 }
 
 void NpcHandler::NpcTalkArcaBattleLesnar()
@@ -592,25 +592,25 @@ void NpcHandler::NpcTalkPersonalShopBoard()
 
 void NpcHandler::NpcTalkAdniel()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
 	SendTalkToNpc(0x29, "interface_adniel");
 
-	/*if (sGameServer->IsMixRecoveryWarning() && this->GetPlayer()->IsRecoveryMixFull())
+	/*if (sGameServer->IsMixRecoveryWarning() && this->m_Player->IsRecoveryMixFull())
 	{
-		this->GetPlayer()->SendMessageBox(0, "WARNING!", "Mix Recovery NPC is full. \n If you fail an upgrade mix without using TCA, you won't be able to recover the item.");
+		this->m_Player->SendMessageBox(0, "WARNING!", "Mix Recovery NPC is full. \n If you fail an upgrade mix without using TCA, you won't be able to recover the item.");
 	}*/
 }
 
 void NpcHandler::NpcTalkMuunExchange()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -619,16 +619,16 @@ void NpcHandler::NpcTalkMuunExchange()
 
 void NpcHandler::NpcTalkDuel()
 {
-	sDuelMgr->SendDuelRoomStatus(this->GetPlayer());
+	sDuelMgr->SendDuelRoomStatus(this->m_Player);
 
 	SendTalkToNpc(0x21, "interface_duel_gate");
 }
 
 void NpcHandler::NpcTalkJewelMix()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -637,9 +637,9 @@ void NpcHandler::NpcTalkJewelMix()
 
 void NpcHandler::NpcTalkLucky()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -648,9 +648,9 @@ void NpcHandler::NpcTalkLucky()
 
 void NpcHandler::NpcTalkPetTrainer()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -659,9 +659,9 @@ void NpcHandler::NpcTalkPetTrainer()
 
 void NpcHandler::NpcTalkChaosCard()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -670,9 +670,9 @@ void NpcHandler::NpcTalkChaosCard()
 
 void NpcHandler::NpcTalkCherryBlossom()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -681,9 +681,9 @@ void NpcHandler::NpcTalkCherryBlossom()
 
 void NpcHandler::NpcTalkSeedMaster()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -692,9 +692,9 @@ void NpcHandler::NpcTalkSeedMaster()
 
 void NpcHandler::NpcTalkSeedResearch()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -703,25 +703,25 @@ void NpcHandler::NpcTalkSeedResearch()
 
 void NpcHandler::NpcTalkChaosMachine()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
 	SendTalkToNpc(0x03, "interface_chaos_machine", 1);
 
-	/*if (sGameServer->IsMixRecoveryWarning() && this->GetPlayer()->IsRecoveryMixFull())
+	/*if (sGameServer->IsMixRecoveryWarning() && this->m_Player->IsRecoveryMixFull())
 	{
-		this->GetPlayer()->SendMessageBox(0, "WARNING!", "Mix Recovery NPC is full. \n If you fail an upgrade mix without using TCA, you won't be able to recover the item.");
+		this->m_Player->SendMessageBox(0, "WARNING!", "Mix Recovery NPC is full. \n If you fail an upgrade mix without using TCA, you won't be able to recover the item.");
 	}*/
 }
 
 void NpcHandler::NpcTalkHarmonyGemstone()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -730,9 +730,9 @@ void NpcHandler::NpcTalkHarmonyGemstone()
 
 void NpcHandler::NpcTalkHarmonySmeltItem()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -741,9 +741,9 @@ void NpcHandler::NpcTalkHarmonySmeltItem()
 
 void NpcHandler::NpcTalkHarmonyRestoreItem()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
@@ -752,42 +752,42 @@ void NpcHandler::NpcTalkHarmonyRestoreItem()
 
 void NpcHandler::NpcTalkSantaRestoreLife()
 {
-	this->GetPlayer()->PowerSet(POWER_LIFE, this->GetPlayer()->PowerGetTotal(POWER_LIFE) , true);
+	this->m_Player->PowerSet(POWER_LIFE, this->m_Player->PowerGetTotal(POWER_LIFE) , true);
 }
 
 void NpcHandler::NpcTalkSantaRestoreMana()
 {
-	this->GetPlayer()->PowerSet(POWER_MANA, this->GetPlayer()->PowerGetTotal(POWER_MANA) , true);
+	this->m_Player->PowerSet(POWER_MANA, this->m_Player->PowerGetTotal(POWER_MANA) , true);
 }
 
 void NpcHandler::NpcTalkBuffSantaHealing()
 {
-	this->GetPlayer()->AddBuff(92, BuffEffect(4, 500), 1800, 12, this->GetPlayer(), true);
+	this->m_Player->AddBuff(92, BuffEffect(4, 500), 1800, 12, this->m_Player, true);
 }
 
 void NpcHandler::NpcTalkBuffSantaProtection()
 {
-	this->GetPlayer()->AddBuff(93, BuffEffect(5, 500), 1800, 12, this->GetPlayer(), true);
+	this->m_Player->AddBuff(93, BuffEffect(5, 500), 1800, 12, this->m_Player, true);
 }
 
 void NpcHandler::NpcTalkBuffSantaStrengthener()
 {
-	this->GetPlayer()->AddBuff(94, BuffEffect(2, 30), 1800, 12, this->GetPlayer(), true);
+	this->m_Player->AddBuff(94, BuffEffect(2, 30), 1800, 12, this->m_Player, true);
 }
 
 void NpcHandler::NpcTalkBuffSantaDefense()
 {
-	this->GetPlayer()->AddBuff(95, BuffEffect(3, 100), 1800, 12, this->GetPlayer(), true);
+	this->m_Player->AddBuff(95, BuffEffect(3, 100), 1800, 12, this->m_Player, true);
 }
 
 void NpcHandler::NpcTalkBuffSantaQuickness()
 {
-	this->GetPlayer()->AddBuff(96, BuffEffect(1, 15), 1800, 12, this->GetPlayer(), true);
+	this->m_Player->AddBuff(96, BuffEffect(1, 15), 1800, 12, this->m_Player, true);
 }
 
 void NpcHandler::NpcTalkBuffSantaFortune()
 {
-	this->GetPlayer()->AddBuff(97, BuffEffect(31, 10), 1800, 12, this->GetPlayer(), true);
+	this->m_Player->AddBuff(97, BuffEffect(31, 10), 1800, 12, this->m_Player, true);
 }
 
 void NpcHandler::NpcTalkImperialFortress()
@@ -799,7 +799,7 @@ void NpcHandler::NpcTalkCastleSiegeGuard()
 {
 	if ( sCastleSiege->GetState() == CASTLE_SIEGE_STATE_START )
 	{
-		this->GetNpc()->SayTo(this->GetPlayer(), "Information is unavailable!");
+		this->m_Npc->SayTo(this->m_Player, "Information is unavailable!");
 		return;
 	}
 
@@ -810,11 +810,11 @@ void NpcHandler::NpcTalkLastManStanding()
 {
 	if ( sLastManStanding->GetState() != LAST_MAN_STANDING_STATE_OPEN )
 	{
-		this->GetPlayer()->SendMessageBox(0, "Last Man Standing", "Event is not open.");
+		this->m_Player->SendMessageBox(0, "Last Man Standing", "Event is not open.");
 		return;
 	}
 
-	sLastManStanding->EnterRequest(this->GetPlayer());
+	sLastManStanding->EnterRequest(this->m_Player);
 }
 
 void NpcHandler::SendTalkToNpc(uint8 result, std::string const& interface_id, bool tax, uint8 data1, uint8 data2)
@@ -822,20 +822,20 @@ void NpcHandler::SendTalkToNpc(uint8 result, std::string const& interface_id, bo
 	TALK_TO_NPC_RESULT pMsg(result);
 	pMsg.data[0] = data1;
 	pMsg.data[1] = data2;
-	this->GetPlayer()->SEND_PCT(pMsg);
+	this->m_Player->SEND_PCT(pMsg);
 
 	if ( interface_id != "" )
 	{
-		this->GetPlayer()->GetInterfaceState()->Set(interface_id, this->GetNpc());
+		this->m_Player->GetInterfaceState()->Set(interface_id, this->m_Npc);
 	}
 
 	if ( tax )
 	{
-		sCastleSiege->SendTaxRate(this->GetPlayer(), 1);
+		sCastleSiege->SendTaxRate(this->m_Player, 1);
 	}
 
-	this->GetPlayer()->GetMixInventory()->Clear();
-	this->GetPlayer()->SetMixCompleted(false);
+	this->m_Player->GetMixInventory()->Clear();
+	this->m_Player->SetMixCompleted(false);
 }
 
 void NpcHandler::NpcTalkCentTown()
@@ -850,18 +850,18 @@ void NpcHandler::NpcTalkCentEntrance()
 
 void NpcHandler::NpcTalkMossMerchant()
 {
-	if ( !this->GetPlayer()->IsAuthorizationEnabled() )
+	if ( !this->m_Player->IsAuthorizationEnabled() )
 	{
-		this->GetPlayer()->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
+		this->m_Player->SendNotice(CUSTOM_MESSAGE_ID_RED, "You are not authorized for this action.");
 		return;
 	}
 
 	this->SendTalkToNpc(0x38, InterfaceData::MossMerchant, false);
 
-	sMossMerchant->Open(this->GetPlayer());
+	sMossMerchant->Open(this->m_Player);
 }
 
 void NpcHandler::NpcTalkItemRecovery()
 {
-	this->GetPlayer()->SendRecoveryMixItemList(this->GetNpc());
+	this->m_Player->SendRecoveryMixItemList(this->m_Npc);
 }

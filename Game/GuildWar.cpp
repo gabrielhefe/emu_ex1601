@@ -12,11 +12,11 @@ void GuildWarMgr::Update()
 {
 	for ( GuildWarDataList::iterator it = this->guild_war_list.begin(); it != this->guild_war_list.end(); ++it )
 	{
-		if ( (*it)->GetResetTime()->Elapsed() ) 
-		{
-			(*it)->SetCount(0);
-		}
-	}
+                if ( (*it)->m_ResetTime.Elapsed() )
+                {
+                        (*it)->m_Count = 0;
+                }
+        }
 }
 
 void GuildWarMgr::StartWarRequest(Player* pPlayer, const char * guild)
@@ -200,10 +200,10 @@ bool GuildWarMgr::IsWarAllowed(Guild* pGuild01, Guild* pGuild02)
 
 	for ( GuildWarDataList::iterator it = this->guild_war_list.begin(); it != this->guild_war_list.end(); ++it )
 	{
-		if ( ((*it)->GetGuild01() == pGuild01->GetID() && (*it)->GetGuild02() == pGuild02->GetID()) ||
-			 ((*it)->GetGuild01() == pGuild02->GetID() && (*it)->GetGuild02() == pGuild01->GetID()) )
+		if ( ((*it)->m_Guild01 == pGuild01->GetID() && (*it)->m_Guild02 == pGuild02->GetID()) ||
+			 ((*it)->m_Guild01 == pGuild02->GetID() && (*it)->m_Guild02 == pGuild01->GetID()) )
 		{
-			return (*it)->GetCount() < sGameServer->GetGuildWarMax();
+			return (*it)->m_Count < sGameServer->GetGuildWarMax();
 		}
 	}
 
@@ -216,8 +216,8 @@ void GuildWarMgr::StartWar(Guild* pGuild01, Guild* pGuild02)
 
 	for ( GuildWarDataList::iterator it = this->guild_war_list.begin(); it != this->guild_war_list.end(); ++it )
 	{
-		if ( ((*it)->GetGuild01() == pGuild01->GetID() && (*it)->GetGuild02() == pGuild02->GetID()) ||
-			 ((*it)->GetGuild01() == pGuild02->GetID() && (*it)->GetGuild02() == pGuild01->GetID()) )
+		if ( ((*it)->m_Guild01 == pGuild01->GetID() && (*it)->m_Guild02 == pGuild02->GetID()) ||
+			 ((*it)->m_Guild01 == pGuild02->GetID() && (*it)->m_Guild02 == pGuild01->GetID()) )
 		{
 			pData = *it;
 		}
@@ -226,19 +226,19 @@ void GuildWarMgr::StartWar(Guild* pGuild01, Guild* pGuild02)
 	if ( !pData )
 	{
 		pData = new GuildWarData(pGuild01->GetID(), pGuild02->GetID());
-		pData->GetResetTime()->Start(HOUR * IN_MILLISECONDS);
-		pData->GetWarTime()->Start(sGameServer->GetGuildWarIntervalTime());
+		pData->m_ResetTime.Start(HOUR * IN_MILLISECONDS);
+		pData->m_WarTime.Start(sGameServer->GetGuildWarIntervalTime());
 		this->guild_war_list.push_back(pData);
 	}
 	
-	if ( pData->GetWarTime()->Elapsed() )
-	{
-		pData->SetCount(1);
-	}
-	else
-	{
-		pData->IncreaseCount(1);
-	}
+        if ( pData->m_WarTime.Elapsed() )
+        {
+                pData->m_Count = 1;
+        }
+        else
+        {
+                pData->m_Count += 1;
+        }
 }
 
 void GuildWarMgr::EndWar(Guild* pLooser, Guild* pWinner, uint8 reason)
@@ -283,10 +283,10 @@ void GuildWarMgr::EndWar(Guild* pLooser, Guild* pWinner, uint8 reason)
 	{
 		for ( GuildWarDataList::iterator it = this->guild_war_list.begin(); it != this->guild_war_list.end(); ++it )
 		{
-			if ( ((*it)->GetGuild01() == pLooser->GetID() && (*it)->GetGuild02() == pWinner->GetID()) ||
-				 ((*it)->GetGuild01() == pWinner->GetID() && (*it)->GetGuild02() == pLooser->GetID()) )
+			if ( ((*it)->m_Guild01 == pLooser->GetID() && (*it)->m_Guild02 == pWinner->GetID()) ||
+				 ((*it)->m_Guild01 == pWinner->GetID() && (*it)->m_Guild02 == pLooser->GetID()) )
 			{
-				(*it)->GetWarTime()->Start(sGameServer->GetGuildWarIntervalTime());
+				(*it)->m_WarTime.Start(sGameServer->GetGuildWarIntervalTime());
 			}
 		}
 	}
