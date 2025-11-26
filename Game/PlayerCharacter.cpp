@@ -10118,7 +10118,7 @@ void Player::EnterWorldSuccess(uint8 * Packet)
 
 	this->GenUpdateLevel();
 
-	this->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->SetTimer(0);
+this->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->m_Timer = 0;
 
 	if ( !this->IsAuthorizationEnabled() )
 	{
@@ -12018,17 +12018,17 @@ void Player::Autosave()
 
 		this->CashShopCoinUpdate();
 
-		if ( this->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->GetTimer() == 0 || this->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->Elapsed(sGameServer->GetCashShopGiftUpdateTime()) )
-		{
-			this->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->Start();
-			this->CashShopGiftUpdate();
-		}
-	}
+if ( this->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->m_Timer == 0 || this->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->Elapsed(sGameServer->GetCashShopGiftUpdateTime()) )
+{
+this->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->Start();
+this->CashShopGiftUpdate();
+}
+}
 
-	if ( this->GetTimer(PLAYER_TIMER_MAIL)->GetTimer() == 0 || this->GetTimer(PLAYER_TIMER_MAIL)->Elapsed(sGameServer->GetFriendMailUpdateInterval()) )
-	{
-		this->GetTimer(PLAYER_TIMER_MAIL)->Start();
-		this->MailNewUpdate();
+if ( this->GetTimer(PLAYER_TIMER_MAIL)->m_Timer == 0 || this->GetTimer(PLAYER_TIMER_MAIL)->Elapsed(sGameServer->GetFriendMailUpdateInterval()) )
+{
+this->GetTimer(PLAYER_TIMER_MAIL)->Start();
+this->MailNewUpdate();
 	}
 }
 
