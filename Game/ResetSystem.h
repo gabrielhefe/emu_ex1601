@@ -5,7 +5,7 @@
 
 class ResetSystemFunction: public Unit
 {
-	int32 GetReset() const { return this->GetResetSystemData(RESET_TOTAL)->GetReset(); }
+int32 GetReset() const { return this->GetResetSystemData(RESET_TOTAL)->m_Reset; }
 
 	//DECLARE_ARRAY_STRUCT(ResetSystem, ResetSystem, RESET_MAX);
 	DECLARE_ARRAY_STRUCT(ResetSystemData, ResetSystemData, RESET_MAX);
@@ -13,16 +13,15 @@ class ResetSystemFunction: public Unit
 
 struct ResetSystemData
 {
-	DECLARE_PROPERTY(int32, Reset);
-	//DECLARE_PROPERTY(int32, )
-	void Reset() {
-		this->SetReset(0);
-	}
+int32 m_Reset = 0;
+void Reset() {
+this->m_Reset = 0;
+}
 
-	void Set(ResetSystemData const* Data)
-	{
-		this->SetReset(Data->GetReset());
-	}
+void Set(ResetSystemData const* Data)
+{
+this->m_Reset = Data->m_Reset;
+}
 };
 
 enum

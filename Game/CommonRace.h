@@ -10,30 +10,30 @@ enum CommonRaceState
 
 struct CommonRaceGate
 {
-	explicit CommonRaceGate(int32 gate, int32 reward)
-	{
-		this->SetGate(gate);
-		this->SetReward(reward);
-	}
+        explicit CommonRaceGate(int32 gate, int32 reward)
+        {
+                this->m_Gate = gate;
+                this->m_Reward = reward;
+        }
 
-	DECLARE_ENUM(int32, Gate);
-	DECLARE_ENUM(int32, Reward);
+        int32 m_Gate = 0;
+        int32 m_Reward = 0;
 };
 
 typedef std::vector<CommonRaceGate*> CommonRaceGateList;
 
 struct CommonRacePlayer
 {
-	CommonRacePlayer()
-	{
-		this->SetStartedTime(time(nullptr));
-		this->SetParticipating(false);
-		this->GateList.clear();
-	}
+        CommonRacePlayer()
+        {
+                this->m_StartedTime = time(nullptr);
+                this->m_Participating = false;
+                this->m_GateList.clear();
+        }
 
-	std::vector<int32> GateList;
-	DECLARE_BOOL(Participating);
-	DECLARE_ENUM(time_t, StartedTime);
+        std::vector<int32> m_GateList;
+        bool m_Participating = false;
+        time_t m_StartedTime = 0;
 };
 
 typedef std::map<uint32, CommonRacePlayer> CommonRacePlayerMap;
@@ -55,16 +55,16 @@ class CommonRace: public EventCommon
 
 		void ProcState_None();
 		void ProcState_Notify();
-		void ProcState_Playing();
+                void ProcState_Playing();
 
-		void PlayerInGate(Player* pPlayer, int32 gate);
-		void ResetPlayer(Player* pPlayer);
-		
-		DECLARE_ENUM(int32, Duration);
-		CommonRaceGateList gate_list;
-		CommonRacePlayerMap player_data;
-		DECLARE_PROPERTY(size_t, GateReached);
-		DECLARE_PROPERTY_STRING(RaceName);
+                void PlayerInGate(Player* pPlayer, int32 gate);
+                void ResetPlayer(Player* pPlayer);
+
+                int32 m_Duration = 0;
+                CommonRaceGateList m_GateList;
+                CommonRacePlayerMap m_PlayerData;
+                size_t m_GateReached = 0;
+                std::string m_RaceName;
 };
 
 #endif

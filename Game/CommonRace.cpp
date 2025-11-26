@@ -1,199 +1,198 @@
 CommonRace::CommonRace()
-{
-	this->SetGateReached(0);
-}
+	{
+	this->m_GateReached = 0;
+	}
 
 CommonRace::~CommonRace()
-{
+	{
 	this->Clear();
-}
+	}
 
 void CommonRace::Clear()
-{
-	LIST_CLEAR(CommonRaceGateList::iterator, this->gate_list);
-}
+	{
+	LIST_CLEAR(CommonRaceGateList::iterator, this->m_GateList);
+	}
 
 void CommonRace::Start(int32 duration, int32 notify)
-{
+	{
 	if ( this->GetState() != COMMON_RACE_STATE_NONE )
-		return;
+	return;
 
-	this->SetDuration(duration);
+	this->m_Duration = duration;
 	this->SetNotifyTime(notify);
 
 	if ( notify > 0 )
 	{
-		this->SetState_Notify();
+	this->SetState_Notify();
 	}
 	else
 	{
-		this->SetState_Playing();
+	this->SetState_Playing();
 	}
-}
+	}
 
 void CommonRace::Update()
-{
+	{
 	switch ( this->GetState() )
 	{
 	case COMMON_RACE_STATE_NONE:
-		{
-			this->ProcState_None();
-		} break;
+	{
+	this->ProcState_None();
+	} break;
 
 	case COMMON_RACE_STATE_NOTIFY:
-		{
-			this->ProcState_Notify();
-		} break;
+	{
+	this->ProcState_Notify();
+	} break;
 
 	case COMMON_RACE_STATE_PLAYING:
-		{
-			this->ProcState_Playing();
-		} break;
+	{
+	this->ProcState_Playing();
+	} break;
 	}
-}
+	}
 
 void CommonRace::SetState_None()
-{
+	{
 	this->SetState(COMMON_RACE_STATE_NONE);
 	this->RunTime(0);
-	this->SetGateReached(0);
-	this->player_data.clear();
+	this->m_GateReached = 0;
+	this->m_PlayerData.clear();
 
-	sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "%s race finished.", this->GetRaceName().c_str());
+	sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "%s race finished.", this->m_RaceName.c_str());
 
-	sLog->outInfo(LOG_RACE, "[ %s ] SetState_None()", this->GetRaceName().c_str());
-}
-		
+	sLog->outInfo(LOG_RACE, "[ %s ] SetState_None()", this->m_RaceName.c_str());
+	}
+
 void CommonRace::SetState_Notify()
-{
+	{
 	this->SetState(COMMON_RACE_STATE_NOTIFY);
 	this->RunTime(this->GetNotifyTime() * MINUTE * IN_MILLISECONDS);
-	this->SetGateReached(0);
-	this->player_data.clear();
+	this->m_GateReached = 0;
+	this->m_PlayerData.clear();
 
-	sLog->outInfo(LOG_RACE, "[ %s ] SetState_Notify()", this->GetRaceName().c_str());
-}
-		
+	sLog->outInfo(LOG_RACE, "[ %s ] SetState_Notify()", this->m_RaceName.c_str());
+	}
+
 void CommonRace::SetState_Playing()
-{
+	{
 	this->SetState(COMMON_RACE_STATE_PLAYING);
-	this->RunTime(this->GetDuration() * MINUTE * IN_MILLISECONDS);
-	this->SetGateReached(0);
-	this->player_data.clear();
+	this->RunTime(this->m_Duration * MINUTE * IN_MILLISECONDS);
+	this->m_GateReached = 0;
+	this->m_PlayerData.clear();
 
-	sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "%s race started.", this->GetRaceName().c_str());
+	sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "%s race started.", this->m_RaceName.c_str());
 
-	sLog->outInfo(LOG_RACE, "[ %s ] SetState_Playing()", this->GetRaceName().c_str());
-}
+	sLog->outInfo(LOG_RACE, "[ %s ] SetState_Playing()", this->m_RaceName.c_str());
+	}
 
 void CommonRace::ProcState_None()
-{
+	{
+	}
 
-}
-		
 void CommonRace::ProcState_Notify()
-{
-	this->SendRemainMinutes("%d minute(s) left before " + this->GetRaceName() + " race starts.", 5, 15);
-	
+	{
+	this->SendRemainMinutes("%d minute(s) left before " + this->m_RaceName + " race starts.", 5, 15);
+
 	if ( this->TimePassed() )
-		this->SetState_Playing();
-}
+	this->SetState_Playing();
+	}
 
 void CommonRace::ProcState_Playing()
-{
-	this->SendRemainMinutes("%d minute(s) left before " + this->GetRaceName() + " race ends.", 5, 10);
+	{
+	this->SendRemainMinutes("%d minute(s) left before " + this->m_RaceName + " race ends.", 5, 10);
 
 	if ( this->TimePassed() )
-		this->SetState_None();
-}
+	this->SetState_None();
+	}
 
 void CommonRace::PlayerInGate(Player* pPlayer, int32 gate)
-{
+	{
 	if ( !pPlayer )
 	{
-		return;
+	return;
 	}
 
 	if ( this->GetState() != COMMON_RACE_STATE_PLAYING )
 	{
-		return;
+	return;
 	}
 
-	CommonRacePlayer & PlayerData = this->player_data[pPlayer->GetGUID()];
+	CommonRacePlayer & PlayerData = this->m_PlayerData[pPlayer->GetGUID()];
 
-	for ( size_t i = 0; i < this->gate_list.size(); ++i )
+	for ( size_t i = 0; i < this->m_GateList.size(); ++i )
 	{
-		if ( this->gate_list[i]->GetGate() != gate )
-			continue;
+	if ( this->m_GateList[i]->m_Gate != gate )
+	continue;
 
-		if ( PlayerData.GateList.size() == i )
-		{
-			if ( !PlayerData.IsParticipating() )
-			{
-				PlayerData.SetStartedTime(time(nullptr));
-			}
+	if ( PlayerData.m_GateList.size() == i )
+	{
+	if ( !PlayerData.m_Participating )
+	{
+	PlayerData.m_StartedTime = time(nullptr);
+	}
 
-			PlayerData.SetParticipating(true);
-			PlayerData.GateList.push_back(gate);
-		
-			if ( this->GetGateReached() == i )
-			{
-				this->IncreaseGateReached(1);
+	PlayerData.m_Participating = true;
+	PlayerData.m_GateList.push_back(gate);
 
-				if ( this->GetGateReached() == this->gate_list.size() )
-				{
-					sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "[ %s race ] Finished! %s is the winner",
-						this->GetRaceName().c_str(), pPlayer->GetName());
+	if ( this->m_GateReached == i )
+	{
+	this->m_GateReached += 1;
 
-					if ( this->GetRaceName() == "Dungeon" )
-					{
-						sItemBagMgr->RunItemBag(pPlayer, sGameServer->GetDungeonRaceReward(), Item(), true, GremoryCaseReward::EVENT);
-					}
-					else if ( this->GetRaceName() == "LostTower" )
-					{
-						sItemBagMgr->RunItemBag(pPlayer, sGameServer->GetLosttowerRaceReward(), Item(), true, GremoryCaseReward::EVENT);
-					}
+	if ( this->m_GateReached == this->m_GateList.size() )
+	{
+	sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "[ %s race ] Finished! %s is the winner",
+	this->m_RaceName.c_str(), pPlayer->GetName());
 
-					SQLTransaction trans = MuDatabase.BeginTransaction();
+	if ( this->m_RaceName == "Dungeon" )
+	{
+	sItemBagMgr->RunItemBag(pPlayer, sGameServer->GetDungeonRaceReward(), Item(), true, GremoryCaseReward::EVENT);
+	}
+	else if ( this->m_RaceName == "LostTower" )
+	{
+	sItemBagMgr->RunItemBag(pPlayer, sGameServer->GetLosttowerRaceReward(), Item(), true, GremoryCaseReward::EVENT);
+	}
 
-					PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_EVENT_RANKING_RACE);
-					stmt->setUInt32(0, pPlayer->GetGUID());
-					stmt->setString(1, this->GetRaceName());
-					stmt->setString(2, TimeToTimestampStr(PlayerData.GetStartedTime()));
-					trans->Append(stmt);
+	SQLTransaction trans = MuDatabase.BeginTransaction();
 
-					MuDatabase.CommitTransaction(trans);
+	PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_EVENT_RANKING_RACE);
+	stmt->setUInt32(0, pPlayer->GetGUID());
+	stmt->setString(1, this->m_RaceName);
+	stmt->setString(2, TimeToTimestampStr(PlayerData.m_StartedTime));
+	trans->Append(stmt);
 
-					this->SetState_None();
-				}
-				else
-				{
-					sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "[ %s race ] %s reached gate number %d",
-						this->GetRaceName().c_str(), pPlayer->GetName(), i + 1);
-				}
-			}
+	MuDatabase.CommitTransaction(trans);
 
-			return;
-		}
+	this->SetState_None();
+	}
+	else
+	{
+	sObjectMgr->SendEventNotification(NOTICE_GLOBAL, "[ %s race ] %s reached gate number %d",
+	this->m_RaceName.c_str(), pPlayer->GetName(), i + 1);
+	}
+	}
 
-		break;
+	return;
+	}
+
+	break;
 	}
 
 	this->ResetPlayer(pPlayer);
-}
-
-void CommonRace::ResetPlayer(Player* pPlayer)
-{
-	if ( this->GetState() != COMMON_RACE_STATE_PLAYING )
-		return;
-
-	CommonRacePlayer & PlayerData = this->player_data[pPlayer->GetGUID()];
-
-	if ( PlayerData.IsParticipating() )
-	{
-		pPlayer->SendNotice(NOTICE_NORMAL_BLUE, "You have been disqualified from the race.");
 	}
 
-	PlayerData.SetParticipating(false);
-	PlayerData.GateList.clear();
-}
+void CommonRace::ResetPlayer(Player* pPlayer)
+	{
+	if ( this->GetState() != COMMON_RACE_STATE_PLAYING )
+	return;
+
+	CommonRacePlayer & PlayerData = this->m_PlayerData[pPlayer->GetGUID()];
+
+	if ( PlayerData.m_Participating )
+	{
+	pPlayer->SendNotice(NOTICE_NORMAL_BLUE, "You have been disqualified from the race.");
+	}
+
+	PlayerData.m_Participating = false;
+	PlayerData.m_GateList.clear();
+	}

@@ -1,6 +1,6 @@
 LosttowerRace::LosttowerRace()
 {
-	this->SetRaceName("LostTower");
+this->m_RaceName = "LostTower";
 }
 
 LosttowerRace::~LosttowerRace()
@@ -45,7 +45,7 @@ void LosttowerRace::LoadData()
 					int32 gate = file.GetInt32();
 					file.GetToken(); int32 points = file.GetInt32();
 					
-					this->gate_list.push_back(new CommonRaceGate(gate, points));
+this->m_GateList.push_back(new CommonRaceGate(gate, points));
 				} break;
 			}
 		}
