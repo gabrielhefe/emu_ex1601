@@ -691,9 +691,9 @@ void Object::ViewportConstructMonster(Object* pUnit, Monster* pMonster, uint8 * 
 				}
 			}
 
-			body.m_Class[0] |= (((LifeStoneBasicAI*)pAI)->GetCreationState() << 4 & 0x70);
-		}
-	}
+						body.m_Class[0] |= ((static_cast<LifeStoneBasicAI*>(pAI)->m_CreationState << 4) & 0x70);
+}
+}
 
 	body.elemental_attribute = pMonster->GetElementalAttribute();
 

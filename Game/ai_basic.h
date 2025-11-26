@@ -3,17 +3,17 @@
 
 struct LifeStoneBasicAI: public MonsterAI
 {
-	DECLARE_PROPERTY(int32, CreationTime);
-	DECLARE_PROPERTY(uint8, CreationState);
+        int32 m_CreationTime;
+        uint8 m_CreationState;
 
-	explicit LifeStoneBasicAI(Monster* monster): MonsterAI(monster)
-	{
-		this->SetCreationTime(0);
-		this->SetCreationState(0);
-	}
-	virtual ~LifeStoneBasicAI() {}
+        explicit LifeStoneBasicAI(Monster* monster): MonsterAI(monster)
+        {
+                this->m_CreationTime = 0;
+                this->m_CreationState = 0;
+        }
+        virtual ~LifeStoneBasicAI() {}
 
-	bool IsCreated() const { return this->GetCreationState() >= 5; }
+        bool IsCreated() const { return this->m_CreationState >= 5; }
 };
 
 struct GuardianStatueBasicAI: public MonsterAI
