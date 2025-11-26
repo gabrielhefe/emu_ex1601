@@ -36,15 +36,15 @@ public:
 
 			if ( !this->IsCreated() )
 			{
-				this->IncreaseCreationTime(1);
-				uint8 creation_state_old = this->GetCreationState();
+				this->m_CreationTime += 1;
+				uint8 creation_state_old = this->m_CreationState;
 
-				if ( this->GetCreationTime() < 60 )
-					this->SetCreationState(this->GetCreationTime() / 12);
+				if ( this->m_CreationTime < 60 )
+					this->m_CreationState = this->m_CreationTime / 12;
 				else
-					this->SetCreationState(5);
+					this->m_CreationState = 5;
 
-				if ( this->GetCreationState() != creation_state_old )
+				if ( this->m_CreationState != creation_state_old )
 					this->CreationStateSend();
 			}
 
@@ -90,7 +90,7 @@ public:
 
 		void CreationStateSend()
 		{
-			LIFE_STONE_STATE_SEND pMsg(me()->GetEntry(), this->GetCreationState());
+			LIFE_STONE_STATE_SEND pMsg(me()->GetEntry(), this->m_CreationState);
 			me()->sendPacket_viewport(MAKE_PCT(pMsg));
 		}
 
