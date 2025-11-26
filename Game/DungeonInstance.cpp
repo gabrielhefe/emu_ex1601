@@ -1,11 +1,11 @@
 DungeonInstance::DungeonInstance()
 {
-	this->SetBossKilled(0);
-	this->SetKilledMonsters(0);
-	this->GetTime()->Start();
-	this->GetSimpleTrapTime()->Start();
+	this->m_BossKilled = 0;
+	this->m_KilledMonsters = 0;
+	this->m_Time.Start();
+	this->m_SimpleTrapTime.Start();
 
-	this->SetPlayerCount(0);
+	this->m_PlayerCount = 0;
 }
 
 DungeonInstance::~DungeonInstance()
@@ -17,32 +17,32 @@ void DungeonInstance::Update()
 {
 	this->UpdatePlayers();
 
-	switch (this->GetBossKilled())
+	switch (this->m_BossKilled)
 	{
-	case 0:
+		case 0:
 		{
-			if (this->GetSimpleTrapTime()->Elapsed(sGameServer->GetDungeonSimpleTrapTime()))
+			if (this->m_SimpleTrapTime.Elapsed(sGameServer->GetDungeonSimpleTrapTime()))
 			{
 				this->CreateSimpleTrap();
 			}
 
-			if (this->GetTime()->Elapsed())
+			if (this->m_Time.Elapsed())
 			{
 				this->MovePlayersOut();
 			}
 		} break;
 
-	case 1:
+		case 1:
 		{
-			if (this->GetBossKillTime()->Elapsed(5 * IN_MILLISECONDS))
+			if (this->m_BossKillTime.Elapsed(5 * IN_MILLISECONDS))
 			{
 				this->BossKill(2);
 			}
 		} break;
 
-	case 2:
+		case 2:
 		{
-			if (this->GetBossKillTime()->Elapsed(5 * MINUTE * IN_MILLISECONDS))
+			if (this->m_BossKillTime.Elapsed(5 * MINUTE * IN_MILLISECONDS))
 			{
 				this->MovePlayersOut();
 			}
@@ -58,7 +58,7 @@ void DungeonInstance::UpdatePlayers()
 
 		if (!pPlayer)
 		{
-			sLog->outInfo("instanced_dungeon", "%s (%d) :: Player [%u] does not exist.", __FUNCTION__, this->GetInstance(), itr->first);
+			sLog->outInfo("instanced_dungeon", "%s (%d) :: Player [%u] does not exist.", __FUNCTION__, this->m_Instance, itr->first);
 
 			this->m_DungeonInstancePlayerMap.erase(itr++);
 			continue;
@@ -66,7 +66,7 @@ void DungeonInstance::UpdatePlayers()
 
 		if (!pPlayer->Object::IsPlaying())
 		{
-			sLog->outInfo("instanced_dungeon", "%s (%d) :: Player [%s] login out.", __FUNCTION__, this->GetInstance(), pPlayer->BuildLog().c_str());
+			sLog->outInfo("instanced_dungeon", "%s (%d) :: Player [%s] login out.", __FUNCTION__, this->m_Instance, pPlayer->BuildLog().c_str());
 
 			this->m_DungeonInstancePlayerMap.erase(itr++);
 			continue;
@@ -84,17 +84,17 @@ void DungeonInstance::UpdatePlayers()
 			continue;
 		}
 
-		if (pPlayer->GetWorldId() != this->GetWorld())
+		if (pPlayer->GetWorldId() != this->m_World)
 		{
-			sLog->outInfo("instanced_dungeon", "%s (%d) :: Player [%s] not in world.", __FUNCTION__, this->GetInstance(), pPlayer->BuildLog().c_str());
+			sLog->outInfo("instanced_dungeon", "%s (%d) :: Player [%s] not in world.", __FUNCTION__, this->m_Instance, pPlayer->BuildLog().c_str());
 
 			this->m_DungeonInstancePlayerMap.erase(itr++);
 			continue;
 		}
 
-		if (pPlayer->GetInstance() != this->GetInstance() || (this->GetBossKilled() == 0 && pPlayer->GetPartyID() != this->GetPartyID()))
+		if (pPlayer->GetInstance() != this->m_Instance || (this->m_BossKilled == 0 && pPlayer->GetPartyID() != this->m_PartyId))
 		{
-			sLog->outInfo("instanced_dungeon", "%s (%d) :: Player [%s] not in instance.", __FUNCTION__, this->GetInstance(), pPlayer->BuildLog().c_str());
+			sLog->outInfo("instanced_dungeon", "%s (%d) :: Player [%s] not in instance.", __FUNCTION__, this->m_Instance, pPlayer->BuildLog().c_str());
 
 			pPlayer->MoveToGate(sGameServer->GetDungeonEndGate());
 		}
@@ -114,9 +114,9 @@ void DungeonInstance::MovePlayersOut()
 			continue;
 		}
 
-		if (pPlayer->GetWorldId() == this->GetWorld() && pPlayer->GetInstance() == this->GetInstance())
+		if (pPlayer->GetWorldId() == this->m_World && pPlayer->GetInstance() == this->m_Instance)
 		{
-			sLog->outInfo("instanced_dungeon", "%s (%d) :: Moving Player [%s].", __FUNCTION__, this->GetInstance(), pPlayer->BuildLog().c_str());
+			sLog->outInfo("instanced_dungeon", "%s (%d) :: Moving Player [%s].", __FUNCTION__, this->m_Instance, pPlayer->BuildLog().c_str());
 
 			pPlayer->MoveToGate(sGameServer->GetDungeonEndGate());
 		}
@@ -132,7 +132,7 @@ bool DungeonInstance::IsEmpty() const
 
 void DungeonInstance::AddPlayer(Player* pPlayer)
 {
-	DungeonInstanceData const* pInstanceData = sDungeon->GetInstanceData(this->GetID());
+	DungeonInstanceData const* pInstanceData = sDungeon->GetInstanceData(this->m_Id);
 
 	if (!pInstanceData)
 	{
@@ -141,17 +141,17 @@ void DungeonInstance::AddPlayer(Player* pPlayer)
 
 	if (pPlayer->MoveToGate(pInstanceData->GetGate()))
 	{
-		pPlayer->SetInstance(this->GetInstance());
+		pPlayer->SetInstance(this->m_Instance);
 
 		QUEST_SURVIVAL_TIMER pMsg;
 		pMsg.type = 1;
 		pMsg.increase = 0;
-		pMsg.time = this->GetTime()->GetRemain();
+		pMsg.time = this->m_Time.GetRemain();
 		pPlayer->SEND_PCT(pMsg);
 
 		this->m_DungeonInstancePlayerMap[pPlayer->GetGUID()] = pPlayer;
 
-		sLog->outInfo("instanced_dungeon", "%s (%d) :: Added Player [%s].", __FUNCTION__, this->GetInstance(), pPlayer->BuildLog().c_str());
+		sLog->outInfo("instanced_dungeon", "%s (%d) :: Added Player [%s].", __FUNCTION__, this->m_Instance, pPlayer->BuildLog().c_str());
 	}
 }
 
@@ -162,8 +162,8 @@ void DungeonInstance::AddMonster()
 	{
 		auto const& event_monster = itr->second;
 
-		if (event_monster->dungeon.id != this->GetID())
-			continue;
+		if (event_monster->dungeon.id != this->m_Id)
+		continue;
 
 		auto monster = sObjectMgr->MonsterTryAdd(event_monster->MonsterId, event_monster->MapId);
 		if (monster)
@@ -173,13 +173,13 @@ void DungeonInstance::AddMonster()
 			monster->SetRespawnLocation(MONSTER_RESPAWN_ZONE);
 			monster->SetRespawn(IN_MILLISECONDS);
 
-			monster->AddAdditionalDataInt(0, GetInstance());
-			monster->AddAdditionalDataInt(1, GetLevelID());
+			monster->AddAdditionalDataInt(0, this->m_Instance);
+			monster->AddAdditionalDataInt(1, this->m_LevelId);
 
-			monster->SetInstance(GetInstance());
+			monster->SetInstance(this->m_Instance);
 			monster->AddToWorld();
 
-			sLog->outInfo("instanced_dungeon", "%s (%d) :: Added Monster [%u][%u].", __FUNCTION__, GetInstance(), monster->GetEntry(), monster->GetClass());
+			sLog->outInfo("instanced_dungeon", "%s (%d) :: Added Monster [%u][%u].", __FUNCTION__, this->m_Instance, monster->GetEntry(), monster->GetClass());
 		}
 	}
 }
@@ -188,30 +188,30 @@ void DungeonInstance::BossKill(uint8 id)
 {
 	if (id == 1)
 	{
-		if (this->GetBossKilled() == 0)
+		if (this->m_BossKilled == 0)
 		{
-			this->SetBossKilled(1);
-			this->GetBossKillTime()->Start();
+			this->m_BossKilled = 1;
+			this->m_BossKillTime.Start();
 
-			sLog->outInfo("instanced_dungeon", "%s (%d) :: Killed Boss.", __FUNCTION__, this->GetInstance());
+			sLog->outInfo("instanced_dungeon", "%s (%d) :: Killed Boss.", __FUNCTION__, this->m_Instance);
 		}
 
 		return;
 	}
 
-	if (id == 2 && this->GetBossKilled() != 1)
+	if (id == 2 && this->m_BossKilled != 1)
 	{
 		return;
 	}
 
-	this->SetBossKilled(2);
-	this->GetBossKillTime()->Start();
-	
+	this->m_BossKilled = 2;
+	this->m_BossKillTime.Start();
+
 	this->UpdatePlayers();
 
-	this->SetPlayerCount(this->m_DungeonInstancePlayerMap.size());
+	this->m_PlayerCount = this->m_DungeonInstancePlayerMap.size();
 
-	this->GetBossKillTime()->Start();
+	this->m_BossKillTime.Start();
 
 	this->CreateChest();
 
@@ -220,12 +220,12 @@ void DungeonInstance::BossKill(uint8 id)
 
 void DungeonInstance::CreateChest()
 {
-	if (this->GetPlayerCount() <= 0)
+	if (this->m_PlayerCount <= 0)
 	{
 		return;
 	}
 
-	DungeonInstanceData const* pData = sDungeon->GetInstanceData(this->GetID());
+	DungeonInstanceData const* pData = sDungeon->GetInstanceData(this->m_Id);
 
 	if (!pData)
 	{
@@ -241,17 +241,17 @@ void DungeonInstance::CreateChest()
 		pMonster->SetBasicLocation(pData->GetMainChestX(), pData->GetMainChestY(), pData->GetMainChestX(), pData->GetMainChestY());
 		pMonster->SetRespawnType(GAME_OBJECT_RESPAWN_DELETE);
 		pMonster->SetScriptName("ai_instanced_dungeon_chest");
-		pMonster->AddAdditionalDataInt(0, this->GetInstance());
+		pMonster->AddAdditionalDataInt(0, this->m_Instance);
 		pMonster->AddAdditionalDataInt(1, 0);
 		pMonster->AddAdditionalDataInt(2, 0);
 
-		pMonster->SetInstance(this->GetInstance());
+		pMonster->SetInstance(this->m_Instance);
 		pMonster->AddToWorld();
 
-		sLog->outInfo("instanced_dungeon", "%s (%d) :: Created Golden Chest [%u][%u].", __FUNCTION__, this->GetInstance(), pMonster->GetEntry(), pMonster->GetClass());
+		sLog->outInfo("instanced_dungeon", "%s (%d) :: Created Golden Chest [%u][%u].", __FUNCTION__, this->m_Instance, pMonster->GetEntry(), pMonster->GetClass());
 	}
 
-	int32 silver_chest_count = this->GetKilledMonsters() / sGameServer->GetDungeonSilverChestMonster();
+	int32 silver_chest_count = this->m_KilledMonsters / sGameServer->GetDungeonSilverChestMonster();
 
 	if (silver_chest_count <= 0)
 	{
@@ -274,14 +274,14 @@ void DungeonInstance::CreateChest()
 			pMonster->SetBasicLocation(pData->GetChestX(i), pData->GetChestY(i), pData->GetChestX(i), pData->GetChestY(i));
 			pMonster->SetRespawnType(GAME_OBJECT_RESPAWN_DELETE);
 			pMonster->SetScriptName("ai_instanced_dungeon_chest");
-			pMonster->AddAdditionalDataInt(0, this->GetInstance());
+			pMonster->AddAdditionalDataInt(0, this->m_Instance);
 			pMonster->AddAdditionalDataInt(1, 1);
 			pMonster->AddAdditionalDataInt(2, i);
 
-			pMonster->SetInstance(this->GetInstance());
+			pMonster->SetInstance(this->m_Instance);
 			pMonster->AddToWorld();
 
-			sLog->outInfo("instanced_dungeon", "%s (%d) :: Created Silver Chest [%u][%u].", __FUNCTION__, this->GetInstance(), pMonster->GetEntry(), pMonster->GetClass());
+			sLog->outInfo("instanced_dungeon", "%s (%d) :: Created Silver Chest [%u][%u].", __FUNCTION__, this->m_Instance, pMonster->GetEntry(), pMonster->GetClass());
 		}
 	}
 }
@@ -297,7 +297,7 @@ void DungeonInstance::ChestOpen(uint8 type, uint8 id)
 
 	this->m_DungeonInstanceChestMap[type][id] = true;
 
-	DungeonInstanceLevel const* pLevel = sDungeon->GetInstanceLevel(this->GetLevelID());
+	DungeonInstanceLevel const* pLevel = sDungeon->GetInstanceLevel(this->m_LevelId);
 
 	if (!pLevel)
 	{
@@ -353,13 +353,13 @@ void DungeonInstance::SaveInstance()
 
 		PreparedStatement* stmt = MuDatabase.GetPreparedStatement(QUERY_MUDATABASE_DUNGEON_INSTANCE_UPDATE);
 		stmt->setUInt32(0, itr->first);
-		stmt->setUInt8(1, this->GetID());
+		stmt->setUInt8(1, this->m_Id);
 		stmt->setInt64(2, current_time);
-		stmt->setUInt8(3, this->GetID());
+		stmt->setUInt8(3, this->m_Id);
 		stmt->setInt64(4, current_time);
 		trans->Append(stmt);
 
-		sDungeon->SaveInstance(itr->first, this->GetID(), current_time);
+		sDungeon->SaveInstance(itr->first, this->m_Id, current_time);
 	}
 
 	MuDatabase.CommitTransaction(trans);
@@ -379,7 +379,7 @@ int32 DungeonInstance::GetCountByPC(Player* pPlayer) const
 		}
 
 		if (pMember->GetAccountData()->GetDiskSerial() == pPlayer->GetAccountData()->GetDiskSerial() &&
-			!memcmp(pMember->GetAccountData()->GetMac(), pPlayer->GetAccountData()->GetMac(), MAX_ACCOUNT_MAC_LENGTH))
+		!memcmp(pMember->GetAccountData()->GetMac(), pPlayer->GetAccountData()->GetMac(), MAX_ACCOUNT_MAC_LENGTH))
 		{
 			++count;
 		}
@@ -409,7 +409,7 @@ void DungeonInstance::CreateSimpleTrap()
 
 void DungeonInstance::CreateTrap(int16 x, int16 y, uint8 type)
 {
-	DungeonInstanceData const* pData = sDungeon->GetInstanceData(this->GetID());
+	DungeonInstanceData const* pData = sDungeon->GetInstanceData(this->m_Id);
 
 	if (!pData)
 	{
@@ -428,12 +428,12 @@ void DungeonInstance::CreateTrap(int16 x, int16 y, uint8 type)
 		pMonster->SetDespawnTick(MyGetTickCount());
 		pMonster->SetDespawnType(MONSTER_DESPAWN_TIME);
 		pMonster->SetScriptName("ai_instanced_dungeon_trap");
-		pMonster->AddAdditionalDataInt(0, this->GetInstance());
+		pMonster->AddAdditionalDataInt(0, this->m_Instance);
 		pMonster->AddAdditionalDataInt(1, type);
 
-		pMonster->SetInstance(this->GetInstance());
+		pMonster->SetInstance(this->m_Instance);
 		pMonster->AddToWorld();
 
-		sLog->outInfo("instanced_dungeon", "%s (%d) :: Created Trap [%u][%u].", __FUNCTION__, this->GetInstance(), pMonster->GetEntry(), pMonster->GetClass());
+		sLog->outInfo("instanced_dungeon", "%s (%d) :: Created Trap [%u][%u].", __FUNCTION__, this->m_Instance, pMonster->GetEntry(), pMonster->GetClass());
 	}
 }

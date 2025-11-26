@@ -441,26 +441,26 @@ void Dungeon::EnterRequest(Player* pPlayer)
 		this->IncreaseInstanceID(1);
 
 		pInstance = new DungeonInstance();
-		pInstance->SetInstance(this->GetInstanceID());
-		pInstance->SetID(pData->GetID());
-		pInstance->SetLevelID(pLevelData->GetID());
-		pInstance->SetPartyID(pParty->GetID());
-		pInstance->SetWorld(pData->GetWorld());
-		pInstance->GetTime()->Start(sGameServer->GetDungeonDuration());
+		pInstance->m_Instance = this->GetInstanceID();
+		pInstance->m_Id = pData->GetID();
+		pInstance->m_LevelId = pLevelData->GetID();
+		pInstance->m_PartyId = pParty->GetID();
+		pInstance->m_World = pData->GetWorld();
+		pInstance->m_Time.Start(sGameServer->GetDungeonDuration());
 
 		pInstance->AddMonster();
 
-		this->m_DungeonInstanceMap[pInstance->GetInstance()] = pInstance;
+		this->m_DungeonInstanceMap[pInstance->m_Instance] = pInstance;
 	}
 	else
 	{
-		if (pInstance->GetBossKilled() != 0)
+		if (pInstance->m_BossKilled != 0)
 		{
 			pPlayer->SendMessageBox(0, "Instanced Dungeon", "Your party instance has already finished.");
 			return;
 		}
 
-		DungeonInstanceLevel const* pLevelData = this->GetInstanceLevel(pInstance->GetLevelID());
+		DungeonInstanceLevel const* pLevelData = this->GetInstanceLevel(pInstance->m_LevelId);
 
 		if (!pLevelData)
 		{
