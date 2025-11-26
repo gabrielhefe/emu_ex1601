@@ -3,24 +3,24 @@
 
 class GuildWarData
 {
-	public:
-		explicit GuildWarData(uint32 Guild01, uint32 Guild02)
-		{
-			this->SetGuild01(Guild01);
-			this->SetGuild02(Guild02);
-			this->SetCount(0);
-			this->GetWarTime()->Reset();
-			this->GetResetTime()->Reset();
-			this->GetWarTime()->Start();
-			this->GetResetTime()->Start();
-		}
+        public:
+                explicit GuildWarData(uint32 Guild01, uint32 Guild02)
+                {
+                        this->m_Guild01 = Guild01;
+                        this->m_Guild02 = Guild02;
+                        this->m_Count = 0;
+                        this->m_WarTime.Reset();
+                        this->m_ResetTime.Reset();
+                        this->m_WarTime.Start();
+                        this->m_ResetTime.Start();
+                }
 
-	private:
-		DECLARE_ENUM(uint32, Guild01);
-		DECLARE_ENUM(uint32, Guild02);
-		DECLARE_PROPERTY(int32, Count);
-		DECLARE_STRUCT(TickTimer, WarTime);
-		DECLARE_STRUCT(TickTimer, ResetTime);
+        private:
+                uint32 m_Guild01;
+                uint32 m_Guild02;
+                int32 m_Count;
+                TickTimer m_WarTime;
+                TickTimer m_ResetTime;
 };
 
 typedef std::list<GuildWarData*> GuildWarDataList;
