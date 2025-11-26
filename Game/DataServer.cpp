@@ -1580,14 +1580,14 @@ void DataServer::CharacterSignal(uint8 * Packet)
 
 	switch ( lpMsg->type )
 	{
-	case 0:
-		{
-			pPlayer->GetTimer(PLAYER_TIMER_MAIL)->SetTimer(0);
-		} break;
+case 0:
+{
+pPlayer->GetTimer(PLAYER_TIMER_MAIL)->m_Timer = 0;
+} break;
 
-	case 1:
-		{
-			pPlayer->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->SetTimer(0);
-		} break;
+case 1:
+{
+pPlayer->GetTimer(PLAYER_TIMER_CASH_SHOP_GIFT)->m_Timer = 0;
+} break;
 	}
 }

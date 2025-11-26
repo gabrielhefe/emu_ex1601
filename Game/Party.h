@@ -35,18 +35,18 @@ struct PartyMemberData
 		this->SetLevel(0);
 	}
 
-	void Set(PartyMemberData const* Data)
-	{
-		this->SetPlayer(Data->GetPlayer());
+void Set(PartyMemberData const* Data)
+{
+this->SetPlayer(Data->GetPlayer());
 		this->SetAccount(Data->GetAccount());
 		this->SetGUID(Data->GetGUID());
-		this->SetStatus(Data->GetStatus());
-		this->SetName(Data->GetName());
-		this->GetLeftTime()->SetDelay(Data->GetLeftTime()->GetDelay());
-		this->GetLeftTime()->SetTimer(Data->GetLeftTime()->GetTimer());
-		this->SetGenFamily(Data->GetGenFamily());
-		this->SetAssisted(Data->IsAssisted());
-		this->SetClass(Data->GetClass());
+this->SetStatus(Data->GetStatus());
+this->SetName(Data->GetName());
+this->GetLeftTime()->m_Delay = Data->GetLeftTime()->m_Delay;
+this->GetLeftTime()->m_Timer = Data->GetLeftTime()->m_Timer;
+this->SetGenFamily(Data->GetGenFamily());
+this->SetAssisted(Data->IsAssisted());
+this->SetClass(Data->GetClass());
 		this->SetLevel(Data->GetLevel());
 	}
 

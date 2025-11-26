@@ -368,16 +368,16 @@ void Player::PartyLeaderChange(uint8 * Packet)
 		if (!memcmp(pMember->GetName(), lpMsg->name, MAX_CHARACTER_LENGTH))
 		{
 			pLeaderMember->SetAccount(pMember->GetAccount());
-			pLeaderMember->SetGUID(pMember->GetGUID());
-			pLeaderMember->SetName(pMember->GetName());
-			pLeaderMember->SetPlayer(pMember->GetPlayer());
-			pLeaderMember->SetLevel(pMember->GetLevel());
-			pLeaderMember->SetClass(pMember->GetClass());
-			pLeaderMember->SetGenFamily(pMember->GetGenFamily());
-			pLeaderMember->SetStatus(pMember->GetStatus());
-			pLeaderMember->GetLeftTime()->SetTimer(pMember->GetLeftTime()->GetTimer());
-			pLeaderMember->GetLeftTime()->SetDelay(pMember->GetLeftTime()->GetDelay());
-			pLeaderMember->SetAssisted(false);
+pLeaderMember->SetGUID(pMember->GetGUID());
+pLeaderMember->SetName(pMember->GetName());
+pLeaderMember->SetPlayer(pMember->GetPlayer());
+pLeaderMember->SetLevel(pMember->GetLevel());
+pLeaderMember->SetClass(pMember->GetClass());
+pLeaderMember->SetGenFamily(pMember->GetGenFamily());
+pLeaderMember->SetStatus(pMember->GetStatus());
+pLeaderMember->GetLeftTime()->m_Timer = pMember->GetLeftTime()->m_Timer;
+pLeaderMember->GetLeftTime()->m_Delay = pMember->GetLeftTime()->m_Delay;
+pLeaderMember->SetAssisted(false);
 
 			pMember->SetAccount(this->GetAccountData()->GetGUID());
 			pMember->SetGUID(this->GetGUID());
