@@ -88,10 +88,12 @@ struct CHAOS_CASTLE_SURVIVAL_SCORE
 	int32 player_kill_count;
 };
 
+#include <cstring>
+
 struct ChaosCastleSurvivalSchedule
 {
-	DECLARE_ENUM(uint8, Hour);
-	DECLARE_ENUM(uint8, Minute);
+	uint8 m_Hour{};
+	uint8 m_Minute{};
 };
 
 typedef std::vector<ChaosCastleSurvivalSchedule*> ChaosCastleSurvivalScheduleList;
@@ -105,14 +107,14 @@ struct ChaosCastleSurvivalRanking
 
 	void Reset()
 	{
-		this->SetID(0);
-		this->ResetName();
-		this->SetScore(0);
+		this->m_ID = 0;
+		std::memset(this->m_Name, 0, sizeof(this->m_Name));
+		this->m_Score = 0;
 	}
 
-	DECLARE_ENUM(uint32, ID);
-	DECLARE_STRING_FIXED(Name, MAX_CHARACTER_LENGTH + 1);
-	DECLARE_ENUM(int32, Score);
+	uint32 m_ID{};
+	char m_Name[MAX_CHARACTER_LENGTH + 1]{};
+	int32 m_Score{};
 };
 
 typedef std::vector<ChaosCastleSurvivalRanking> ChaosCastleSurvivalRankingList;
@@ -136,8 +138,8 @@ class ChaosCastleSurvivalMgr: public EventCommonMgr
 		CREATE_STATE(Open);
 		CREATE_STATE(Playing);
 
-		DECLARE_STRUCT(ChaosCastle, Ground);
-		DECLARE_ENUM(ChaosCastleSurvivalStage, Stage);
+DECLARE_STRUCT(ChaosCastle, Ground);
+DECLARE_ENUM(ChaosCastleSurvivalStage, Stage);
 
 		uint8 GetCurrentGround() const
 		{
@@ -184,13 +186,13 @@ class ChaosCastleSurvivalMgr: public EventCommonMgr
 		void AddScore(uint32 char_id, int32 score);
 		void OnPlayerConnect(uint32 id, const char * name);
 
-		DECLARE_PROPERTY_ARRAY(uint8, Preliminary, 3);
-		DECLARE_PROPERTY_ARRAY(uint8, SemiFinal, 2);
-		DECLARE_PROPERTY(uint8, Final);
+uint8 m_Preliminary[3]{};
+uint8 m_SemiFinal[2]{};
+uint8 m_Final{};
 
-		ChaosCastleSurvivalScheduleList m_StageTime[MAX_CHAOS_CASTLE_SURVIVAL_STAGE];
+ChaosCastleSurvivalScheduleList m_StageTime[MAX_CHAOS_CASTLE_SURVIVAL_STAGE];
 
-		DECLARE_ARRAY_STRUCT(ChaosCastleSurvivalRanking, Ranking, MAX_CHAOS_CASTLE_SURVIVAL_RANK);
+ChaosCastleSurvivalRanking m_Ranking[MAX_CHAOS_CASTLE_SURVIVAL_RANK];
 };
 
 #endif

@@ -91,13 +91,13 @@ void ChaosCastleSurvivalMgr::LoadChaosCastleSetting()
 
 			case 1:
 				{
-					this->SetPreliminary(0, file.GetUInt8());
+					this->m_Preliminary[0] = file.GetUInt8();
 
-					file.GetToken();	this->SetPreliminary(1, file.GetUInt8());
-					file.GetToken();	this->SetPreliminary(2, file.GetUInt8());
-					file.GetToken();	this->SetSemiFinal(0, file.GetUInt8());
-					file.GetToken();	this->SetSemiFinal(1, file.GetUInt8());
-					file.GetToken();	this->SetFinal(file.GetUInt8());
+					file.GetToken();	this->m_Preliminary[1] = file.GetUInt8();
+					file.GetToken();	this->m_Preliminary[2] = file.GetUInt8();
+					file.GetToken();	this->m_SemiFinal[0] = file.GetUInt8();
+					file.GetToken();	this->m_SemiFinal[1] = file.GetUInt8();
+					file.GetToken();	this->m_Final = file.GetUInt8();
 				} break;
 
 			case 2:
@@ -110,8 +110,8 @@ void ChaosCastleSurvivalMgr::LoadChaosCastleSetting()
 					if ( id < MAX_CHAOS_CASTLE_SURVIVAL_STAGE )
 					{
 						ChaosCastleSurvivalSchedule* pData = new ChaosCastleSurvivalSchedule;
-						pData->SetHour(hour);
-						pData->SetMinute(minute);
+						pData->m_Hour = hour;
+						pData->m_Minute = minute;
 
 						this->m_StageTime[id].push_back(pData);
 					}
@@ -240,12 +240,12 @@ void ChaosCastleSurvivalMgr::DataRequest(Player* pPlayer, uint8 * Packet)
 	POINTER_PCT(CHAOS_CASTLE_SURVIVAL_SCHEDULE_BODY, body, buffer, sizeof(CHAOS_CASTLE_SURVIVAL_SCHEDULE_HEAD));
 	head->count = 0;
 	head->type = this->GetStage();
-	head->preliminary[0] = this->GetPreliminary(0);
-	head->preliminary[1] = this->GetPreliminary(1);
-	head->preliminary[2] = this->GetPreliminary(2);
-	head->semi_final[0] = this->GetSemiFinal(0);
-	head->semi_final[1] = this->GetSemiFinal(1);
-	head->final = this->GetFinal();
+	head->preliminary[0] = this->m_Preliminary[0];
+	head->preliminary[1] = this->m_Preliminary[1];
+	head->preliminary[2] = this->m_Preliminary[2];
+	head->semi_final[0] = this->m_SemiFinal[0];
+	head->semi_final[1] = this->m_SemiFinal[1];
+	head->final = this->m_Final;
 
 	for ( int32 i = 0; i < MAX_CHAOS_CASTLE_SURVIVAL_STAGE; ++i )
 	{
@@ -258,8 +258,8 @@ void ChaosCastleSurvivalMgr::DataRequest(Player* pPlayer, uint8 * Packet)
 				continue;
 			}
 
-			body[head->count].hour = pData->GetHour();
-			body[head->count].minute = pData->GetMinute();
+			body[head->count].hour = pData->m_Hour;
+			body[head->count].minute = pData->m_Minute;
 			body[head->count].preliminary = i == 0 ? 1 : 0;
 			body[head->count].semi_final = i == 1 ? 2 : 0;
 			body[head->count].final = i == 2 ? 3 : 0;
@@ -486,14 +486,14 @@ void ChaosCastleSurvivalMgr::RankingRequest(Player* pPlayer, uint8 * Packet)
 	{
 		for ( int32 i = 0; i < MAX_CHAOS_CASTLE_SURVIVAL_RANK; ++i )
 		{
-			if ( !this->GetRanking(i)->GetID() )
+			if ( !this->m_Ranking[i].m_ID )
 			{
 				continue;
 			}
 
 			body[head->count].rank = head->count + 1;
-			body[head->count].score = this->GetRanking(i)->GetScore();
-			memcpy(body[head->count].name, this->GetRanking(i)->GetName(), MAX_CHARACTER_LENGTH + 1);
+			body[head->count].score = this->m_Ranking[i].m_Score;
+			memcpy(body[head->count].name, this->m_Ranking[i].m_Name, MAX_CHARACTER_LENGTH + 1);
 			body[head->count].unk2 = 0;
 			++head->count;
 		}
@@ -556,7 +556,7 @@ bool ChaosCastleSurvivalMgr::IsInRanking(Player* pPlayer)
 {
 	for ( int32 i = 0; i < MAX_CHAOS_CASTLE_SURVIVAL_RANK; ++i )
 	{
-		if ( this->GetRanking(i)->GetID() == pPlayer->GetGUID() )
+		if ( this->m_Ranking[i].m_ID == pPlayer->GetGUID() )
 		{
 			return true;
 		}
@@ -570,17 +570,17 @@ ChaosCastleSurvivalStage ChaosCastleSurvivalMgr::GetDay() const
 	SYSTEMTIME sysTime;
 	GetLocalTime(&sysTime);
 	
-	if ( sysTime.wDay == this->GetPreliminary(0) || sysTime.wDay == this->GetPreliminary(1) || sysTime.wDay == this->GetPreliminary(2) )
+	if ( sysTime.wDay == this->m_Preliminary[0] || sysTime.wDay == this->m_Preliminary[1] || sysTime.wDay == this->m_Preliminary[2] )
 	{
 		return CHAOS_CASTLE_SURVIVAL_STAGE_PRELIMINARY;
 	}
 
-	if ( sysTime.wDay == this->GetSemiFinal(0) || sysTime.wDay == this->GetSemiFinal(1) )
+	if ( sysTime.wDay == this->m_SemiFinal[0] || sysTime.wDay == this->m_SemiFinal[1] )
 	{
 		return CHAOS_CASTLE_SURVIVAL_STAGE_SEMI_FINAL;
 	}
 
-	if ( sysTime.wDay == this->GetFinal() )
+	if ( sysTime.wDay == this->m_Final )
 	{
 		return CHAOS_CASTLE_SURVIVAL_STAGE_FINAL;
 	}
@@ -590,18 +590,18 @@ ChaosCastleSurvivalStage ChaosCastleSurvivalMgr::GetDay() const
 
 bool Sort(ChaosCastleSurvivalRanking & pPlayer1, ChaosCastleSurvivalRanking & pPlayer2)
 {
-	return (pPlayer1.GetScore() >= pPlayer2.GetScore());
+	return (pPlayer1.m_Score >= pPlayer2.m_Score);
 }
 
 void ChaosCastleSurvivalMgr::UpdateRanking()
 {
-	///- Calculo el d�a actual
+	///- Calculo el día actual
 	ChaosCastleSurvivalStage old_stage = this->GetStage();
 	this->SetStage(this->GetDay());
 
 	for (int32 i = 0; i < MAX_CHAOS_CASTLE_SURVIVAL_RANK; ++i)
 	{
-		this->GetRanking(i)->Reset();
+		this->m_Ranking[i].Reset();
 	}
 
 	///- Genero el Ranking correspondiente
@@ -623,9 +623,11 @@ void ChaosCastleSurvivalMgr::UpdateRanking()
 			FieldReader reader(result->Fetch());
 
 			ChaosCastleSurvivalRanking AddPlayer;
-			AddPlayer.SetID(reader.GetUInt32());
-			AddPlayer.SetName(reader.GetString().c_str());
-			AddPlayer.SetScore(reader.GetInt32());
+			AddPlayer.m_ID = reader.GetUInt32();
+			std::memset(AddPlayer.m_Name, 0, sizeof(AddPlayer.m_Name));
+			std::strncpy(AddPlayer.m_Name, reader.GetString().c_str(), MAX_CHARACTER_LENGTH);
+			AddPlayer.m_Name[MAX_CHARACTER_LENGTH] = 0;
+			AddPlayer.m_Score = reader.GetInt32();
 			sort_list.push_back(AddPlayer);
 			++count;
 
@@ -640,9 +642,9 @@ void ChaosCastleSurvivalMgr::UpdateRanking()
 
 	for (int32 i = 0; i < sort_list.size(); ++i)
 	{
-		this->GetRanking(i)->SetID(sort_list[i].GetID());
-		this->GetRanking(i)->SetScore(sort_list[i].GetScore());
-		this->GetRanking(i)->SetName(sort_list[i].GetName());
+		this->m_Ranking[i].m_ID = sort_list[i].m_ID;
+		this->m_Ranking[i].m_Score = sort_list[i].m_Score;
+		std::memcpy(this->m_Ranking[i].m_Name, sort_list[i].m_Name, sizeof(this->m_Ranking[i].m_Name));
 	}
 
 	///- Si no estoy dentro de las fechas entonces limpio el Ranking
@@ -662,7 +664,7 @@ void ChaosCastleSurvivalMgr::UpdateRanking()
 		{
 			for (int32 i = 0; i < MAX_CHAOS_CASTLE_SURVIVAL_RANK; ++i)
 			{
-				this->GetRanking(i)->SetScore(0);
+				this->m_Ranking[i].m_Score = 0;
 			}
 
 			SQLTransaction trans = MuDatabase.BeginTransaction();
@@ -673,7 +675,7 @@ void ChaosCastleSurvivalMgr::UpdateRanking()
 		{
 			for (int32 i = 0; i < MAX_CHAOS_CASTLE_SURVIVAL_RANK; ++i)
 			{
-				this->GetRanking(i)->Reset();
+				this->m_Ranking[i].Reset();
 			}
 		}
 
@@ -686,9 +688,9 @@ void ChaosCastleSurvivalMgr::UpdateRanking()
 
 		for (int32 i = 0; i < MAX_CHAOS_CASTLE_SURVIVAL_RANK; ++i)
 		{
-			if (this->GetRanking(i)->GetID())
+			if (this->m_Ranking[i].m_ID)
 			{
-				sChaosCastleSurvivalMgr->AddScore(this->GetRanking(i)->GetID(), this->GetRanking(i)->GetScore());
+				sChaosCastleSurvivalMgr->AddScore(this->m_Ranking[i].m_ID, this->m_Ranking[i].m_Score);
 			}
 		}
 	}
@@ -720,10 +722,11 @@ void ChaosCastleSurvivalMgr::OnPlayerConnect(uint32 id, const char * name)
 {
 	for (int32 i = 0; i < MAX_CHAOS_CASTLE_SURVIVAL_RANK; ++i)
 	{
-		if (this->GetRanking(i)->GetID() == id)
+		if (this->m_Ranking[i].m_ID == id)
 		{
-			this->GetRanking(i)->ResetName();
-			this->GetRanking(i)->SetName(name, MAX_CHARACTER_LENGTH);
+			std::memset(this->m_Ranking[i].m_Name, 0, sizeof(this->m_Ranking[i].m_Name));
+			std::strncpy(this->m_Ranking[i].m_Name, name, MAX_CHARACTER_LENGTH);
+			this->m_Ranking[i].m_Name[MAX_CHARACTER_LENGTH] = 0;
 		}
 	}
 }
